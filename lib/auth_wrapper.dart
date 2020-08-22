@@ -4,7 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:rPiInterface/bt_wrapper.dart';
 import 'package:rPiInterface/non_auth_page.dart';
 import 'services/authentication.dart';
-import './services/bt_page.dart';
+//import './services/bt_page.dart';
+import './bt_page2.dart';
+
 
 class AuthWrapper extends StatelessWidget {
   @override
@@ -17,7 +19,7 @@ class AuthWrapper extends StatelessWidget {
         ? NonAuth()
         : Provider<BluetoothConnection>.value(
             value: connection,
-            child: BluetoothWrapper(),
+            child: BluetoothPage(),
           );
   }
 }
