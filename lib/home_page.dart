@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:rPiInterface/choose_devices.dart';
 import 'package:rPiInterface/services/authentication.dart';
 import 'package:provider/provider.dart';
-import 'package:rPiInterface/services/bt_page.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 
 
@@ -47,7 +47,7 @@ class _HomePageState extends State<HomePage> {
             // ),
             FlatButton.icon(
               label: Text(
-                'Conectar um dispositivo',
+                'Escolher dispositivos',
                 style: TextStyle(color: Colors.black),
               ),
               icon: Icon(
@@ -62,7 +62,7 @@ class _HomePageState extends State<HomePage> {
                       value: Auth().user,
                       child: Provider<BluetoothConnection>.value(
                         value: connection,
-                        child: BluetoothPage()
+                        child: DevicesPage()
                       )
                     );
                   }),

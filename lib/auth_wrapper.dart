@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:provider/provider.dart';
-import 'package:rPiInterface/bt_wrapper.dart';
 import 'package:rPiInterface/non_auth_page.dart';
+import 'package:rPiInterface/test.dart';
+import 'package:rPiInterface/test2.dart';
+import 'home_page.dart';
+import './mqtt_state.dart';
 import 'services/authentication.dart';
-//import './services/bt_page.dart';
-import './bt_page2.dart';
 
 
 class AuthWrapper extends StatelessWidget {
@@ -13,13 +13,12 @@ class AuthWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     // returns home or authenticate based on authentiation status
     final user = Provider.of<User>(context);
-    final connection = Provider.of<BluetoothConnection>(context);
     print(user == null ? null : user.uid);
     return user == null
         ? NonAuth()
-        : Provider<BluetoothConnection>.value(
-            value: connection,
-            child: BluetoothPage(),
-          );
+        : ChangeNotifierProvider<MQTTAppState>(
+        create: (_) => MQTTAppState(),
+        child: MQTTView(),);
+          
   }
 }
