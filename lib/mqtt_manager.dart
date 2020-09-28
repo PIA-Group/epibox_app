@@ -1,3 +1,4 @@
+
 import 'package:mqtt_client/mqtt_client.dart';
 import './mqtt_state.dart';
 import 'package:flutter/material.dart';
@@ -32,13 +33,13 @@ class MQTTManager {
     _client = MqttServerClient(_host, _identifier);
     _client.onDisconnected = onDisconnected;
     _client.secure = true;
-    _client.logging(on: false);
+    _client.logging(on: true);
 
     /// Add the successful connection callback
     _client.onConnected = onConnected;
     _client.onSubscribed = onSubscribed;
 
-    final MqttConnectMessage connMess = MqttConnectMessage()
+    /* final MqttConnectMessage connMess = MqttConnectMessage()
         .withClientIdentifier(_identifier)
         .withWillTopic(
             'willtopic') // If you set this you must set a will message
@@ -46,7 +47,7 @@ class MQTTManager {
         .startClean() // Non persistent session for testing
         .withWillQos(MqttQos.atLeastOnce);
     print('EXAMPLE::Mosquitto client connecting....');
-    _client.connectionMessage = connMess;
+    _client.connectionMessage = connMess; */
   }
 
   // Connect to the host
@@ -56,6 +57,7 @@ class MQTTManager {
       print('STARTING CONNECTION');
       _currentState.setAppConnectionState(MQTTAppConnectionState.connecting);
       await _client.connect(_username, _password);
+      print('CONNECTED');
     } on Exception catch (e) {
       print('ERROR ON CONNECTION - $e');
       disconnect();

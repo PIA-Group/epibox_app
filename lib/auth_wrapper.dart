@@ -5,6 +5,7 @@ import 'package:rPiInterface/test.dart';
 import 'package:rPiInterface/test2.dart';
 import 'home_page.dart';
 import './mqtt_state.dart';
+import 'location/main_loc.dart';
 import 'services/authentication.dart';
 
 
@@ -16,9 +17,10 @@ class AuthWrapper extends StatelessWidget {
     print(user == null ? null : user.uid);
     return user == null
         ? NonAuth()
-        : ChangeNotifierProvider<MQTTAppState>(
+        : TestPage();
+        /* : ChangeNotifierProvider<MQTTAppState>(
         create: (_) => MQTTAppState(),
-        child: MQTTView(),);
+        child: MQTTView(),); */
           
   }
 }
