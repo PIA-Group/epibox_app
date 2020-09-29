@@ -27,6 +27,7 @@ class MQTTClientWrapper {
     try {
       print('MQTTClientWrapper::Mosquitto client connecting....');
       connectionState = MqttCurrentConnectionState.CONNECTING;
+      //await client.connect();
       await client.connect(Constants.username, Constants.password);
       print('CONNECTION DONE');
     } on Exception catch (e) {
@@ -50,6 +51,7 @@ class MQTTClientWrapper {
     client = MqttServerClient.withPort(_hostAddress, '#1', Constants.port);
     client.logging(on: false);
     client.keepAlivePeriod = 20;
+    //client.secure = true;
     client.onDisconnected = _onDisconnected;
     client.onConnected = _onConnected;
     client.onSubscribed = _onSubscribed;
