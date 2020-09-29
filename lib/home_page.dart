@@ -13,12 +13,12 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final Auth _auth = Auth();
 
-  MQTTClientWrapper mqttClientWrapper;
+  MQTTClientWrapper mqttClientWrapper = MQTTClientWrapper(() => {});
   
-  void setup() {
+  /* void setup() {
     mqttClientWrapper = MQTTClientWrapper(() => {});
     mqttClientWrapper.prepareMqttClient();
-  }
+  } */
 
 
   @override
@@ -76,10 +76,10 @@ class _HomePageState extends State<HomePage> {
                 Icons.bluetooth,
                 color: Colors.black,
               ),
-              onPressed: () {setState(() {
+              /* onPressed: () {setState(() {
                 setup();
-              });},
-              /* onPressed: () async {
+              });}, */
+              onPressed: () async {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) {
@@ -89,7 +89,7 @@ class _HomePageState extends State<HomePage> {
                     );
                   }),
                 );
-              }, */
+              },
             ),
 
           ],

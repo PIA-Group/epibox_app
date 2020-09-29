@@ -47,7 +47,7 @@ class MQTTClientWrapper {
   }
 
   void _setupMqttClient() {
-    client = MqttServerClient.withPort(Constants.serverUri, '#', Constants.port);
+    client = MqttServerClient.withPort(Constants.serverUri, '#1', Constants.port);
     client.logging(on: false);
     client.keepAlivePeriod = 20;
     client.onDisconnected = _onDisconnected;

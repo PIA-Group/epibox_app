@@ -7,8 +7,8 @@ import 'location/mqtt_wrapper.dart';
 
 class RPiPage extends StatefulWidget {
 
-  /* final MQTTClientWrapper mqttClientWrapper;
-  RPiPage({this.mqttClientWrapper}); */
+  final MQTTClientWrapper mqttClientWrapper;
+  RPiPage({this.mqttClientWrapper});
 
   @override
   _RPiPageState createState() => _RPiPageState();
@@ -25,8 +25,8 @@ class _RPiPageState extends State<RPiPage> {
   String _newMacAddress2 = 'Novo endereço MAC 2';
 
   void setup() {
-    mqttClientWrapper = MQTTClientWrapper(() => {});
-    mqttClientWrapper.prepareMqttClient();
+    //widget.mqttClientWrapper = MQTTClientWrapper(() => {});
+    widget.mqttClientWrapper.prepareMqttClient();
   }
 
   @override
