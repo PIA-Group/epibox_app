@@ -1,23 +1,31 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:rPiInterface/services/authentication.dart';
-import './loading_icon.dart';
+import 'package:rPiInterface/authentication.dart';
+import 'package:rPiInterface/utils/loading_icon.dart';
 
-class RegisterPage extends StatefulWidget {
- 
+class LoginPage extends StatefulWidget {
+  
   final Function toggleView;
-  RegisterPage({this.toggleView});
+  LoginPage({this.toggleView});
   
   @override
-  _RegisterPageState createState() => _RegisterPageState();
+  _LoginPageState createState() => _LoginPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
-  String _email;
-  String _password;
+class _LoginPageState extends State<LoginPage> {
+  
+  String _email = '';
+  String _password = '';
+  String _error = '';
   bool _loading = false;
+
   final Auth _auth = Auth();
+  User result;
   final _formKey = GlobalKey<FormState>();
 
+  User _userFromFirebaseUser(FirebaseUser user) {
+    return user != null ? User(uid: user.uid) : null;
+  }
 
   Widget showEmailInput() {
     return Padding(
@@ -55,7 +63,7 @@ class _RegisterPageState extends State<RegisterPage> {
               Icons.lock,
               color: Colors.grey,
             )),
-        validator: (value) => value.length < 6 ? 'Por favor escolher uma password com 6+ caracteres' : null,
+        validator: (value) => value.isEmpty ? 'Password não pode estar vazia' : null,
         onChanged: (value) {
           setState((){
             _password = value.trim();
@@ -75,29 +83,43 @@ class _RegisterPageState extends State<RegisterPage> {
             shape: new RoundedRectangleBorder(
                 borderRadius: new BorderRadius.circular(30.0)),
             color: Colors.blue,
-            child: new Text('Registar',
+            child: new Text('Login',
                 style: new TextStyle(fontSize: 20.0, color: Colors.white)),
             onPressed: () async {
               if (_formKey.currentState.validate()) {
                 setState(() => _loading = true);
-                await _auth.signUp(_email, _password);
-                setState(() {
-                  _loading = false;
-                });
+                await _auth.signIn(_email, _password);
+                //result = _userFromFirebaseUser(await _auth.getCurrentUser());
+                //result = await _auth.getCurrentUser();
+                if (result == null) {
+                  setState(() {
+                    _error = 'Credenciais incorretas!';
+                    _loading = false;
+                  });
+                } else {
+                  setState(() {
+                    _error = '';
+                    _loading = false;
+                  });
+                }
               }
             }),
           ),
         );
   }
 
-
   Widget showSecondaryButton() {
-    return new FlatButton(
-        child: new Text('Já tem conta? Login',
+    return FlatButton(
+        child: new Text('Ainda não tem conta? Registar',
             style: new TextStyle(fontSize: 18.0, fontWeight: FontWeight.w300)),
-        onPressed: () {
-          widget.toggleView();
-        });
+        onPressed: () => widget.toggleView());
+  }
+
+  Widget showErrorMessage() {
+    return Text(_error,
+    textAlign: TextAlign.center,
+    style: TextStyle(color: Colors.red.withOpacity(0.6)));
+    // add error message if network connection fails
   }
 
   @override
@@ -117,7 +139,7 @@ class _RegisterPageState extends State<RegisterPage> {
               showPasswordInput(),
               showPrimaryButton(),
               showSecondaryButton(),
-              //showErrorMessage(),
+              showErrorMessage(),
             ],
           ),
         ),

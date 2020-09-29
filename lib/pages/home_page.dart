@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:rPiInterface/choose_devices.dart';
-import 'package:rPiInterface/rpi_setup.dart';
-import 'package:rPiInterface/services/authentication.dart';
+import 'package:rPiInterface/pages/devices_setup.dart';
+import 'package:rPiInterface/pages/rpi_setup.dart';
+import 'package:rPiInterface/authentication.dart';
 import 'package:provider/provider.dart';
-import 'location/mqtt_wrapper.dart';
+import '../mqtt_wrapper.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -16,7 +16,7 @@ class _HomePageState extends State<HomePage> {
   MQTTClientWrapper mqttClientWrapper = MQTTClientWrapper(() => {});
   
   /* void setup() {
-    mqttClientWrapper = MQTTClientWrapper(() => {});
+    //mqttClientWrapper = MQTTClientWrapper(() => {});
     mqttClientWrapper.prepareMqttClient();
   } */
 
@@ -85,7 +85,7 @@ class _HomePageState extends State<HomePage> {
                   MaterialPageRoute(builder: (context) {
                     return StreamProvider<User>.value(
                       value: Auth().user,
-                      child: RPiPage()
+                      child: RPiPage(mqttClientWrapper: mqttClientWrapper)
                     );
                   }),
                 );

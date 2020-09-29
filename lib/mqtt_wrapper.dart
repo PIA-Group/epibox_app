@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
-import './constants.dart' as Constants;
+import 'utils/constants.dart' as Constants;
 import 'package:mqtt_client/mqtt_client.dart';
-import './models.dart';
+import 'utils/models.dart';
 
 class MQTTClientWrapper {
 
@@ -16,8 +16,8 @@ class MQTTClientWrapper {
 
   MQTTClientWrapper(this.onConnectedCallback);
 
-  Future<void> prepareMqttClient() async {
-    _setupMqttClient();
+  Future<void> prepareMqttClient(hostAddress) async {
+    _setupMqttClient(hostAddress);
     await _connectClient();
     _subscribeToTopic(Constants.topicName);
   }
@@ -46,8 +46,8 @@ class MQTTClientWrapper {
     }
   }
 
-  void _setupMqttClient() {
-    client = MqttServerClient.withPort(Constants.serverUri, '#1', Constants.port);
+  void _setupMqttClient(_hostAddress) {
+    client = MqttServerClient.withPort(_hostAddress, '#1', Constants.port);
     client.logging(on: false);
     client.keepAlivePeriod = 20;
     client.onDisconnected = _onDisconnected;
