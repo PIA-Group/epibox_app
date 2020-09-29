@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rPiInterface/utils/models.dart';
 import '../authentication.dart';
 import '../mqtt_wrapper.dart';
 
@@ -6,7 +7,6 @@ import '../mqtt_wrapper.dart';
 // programar button "Definir novo default" para enviar MACAddress para RPi e mudar "defaultBIT"
 
 class RPiPage extends StatefulWidget {
-
   MQTTClientWrapper mqttClientWrapper;
   RPiPage({this.mqttClientWrapper});
 
@@ -15,8 +15,11 @@ class RPiPage extends StatefulWidget {
 }
 
 class _RPiPageState extends State<RPiPage> {
-  
   final Auth _auth = Auth();
+
+  String _connectionText;
+  Color _connectionColor;
+  MqttCurrentConnectionState _connectionState;
 
   String message;
   String _hostAddress = '192.168.2.112';
@@ -26,30 +29,60 @@ class _RPiPageState extends State<RPiPage> {
     widget.mqttClientWrapper.prepareMqttClient(_hostAddress);
   }
 
+  @override
+  void initState() {
+    super.initState();
+    _connectionState = widget.mqttClientWrapper.connectionState;
+    _connectionColor = _connectionState == MqttCurrentConnectionState.CONNECTED
+        ? Colors.green[50]
+        : _connectionState == MqttCurrentConnectionState.CONNECTING
+            ? Colors.yellow[50]
+            : Colors.red[50];
+    _connectionText = _connectionState == MqttCurrentConnectionState.CONNECTED
+        ? 'Conectado'
+        : _connectionState == MqttCurrentConnectionState.CONNECTING
+            ? 'A conectar...'
+            : 'Disconectado';
+    print('Connection state: $_connectionText');
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-          title: new Text('Conectar RPi'),
-          actions: <Widget>[
-            FlatButton.icon(
-              label: Text(
-                'Sign out',
-                style: TextStyle(color: Colors.white),
-              ),
-              icon: Icon(
-                Icons.person,
-                color: Colors.white,
-              ),
-              onPressed: () async {
-                await _auth.signOut();
-              },
-            )
-          ]),
+      appBar: AppBar(title: new Text('Conectar RPi'), actions: <Widget>[
+        FlatButton.icon(
+          label: Text(
+            'Sign out',
+            style: TextStyle(color: Colors.white),
+          ),
+          icon: Icon(
+            Icons.person,
+            color: Colors.white,
+          ),
+          onPressed: () async {
+            await _auth.signOut();
+          },
+        )
+      ]),
       body: Center(
         child: ListView(
           children: <Widget>[
+            Container(
+              height: 20,
+              color: _connectionColor,
+              child: Align(
+                alignment: Alignment.center,
+                child: Container(
+                  child: Text(_connectionText,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      //fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ),
+            ),
             Padding(
               padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
               child: Column(children: [

@@ -29,9 +29,20 @@ class _DevicesPageState extends State<DevicesPage> {
   String _newMacAddress2 = 'Novo endereço MAC 2';
 
   void getMACAddresses() {
-    List listMAC = widget.message.split(",");
-    _macAddress1 = listMAC[0];
-    _macAddress2 = listMAC[1];
+    try{
+      final List<String> listMAC = widget.message.split(",");
+      print(listMAC);
+      _macAddress1 = listMAC[0];
+      _macAddress2 = listMAC[1];
+    } on Exception catch (e) {
+      print('$e');
+      _macAddress1 = 'Endereço MAC 1';
+      _macAddress2 = 'Endereço MAC 2';
+    } catch (e) {
+      print('$e');
+      _macAddress1 = 'Endereço MAC 1';
+      _macAddress2 = 'Endereço MAC 2';
+    }
   }
 
   @override

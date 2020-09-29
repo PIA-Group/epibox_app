@@ -4,7 +4,6 @@ import 'package:rPiInterface/pages/rpi_setup.dart';
 import 'package:rPiInterface/authentication.dart';
 import 'package:provider/provider.dart';
 import '../mqtt_wrapper.dart';
-import 'dart:convert';
 
 
 class HomePage extends StatefulWidget {
