@@ -7,7 +7,7 @@ import '../mqtt_wrapper.dart';
 
 class RPiPage extends StatefulWidget {
 
-  final MQTTClientWrapper mqttClientWrapper;
+  MQTTClientWrapper mqttClientWrapper;
   RPiPage({this.mqttClientWrapper});
 
   @override
@@ -15,16 +15,17 @@ class RPiPage extends StatefulWidget {
 }
 
 class _RPiPageState extends State<RPiPage> {
-
+  
   final Auth _auth = Auth();
-  //MQTTClientWrapper mqttClientWrapper;
 
+  String message;
   String _hostAddress = '192.168.2.112';
 
   void setup() {
-    //widget.mqttClientWrapper = MQTTClientWrapper(() => {});
+    //widget.mqttClientWrapper = MQTTClientWrapper(() => {}, (newMessage) => gotNewMessage(newMessage));
     widget.mqttClientWrapper.prepareMqttClient(_hostAddress);
   }
+
 
   @override
   Widget build(BuildContext context) {

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../authentication.dart';
 import '../mqtt_wrapper.dart';
 
+
 // programar button "Usar default" e "Usar novo" para enviar MACAddress para RPi e voltar à HomePage
 // programar button "Definir novo default" para enviar MACAddress para RPi e mudar "defaultBIT"
 
@@ -10,7 +11,8 @@ import '../mqtt_wrapper.dart';
 class DevicesPage extends StatefulWidget {
 
   final MQTTClientWrapper mqttClientWrapper;
-  DevicesPage({this.mqttClientWrapper});
+  final String message;
+  DevicesPage({this.mqttClientWrapper, this.message});
 
   @override
   _DevicesPageState createState() => _DevicesPageState();
@@ -18,13 +20,25 @@ class DevicesPage extends StatefulWidget {
 
 class _DevicesPageState extends State<DevicesPage> {
 
- final Auth _auth = Auth();
+  final Auth _auth = Auth();
 
-  String _macAddress1 = 'Endereço MAC 1';
-  String _macAddress2 = 'Endereço MAC 2';
+  String _macAddress1;
+  String _macAddress2;
 
   String _newMacAddress1 = 'Novo endereço MAC 1';
   String _newMacAddress2 = 'Novo endereço MAC 2';
+
+  void getMACAddresses() {
+    List listMAC = widget.message.split(",");
+    _macAddress1 = listMAC[0];
+    _macAddress2 = listMAC[1];
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getMACAddresses();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -239,7 +253,7 @@ class _DevicesPageState extends State<DevicesPage> {
                     children: [
                       RaisedButton(
                         onPressed: () {
-                          widget.mqttClientWrapper.publishMessage("[USE, {'MAC1': $_newMacAddress1, 'MAC2': $_newMacAddress2}]");
+                          widget.mqttClientWrapper.publishMessage("['USE', {'MAC1': $_newMacAddress1, 'MAC2': $_newMacAddress2}]");
                         },
                         child: new Text("Usar novo"),
                       ),
@@ -249,7 +263,7 @@ class _DevicesPageState extends State<DevicesPage> {
                             _macAddress1 = _newMacAddress1;
                             _macAddress2 = _newMacAddress2;
                           });
-                          widget.mqttClientWrapper.publishMessage("[NEW, {'MAC1': $_newMacAddress1, 'MAC2': $_newMacAddress2}]");
+                          widget.mqttClientWrapper.publishMessage("['NEW', {'MAC1': $_newMacAddress1, 'MAC2': $_newMacAddress2}]");
                         },
                         child: new Text("Definir novo default"),
                       ),

@@ -4,21 +4,36 @@ import 'package:rPiInterface/pages/rpi_setup.dart';
 import 'package:rPiInterface/authentication.dart';
 import 'package:provider/provider.dart';
 import '../mqtt_wrapper.dart';
+import 'dart:convert';
+
 
 class HomePage extends StatefulWidget {
+
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
   final Auth _auth = Auth();
+  String message;
 
-  MQTTClientWrapper mqttClientWrapper = MQTTClientWrapper(() => {});
-  
-  /* void setup() {
-    //mqttClientWrapper = MQTTClientWrapper(() => {});
-    mqttClientWrapper.prepareMqttClient();
-  } */
+  MQTTClientWrapper mqttClientWrapper;
+
+  void setupHome() {
+    mqttClientWrapper = MQTTClientWrapper(() => {}, (newMessage) => gotNewMessage(newMessage));
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    setupHome();
+  }
+
+  void gotNewMessage(String newMessage) {
+    setState(() => message = newMessage);
+    print('This is the new message: $message');
+  }
+
 
 
   @override
@@ -60,7 +75,7 @@ class _HomePageState extends State<HomePage> {
                   MaterialPageRoute(builder: (context) {
                     return StreamProvider<User>.value(
                       value: Auth().user,
-                      child:  DevicesPage(mqttClientWrapper: mqttClientWrapper)
+                      child:  DevicesPage(mqttClientWrapper: mqttClientWrapper, message: message,)
                     );
                   }),
                 );

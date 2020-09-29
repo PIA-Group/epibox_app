@@ -11,7 +11,7 @@ class _TestPageState extends State<TestPage> {
   MQTTClientWrapper mqttClientWrapper;
 
   void setup() {
-    mqttClientWrapper = MQTTClientWrapper(()=>{});
+    //mqttClientWrapper = MQTTClientWrapper(()=>{});
     mqttClientWrapper.prepareMqttClient('192.168.2.112');
   }
 

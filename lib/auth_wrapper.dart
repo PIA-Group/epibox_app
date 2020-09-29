@@ -11,6 +11,7 @@ class AuthWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     // returns home or authenticate based on authentiation status
     final user = Provider.of<User>(context);
+    //final mqttMessage = Provider.of<String>(context);
     print(user == null ? null : user.uid);
     return user == null
         ? NonAuth()
