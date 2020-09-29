@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 
 import '../authentication.dart';
+import '../mqtt_wrapper.dart';
 
 // programar button "Usar default" e "Usar novo" para enviar MACAddress para RPi e voltar à HomePage
 // programar button "Definir novo default" para enviar MACAddress para RPi e mudar "defaultBIT"
 
 
 class DevicesPage extends StatefulWidget {
+
+  final MQTTClientWrapper mqttClientWrapper;
+  DevicesPage({this.mqttClientWrapper});
+
   @override
   _DevicesPageState createState() => _DevicesPageState();
 }
@@ -233,7 +238,9 @@ class _DevicesPageState extends State<DevicesPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       RaisedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          widget.mqttClientWrapper.publishMessage("[USE, {'MAC1': $_newMacAddress1, 'MAC2': $_newMacAddress2}]");
+                        },
                         child: new Text("Usar novo"),
                       ),
                       RaisedButton(
@@ -242,6 +249,7 @@ class _DevicesPageState extends State<DevicesPage> {
                             _macAddress1 = _newMacAddress1;
                             _macAddress2 = _newMacAddress2;
                           });
+                          widget.mqttClientWrapper.publishMessage("[NEW, {'MAC1': $_newMacAddress1, 'MAC2': $_newMacAddress2}]");
                         },
                         child: new Text("Definir novo default"),
                       ),

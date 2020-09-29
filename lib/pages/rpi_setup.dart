@@ -30,7 +30,7 @@ class _RPiPageState extends State<RPiPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: new Text('Selecionar RPi'),
+          title: new Text('Conectar RPi'),
           actions: <Widget>[
             FlatButton.icon(
               label: Text(
@@ -108,7 +108,7 @@ class _RPiPageState extends State<RPiPage> {
                     onPressed: () {
                       setState(() => setup());
                     },
-                    child: new Text("Selecionar"),
+                    child: new Text("Conectar"),
                   ),
                 ),
               ]),

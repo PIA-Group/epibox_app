@@ -62,7 +62,6 @@ class MQTTClientWrapper {
     print('MQTTClientWrapper::Subscribing to the $topicName topic');
     client.subscribe(topicName, MqttQos.atMostOnce);
     print('SUBSCRIPTION DONE');
-    publishMessage("heyy");
     client.updates.listen((List<MqttReceivedMessage<MqttMessage>> c) {
       final MqttPublishMessage recMess = c[0].payload;
       final String newMessage =

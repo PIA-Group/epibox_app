@@ -60,7 +60,7 @@ class _HomePageState extends State<HomePage> {
                   MaterialPageRoute(builder: (context) {
                     return StreamProvider<User>.value(
                       value: Auth().user,
-                      child:  DevicesPage()
+                      child:  DevicesPage(mqttClientWrapper: mqttClientWrapper)
                     );
                   }),
                 );
