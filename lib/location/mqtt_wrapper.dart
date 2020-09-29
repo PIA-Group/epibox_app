@@ -27,7 +27,7 @@ class MQTTClientWrapper {
     try {
       print('MQTTClientWrapper::Mosquitto client connecting....');
       connectionState = MqttCurrentConnectionState.CONNECTING;
-      await client.connect();
+      await client.connect(Constants.username, Constants.password);
       print('CONNECTION DONE');
     } on Exception catch (e) {
       print('MQTTClientWrapper::client exception - $e');
@@ -60,24 +60,24 @@ class MQTTClientWrapper {
     print('MQTTClientWrapper::Subscribing to the $topicName topic');
     client.subscribe(topicName, MqttQos.atMostOnce);
     print('SUBSCRIPTION DONE');
+    publishMessage("heyy");
     client.updates.listen((List<MqttReceivedMessage<MqttMessage>> c) {
       final MqttPublishMessage recMess = c[0].payload;
-      final String newLocationJson =
+      final String newMessage =
       MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
-
-      print("MQTTClientWrapper::GOT A NEW MESSAGE $newLocationJson");
+      print("MQTTClientWrapper::GOT A NEW MESSAGE $newMessage");
       
     });
   }
 
 
-  /* void _publishMessage(String message) {
+  void publishMessage(String message) {
     final MqttClientPayloadBuilder builder = MqttClientPayloadBuilder();
     builder.addString(message);
 
     print('MQTTClientWrapper::Publishing message $message to topic ${Constants.topicName}');
     client.publishMessage(Constants.topicName, MqttQos.exactlyOnce, builder.payload);
-  } */
+  }
 
   void _onSubscribed(String topic) {
     print('MQTTClientWrapper::Subscription confirmed for topic $topic');

@@ -1,9 +1,8 @@
 
-final double defaultZoom = 10.8746;
-final double newZoom = 15.8746;
-
 final String defaultMarkerId = "1";
 
-final String serverUri = "test.mosquitto.org";
+final String serverUri = "192.168.2.112";
 final int port = 1883;
-final String topicName = "Dart/Mqtt_client/testtopic";
+final String topicName = "rpi";
+final String username = "preepiseizures";
+final String password = "preepiseizures";

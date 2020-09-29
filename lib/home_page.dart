@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:rPiInterface/choose_devices.dart';
+import 'package:rPiInterface/rpi_setup.dart';
 import 'package:rPiInterface/services/authentication.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
-
-
-BluetoothConnection connection;
-bool get isConnected => connection != null && connection.isConnected;
+import 'location/mqtt_wrapper.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -15,6 +12,14 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final Auth _auth = Auth();
+
+  MQTTClientWrapper mqttClientWrapper;
+  
+  void setup() {
+    mqttClientWrapper = MQTTClientWrapper(() => {});
+    mqttClientWrapper.prepareMqttClient();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -40,11 +45,6 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           mainAxisSize: MainAxisSize.max,
           children: <Widget>[
-            // Expanded(
-            //   child: Text(isConnected
-            //       ? connection.isConnected.toString()
-            //       : isConnected.toString()),
-            // ),
             FlatButton.icon(
               label: Text(
                 'Escolher dispositivos',
@@ -60,15 +60,38 @@ class _HomePageState extends State<HomePage> {
                   MaterialPageRoute(builder: (context) {
                     return StreamProvider<User>.value(
                       value: Auth().user,
-                      child: Provider<BluetoothConnection>.value(
-                        value: connection,
-                        child: DevicesPage()
-                      )
+                      child:  DevicesPage()
                     );
                   }),
                 );
               },
             ),
+
+            FlatButton.icon(
+              label: Text(
+                'Escolher dispositivos',
+                style: TextStyle(color: Colors.black),
+              ),
+              icon: Icon(
+                Icons.bluetooth,
+                color: Colors.black,
+              ),
+              onPressed: () {setState(() {
+                setup();
+              });},
+              /* onPressed: () async {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) {
+                    return StreamProvider<User>.value(
+                      value: Auth().user,
+                      child: RPiPage()
+                    );
+                  }),
+                );
+              }, */
+            ),
+
           ],
         ),
         // body: WebView(
