@@ -13,8 +13,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
-  ValueNotifier<MqttCurrentConnectionState> connectionNotifier = ValueNotifier(MqttCurrentConnectionState.DISCONNECTED);
+  ValueNotifier<MqttCurrentConnectionState> connectionNotifier =
+      ValueNotifier(MqttCurrentConnectionState.DISCONNECTED);
   ValueNotifier<String> macAddress1Notifier = ValueNotifier('Endereço MAC');
   ValueNotifier<String> macAddress2Notifier = ValueNotifier('Endereço MAC');
 
@@ -54,9 +54,9 @@ class _HomePageState extends State<HomePage> {
     isMACAddress(message);
   }
 
-
   void updatedConnection(MqttCurrentConnectionState newConnectionState) {
-    setState(() => rPiTask = Icon(Icons.check_circle_outline, color: Colors.black));
+    setState(
+        () => rPiTask = Icon(Icons.check_circle_outline, color: Colors.black));
     setState(() => connectionState = newConnectionState);
     connectionNotifier.value = newConnectionState;
     print('This is the new connection state $connectionState');
@@ -64,15 +64,13 @@ class _HomePageState extends State<HomePage> {
 
   void isMACAddress(String message) {
     if (message.contains('DEFAULT')) {
-      try{
+      try {
         final List<String> listMAC = message.split(",");
         setState(() {
-          /* macAddress1 = listMAC[1].split("'")[1];
-          macAddress2 = listMAC[2].split("'")[1]; */
-          macAddress1 = listMAC[1];
-          macAddress2 = listMAC[2];
-          macAddress1Notifier.value = listMAC[1];
-          macAddress2Notifier.value = listMAC[2];
+          macAddress1Notifier.value = listMAC[1].split("'")[1];
+          macAddress2Notifier.value = listMAC[2].split("'")[1];
+          /* macAddress1Notifier.value = listMAC[1];
+          macAddress2Notifier.value = listMAC[2]; */
         });
         print('Default MAC: $macAddress1, $macAddress2');
       } on Exception catch (e) {
@@ -93,6 +91,19 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: Drawer(
+        child: ListView(
+            // Important: Remove any padding from the ListView.
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              DrawerHeader(
+                child: Text('Drawer Header'),
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                ),
+              ),
+            ]),
+      ),
       appBar: new AppBar(
           title: new Text('Aquisição de biossinais'),
           actions: <Widget>[

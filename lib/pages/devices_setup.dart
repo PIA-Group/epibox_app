@@ -308,14 +308,14 @@ class _DevicesPageState extends State<DevicesPage> {
                       RaisedButton(
                         onPressed: () {
                           widget.mqttClientWrapper.publishMessage(
-                              "['USE', {'MAC1': '${_controller1.text}', 'MAC2': '${_controller2.text}'}]");
+                              "['USE',{'MAC1':'${_controller1.text}','MAC2':'${_controller2.text}'}]");
                         },
                         child: new Text("Usar novo"),
                       ),
                       RaisedButton(
                         onPressed: () {
                           widget.mqttClientWrapper.publishMessage(
-                              "['NEW', {'MAC1': '${_controller1.text}', 'MAC2': '${_controller2.text}}']");
+                              "['NEW',{'MAC1':'${_controller1.text}','MAC2':'${_controller2.text}'}]");
                         },
                         child: new Text("Definir novo default"),
                       ),
