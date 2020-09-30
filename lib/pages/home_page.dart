@@ -15,6 +15,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
 
   ValueNotifier<MqttCurrentConnectionState> connectionNotifier = ValueNotifier(MqttCurrentConnectionState.DISCONNECTED);
+  ValueNotifier<String> macAddress1Notifier = ValueNotifier('Endereço MAC');
+  ValueNotifier<String> macAddress2Notifier = ValueNotifier('Endereço MAC');
 
   final Auth _auth = Auth();
 
@@ -49,7 +51,7 @@ class _HomePageState extends State<HomePage> {
   void gotNewMessage(String newMessage) {
     setState(() => message = newMessage);
     print('This is the new message: $message');
-    isMACAddresses(message);
+    isMACAddress(message);
   }
 
 
@@ -60,15 +62,19 @@ class _HomePageState extends State<HomePage> {
     print('This is the new connection state $connectionState');
   }
 
-  void isMACAddresses(String message) {
+  void isMACAddress(String message) {
     if (message.contains('DEFAULT')) {
       try{
         final List<String> listMAC = message.split(",");
-        print(listMAC);
         setState(() {
-          macAddress1 = listMAC[1].split("'")[1];
-          macAddress2 = listMAC[2].split("'")[1];
+          /* macAddress1 = listMAC[1].split("'")[1];
+          macAddress2 = listMAC[2].split("'")[1]; */
+          macAddress1 = listMAC[1];
+          macAddress2 = listMAC[2];
+          macAddress1Notifier.value = listMAC[1];
+          macAddress2Notifier.value = listMAC[2];
         });
+        print('Default MAC: $macAddress1, $macAddress2');
       } on Exception catch (e) {
         print('$e');
         setState(() {
@@ -143,10 +149,9 @@ class _HomePageState extends State<HomePage> {
                         value: Auth().user,
                         child: DevicesPage(
                           mqttClientWrapper: mqttClientWrapper,
-                          message: message,
-                          client: client,
-                          macAddress1: macAddress1,
-                          macAddress2: macAddress2,
+                          macAddress1Notifier: macAddress1Notifier,
+                          macAddress2Notifier: macAddress2Notifier,
+                          connectionNotifier: connectionNotifier,
                         ));
                   }),
                 );
