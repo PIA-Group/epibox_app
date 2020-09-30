@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:rPiInterface/authentication.dart';
+import 'package:rPiInterface/utils/authentication.dart';
 import '../utils/loading_icon.dart';
 
 class RegisterPage extends StatefulWidget {

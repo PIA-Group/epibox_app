@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:rPiInterface/authentication.dart';
+import 'package:rPiInterface/utils/authentication.dart';
 import 'package:rPiInterface/auth_wrapper.dart';
 import 'package:provider/provider.dart';
 

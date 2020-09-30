@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:mqtt_client/mqtt_client.dart';
 
-import '../authentication.dart';
+import '../utils/authentication.dart';
 import '../mqtt_wrapper.dart';
 
 
@@ -12,7 +13,11 @@ class DevicesPage extends StatefulWidget {
 
   final MQTTClientWrapper mqttClientWrapper;
   final String message;
-  DevicesPage({this.mqttClientWrapper, this.message});
+  MqttClient client;
+  String macAddress1;
+  String macAddress2;
+
+  DevicesPage({this.mqttClientWrapper, this.message, this.client, this.macAddress1='Endereço MAC', this.macAddress2='Endereço MAC'});
 
   @override
   _DevicesPageState createState() => _DevicesPageState();
@@ -22,33 +27,33 @@ class _DevicesPageState extends State<DevicesPage> {
 
   final Auth _auth = Auth();
 
-  String _macAddress1;
-  String _macAddress2;
+  final TextEditingController _controller1 = TextEditingController();
+  final TextEditingController _controller2 = TextEditingController();
 
-  String _newMacAddress1 = 'Novo endereço MAC 1';
-  String _newMacAddress2 = 'Novo endereço MAC 2';
-
-  void getMACAddresses() {
-    try{
-      final List<String> listMAC = widget.message.split(",");
-      print(listMAC);
-      _macAddress1 = listMAC[0];
-      _macAddress2 = listMAC[1];
-    } on Exception catch (e) {
-      print('$e');
-      _macAddress1 = 'Endereço MAC 1';
-      _macAddress2 = 'Endereço MAC 2';
-    } catch (e) {
-      print('$e');
-      _macAddress1 = 'Endereço MAC 1';
-      _macAddress2 = 'Endereço MAC 2';
-    }
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is removed from the
+    // widget tree.
+    _controller1.dispose();
+    _controller2.dispose();
+    super.dispose();
   }
 
   @override
   void initState() {
     super.initState();
-    getMACAddresses();
+      _controller1.text = widget.macAddress1;
+      _controller2.text = widget.macAddress2;
+      _controller1.addListener(_setNewDefault1);
+      _controller2.addListener(_setNewDefault2);
+  }
+
+  void _setNewDefault1() {
+    setState(() => widget.macAddress1 = _controller1.text);
+  }
+
+  void _setNewDefault2() {
+    setState(() => widget.macAddress2 = _controller2.text);
   }
 
   @override
@@ -132,7 +137,7 @@ class _DevicesPageState extends State<DevicesPage> {
                                 padding:
                                     EdgeInsets.fromLTRB(11.0, 0.0, 0.0, 0.0),
                                 child: Text(
-                                  _macAddress1,
+                                  widget.macAddress1,
                                   textAlign: TextAlign.left,
                                   style: TextStyle(
                                     fontSize: 16,
@@ -164,7 +169,7 @@ class _DevicesPageState extends State<DevicesPage> {
                                 padding:
                                     EdgeInsets.fromLTRB(11.0, 0.0, 0.0, 0.0),
                                 child: Text(
-                                  _macAddress2,
+                                  widget.macAddress2,
                                   textAlign: TextAlign.left,
                                   style: TextStyle(
                                     fontSize: 16,
@@ -228,30 +233,24 @@ class _DevicesPageState extends State<DevicesPage> {
                         Padding(
                           padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
                           child: TextField(
+                              controller: _controller1,
                               decoration: InputDecoration(
                                 border: OutlineInputBorder(),
                                 labelText: 'Endereço MAC',
                               ),
-                              onChanged: (text) {
-                                setState(() {
-                                  _newMacAddress1 = text;
-                                });
-                                print("Novo MAC address 1: $_newMacAddress1");
-                              }),
+                              onChanged: (text) => print("Novo MAC address 1: ${_controller1.text}")
+                              ),
                         ),
                         Padding(
                           padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
                           child: TextField(
+                              controller: _controller2,
                               decoration: InputDecoration(
                                 border: OutlineInputBorder(),
                                 labelText: 'Endereço MAC',
                               ),
-                              onChanged: (text) {
-                                setState(() {
-                                  _newMacAddress2 = text;
-                                });
-                                print("Novo MAC address 2: $_newMacAddress2");
-                              }),
+                              onChanged: (text) => print("Novo MAC address 1: ${_controller2.text}"),
+                          ),
                         ),
                       ],
                     ),
@@ -264,17 +263,13 @@ class _DevicesPageState extends State<DevicesPage> {
                     children: [
                       RaisedButton(
                         onPressed: () {
-                          widget.mqttClientWrapper.publishMessage("['USE', {'MAC1': $_newMacAddress1, 'MAC2': $_newMacAddress2}]");
+                          widget.mqttClientWrapper.publishMessage("['USE', {'MAC1': '${_controller1.text}', 'MAC2': '${_controller2.text}'}]");
                         },
                         child: new Text("Usar novo"),
                       ),
                       RaisedButton(
                         onPressed: () {
-                          setState(() {
-                            _macAddress1 = _newMacAddress1;
-                            _macAddress2 = _newMacAddress2;
-                          });
-                          widget.mqttClientWrapper.publishMessage("['NEW', {'MAC1': $_newMacAddress1, 'MAC2': $_newMacAddress2}]");
+                          widget.mqttClientWrapper.publishMessage("['NEW', {'MAC1': '${_controller1.text}', 'MAC2': '${_controller2.text}}']");
                         },
                         child: new Text("Definir novo default"),
                       ),

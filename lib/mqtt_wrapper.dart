@@ -6,16 +6,17 @@ import 'utils/models.dart';
 
 class MQTTClientWrapper {
 
-  MqttClient client;
+  //MqttClient client;
 
   MqttCurrentConnectionState connectionState = MqttCurrentConnectionState.IDLE;
   MqttSubscriptionState subscriptionState = MqttSubscriptionState.IDLE;
 
   final VoidCallback onConnectedCallback;
-  final Function(String) onNewMessage;
-  //final Function(LocationData) onLocationReceivedCallback;
+  final Function(String) onNewMessage; 
+  final Function(MqttCurrentConnectionState) onNewConnection;
+  MqttClient client;
 
-  MQTTClientWrapper(this.onConnectedCallback, this.onNewMessage);
+  MQTTClientWrapper(this.client, this.onConnectedCallback, this.onNewMessage, this.onNewConnection);
 
   Future<void> prepareMqttClient(hostAddress) async {
     _setupMqttClient(hostAddress);
@@ -23,13 +24,12 @@ class MQTTClientWrapper {
     _subscribeToTopic(Constants.topicName);
   }
 
-
   Future<void> _connectClient() async {
     try {
       print('MQTTClientWrapper::Mosquitto client connecting....');
-      connectionState = MqttCurrentConnectionState.CONNECTING;
-      await client.connect();
-      //await client.connect(Constants.username, Constants.password);
+      //connectionState = MqttCurrentConnectionState.CONNECTING;
+      //await client.connect();
+      await client.connect(Constants.username, Constants.password);
       print('CONNECTION DONE');
     } on Exception catch (e) {
       print('MQTTClientWrapper::client exception - $e');
@@ -39,6 +39,7 @@ class MQTTClientWrapper {
 
     if (client.connectionStatus.state == MqttConnectionState.connected) {
       connectionState = MqttCurrentConnectionState.CONNECTED;
+
       print('MQTTClientWrapper::Mosquitto client connected');
     } else {
       print(
@@ -50,7 +51,8 @@ class MQTTClientWrapper {
 
   void _setupMqttClient(_hostAddress) {
     print('host: $_hostAddress');
-    client = MqttServerClient.withPort('test.mosquitto.org', '#1', Constants.port);
+    //client = MqttServerClient.withPort('test.mosquitto.org', '#1', Constants.port);
+    client = MqttServerClient.withPort(_hostAddress, '#1', Constants.port);
     client.logging(on: false);
     client.keepAlivePeriod = 20;
     //client.secure = true;
@@ -61,11 +63,16 @@ class MQTTClientWrapper {
   }
 
   Future<void> _subscribeToTopic(String topicName) async {
+
     print('MQTTClientWrapper::Subscribing to the $topicName topic');
     client.subscribe(topicName, MqttQos.atMostOnce);
-    print('SUBSCRIPTION DONE');
+    print('SUBSCRIPTION DONE TO TOPIC $topicName');
+    client.subscribe('rpi2', MqttQos.atMostOnce);
+    print('SUBSCRIPTION DONE TO TOPIC rpi2');
+
     await publishMessage('Send MAC Addresses');
     print('After subscription: $connectionState');
+
     client.updates.listen((List<MqttReceivedMessage<MqttMessage>> c) {
       final MqttPublishMessage recMess = c[0].payload;
       final String newMessage =
@@ -73,6 +80,7 @@ class MQTTClientWrapper {
       print("MQTTClientWrapper::GOT A NEW MESSAGE $newMessage");
       onNewMessage(newMessage);
     });
+
   }
 
 
@@ -95,6 +103,7 @@ class MQTTClientWrapper {
       print('MQTTClientWrapper::OnDisconnected callback is solicited, this is correct');
     } */
     connectionState = MqttCurrentConnectionState.DISCONNECTED;
+    onNewConnection(connectionState);
   }
 
   void _onConnected() {
@@ -102,6 +111,7 @@ class MQTTClientWrapper {
     print(
         'MQTTClientWrapper::OnConnected client callback - Client connection was sucessful');
     onConnectedCallback();
+    onNewConnection(connectionState);
   }
 
 }

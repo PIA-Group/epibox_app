@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rPiInterface/utils/models.dart';
-import '../authentication.dart';
+import '../utils/authentication.dart';
 import '../mqtt_wrapper.dart';
 
 // programar button "Usar default" e "Usar novo" para enviar MACAddress para RPi e voltar à HomePage
@@ -8,7 +8,9 @@ import '../mqtt_wrapper.dart';
 
 class RPiPage extends StatefulWidget {
   MQTTClientWrapper mqttClientWrapper;
-  RPiPage({this.mqttClientWrapper});
+  MqttCurrentConnectionState connectionState;
+
+  RPiPage({this.mqttClientWrapper, this.connectionState});
 
   @override
   _RPiPageState createState() => _RPiPageState();
@@ -17,19 +19,19 @@ class RPiPage extends StatefulWidget {
 class _RPiPageState extends State<RPiPage> {
   final Auth _auth = Auth();
 
-  String _connectionText;
-  Color _connectionColor;
-  MqttCurrentConnectionState _connectionState;
+  /* String _connectionText;
+  Color _connectionColor; */
 
   String message;
   String _hostAddress = '192.168.2.112';
 
-  void setup() {
+  Future<void> setup() async {
     //widget.mqttClientWrapper = MQTTClientWrapper(() => {}, (newMessage) => gotNewMessage(newMessage));
-    widget.mqttClientWrapper.prepareMqttClient(_hostAddress);
+    await widget.mqttClientWrapper.prepareMqttClient(_hostAddress);
+    Navigator.pop(context);
   }
 
-  @override
+  /* @override
   void initState() {
     super.initState();
     _connectionState = widget.mqttClientWrapper.connectionState;
@@ -44,7 +46,7 @@ class _RPiPageState extends State<RPiPage> {
             ? 'A conectar...'
             : 'Disconectado';
     print('Connection state: $_connectionText');
-  }
+  } */
 
   @override
   Widget build(BuildContext context) {
@@ -67,13 +69,26 @@ class _RPiPageState extends State<RPiPage> {
       body: Center(
         child: ListView(
           children: <Widget>[
-            Container(
+            /* Container(
               height: 20,
-              color: _connectionColor,
+              color:
+                  widget.connectionState == MqttCurrentConnectionState.CONNECTED
+                      ? Colors.green[50]
+                      : widget.connectionState ==
+                              MqttCurrentConnectionState.CONNECTING
+                          ? Colors.yellow[50]
+                          : Colors.red[50],
               child: Align(
                 alignment: Alignment.center,
                 child: Container(
-                  child: Text(_connectionText,
+                  child: Text(
+                    widget.connectionState ==
+                            MqttCurrentConnectionState.CONNECTED
+                        ? 'Conectado'
+                        : widget.connectionState ==
+                                MqttCurrentConnectionState.CONNECTING
+                            ? 'A conectar...'
+                            : 'Disconectado',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       //fontWeight: FontWeight.bold,
@@ -82,7 +97,7 @@ class _RPiPageState extends State<RPiPage> {
                   ),
                 ),
               ),
-            ),
+            ), */
             Padding(
               padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
               child: Column(children: [

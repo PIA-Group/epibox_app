@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:rPiInterface/authentication.dart';
+import 'package:rPiInterface/utils/authentication.dart';
 import 'package:rPiInterface/utils/loading_icon.dart';
 
 class LoginPage extends StatefulWidget {
