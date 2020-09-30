@@ -7,10 +7,12 @@ import '../mqtt_wrapper.dart';
 // programar button "Definir novo default" para enviar MACAddress para RPi e mudar "defaultBIT"
 
 class RPiPage extends StatefulWidget {
+
+  ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
   MQTTClientWrapper mqttClientWrapper;
   MqttCurrentConnectionState connectionState;
 
-  RPiPage({this.mqttClientWrapper, this.connectionState});
+  RPiPage({this.mqttClientWrapper, this.connectionState, this.connectionNotifier});
 
   @override
   _RPiPageState createState() => _RPiPageState();
@@ -28,25 +30,8 @@ class _RPiPageState extends State<RPiPage> {
   Future<void> setup() async {
     //widget.mqttClientWrapper = MQTTClientWrapper(() => {}, (newMessage) => gotNewMessage(newMessage));
     await widget.mqttClientWrapper.prepareMqttClient(_hostAddress);
-    Navigator.pop(context);
+    //Navigator.pop(context);
   }
-
-  /* @override
-  void initState() {
-    super.initState();
-    _connectionState = widget.mqttClientWrapper.connectionState;
-    _connectionColor = _connectionState == MqttCurrentConnectionState.CONNECTED
-        ? Colors.green[50]
-        : _connectionState == MqttCurrentConnectionState.CONNECTING
-            ? Colors.yellow[50]
-            : Colors.red[50];
-    _connectionText = _connectionState == MqttCurrentConnectionState.CONNECTED
-        ? 'Conectado'
-        : _connectionState == MqttCurrentConnectionState.CONNECTING
-            ? 'A conectar...'
-            : 'Disconectado';
-    print('Connection state: $_connectionText');
-  } */
 
   @override
   Widget build(BuildContext context) {
@@ -69,35 +54,40 @@ class _RPiPageState extends State<RPiPage> {
       body: Center(
         child: ListView(
           children: <Widget>[
-            /* Container(
-              height: 20,
-              color:
-                  widget.connectionState == MqttCurrentConnectionState.CONNECTED
-                      ? Colors.green[50]
-                      : widget.connectionState ==
-                              MqttCurrentConnectionState.CONNECTING
-                          ? Colors.yellow[50]
-                          : Colors.red[50],
-              child: Align(
-                alignment: Alignment.center,
-                child: Container(
-                  child: Text(
-                    widget.connectionState ==
+            ValueListenableBuilder(
+                valueListenable: widget.connectionNotifier,
+                builder: (BuildContext context,
+                    MqttCurrentConnectionState state, Widget child) {
+                  return Container(
+                    height: 20,
+                    color: state ==
                             MqttCurrentConnectionState.CONNECTED
-                        ? 'Conectado'
-                        : widget.connectionState ==
+                        ? Colors.green[50]
+                        : state ==
                                 MqttCurrentConnectionState.CONNECTING
-                            ? 'A conectar...'
-                            : 'Disconectado',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      //fontWeight: FontWeight.bold,
-                      fontSize: 13,
+                            ? Colors.yellow[50]
+                            : Colors.red[50],
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: Container(
+                        child: Text(
+                          state ==
+                                  MqttCurrentConnectionState.CONNECTED
+                              ? 'Conectado'
+                              : state ==
+                                      MqttCurrentConnectionState.CONNECTING
+                                  ? 'A conectar...'
+                                  : 'Disconectado',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            //fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ),
-            ), */
+                  );
+                }),
             Padding(
               padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
               child: Column(children: [

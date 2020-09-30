@@ -13,11 +13,16 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
+  ValueNotifier<MqttCurrentConnectionState> connectionNotifier = ValueNotifier(MqttCurrentConnectionState.DISCONNECTED);
+
   final Auth _auth = Auth();
+
   String macAddress1;
   String macAddress2;
   String message;
-  MqttCurrentConnectionState connection;
+
+  MqttCurrentConnectionState connectionState;
   MQTTClientWrapper mqttClientWrapper;
   MqttClient client;
 
@@ -50,7 +55,9 @@ class _HomePageState extends State<HomePage> {
 
   void updatedConnection(MqttCurrentConnectionState newConnectionState) {
     setState(() => rPiTask = Icon(Icons.check_circle_outline, color: Colors.black));
-    print('This is the new connection state $connection');
+    setState(() => connectionState = newConnectionState);
+    connectionNotifier.value = newConnectionState;
+    print('This is the new connection state $connectionState');
   }
 
   void isMACAddresses(String message) {
@@ -115,7 +122,8 @@ class _HomePageState extends State<HomePage> {
                         value: Auth().user,
                         child: RPiPage(
                           mqttClientWrapper: mqttClientWrapper,
-                          connectionState: connection,
+                          connectionState: connectionState,
+                          connectionNotifier: connectionNotifier,
                         ));
                   }),
                 );
