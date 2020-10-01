@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:rPiInterface/mqtt_wrapper.dart';
+import '../mqtt_wrapper.dart';
 
 class TestPage extends StatefulWidget {
   @override

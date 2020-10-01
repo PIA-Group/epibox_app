@@ -28,8 +28,6 @@ class _HomePageState extends State<HomePage> {
   String macAddress2;
   String message;
 
-  String patientName = 'Name';
-
   MqttCurrentConnectionState connectionState;
   MQTTClientWrapper mqttClientWrapper;
   MqttClient client;
@@ -47,7 +45,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
-  void initState() async {
+  void initState() {
     super.initState();
     macAddress1 = 'Endereço MAC';
     macAddress2 = 'Endereço MAC';
@@ -101,10 +99,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<DocumentSnapshot> getUserName(uid) async {
-    var userName =  firestoreInstance 
-    .collection("users")
-    .document(uid)
-    .get();
+    var userName = firestoreInstance.collection("users").document(uid).get();
     print(userName);
     return userName;
   }
@@ -124,6 +119,12 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
+                    Text('PACIENTE:',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          decoration: TextDecoration.underline,
+                        )),
                     FutureBuilder(
                         future: currentUserID(),
                         builder: (context, snapshot) {
@@ -134,7 +135,8 @@ class _HomePageState extends State<HomePage> {
                                 builder: (context, snapshot2) {
                                   if (snapshot2.connectionState ==
                                       ConnectionState.done) {
-                                    return Text('Paciente: ${snapshot2.data.data["userName"]}',
+                                    return Text(
+                                        '${snapshot2.data.data["userName"]}',
                                         style: TextStyle(
                                             color: Colors.white, fontSize: 16));
                                   } else {
@@ -145,12 +147,18 @@ class _HomePageState extends State<HomePage> {
                             return CircularProgressIndicator();
                           }
                         }),
+                    Text('ID:',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          decoration: TextDecoration.underline,
+                        )),
                     FutureBuilder(
                         future: _auth.getCurrentUserStr(),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.done) {
-                            return Text('ID: ${snapshot.data}',
+                            return Text('${snapshot.data}',
                                 style: TextStyle(
                                     color: Colors.white, fontSize: 16));
                           } else {
@@ -184,24 +192,79 @@ class _HomePageState extends State<HomePage> {
               )
             ]),
       ),
-      appBar: new AppBar(
-          title: new Text('Aquisição de biossinais'),
-          actions: <Widget>[
-            FlatButton.icon(
-              label: Text(
-                'Sign out',
-                style: TextStyle(color: Colors.white),
+      appBar: new AppBar(title: new Text('PreEpiSeizures'), actions: <Widget>[
+        FlatButton.icon(
+          label: Text(
+            'Sign out',
+            style: TextStyle(color: Colors.white),
+          ),
+          icon: Icon(
+            Icons.person,
+            color: Colors.white,
+          ),
+          onPressed: () async {
+            await _auth.signOut();
+          },
+        )
+      ]),
+      body: ListView(children: <Widget>[
+        Card(
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: Colors.blue[300],
+              child: Text(
+                '1',
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
               ),
-              icon: Icon(
-                Icons.person,
-                color: Colors.white,
+            ),
+            title: Text('Conectar a RaspberryPi'),
+            onTap: () async {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) {
+                  return StreamProvider<User>.value(
+                      value: Auth().user,
+                      child: RPiPage(
+                        mqttClientWrapper: mqttClientWrapper,
+                        connectionState: connectionState,
+                        connectionNotifier: connectionNotifier,
+                      ));
+                }),
+              );
+            },
+          ),
+        ),
+        Card(
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: Colors.blue[300],
+              child: Text(
+                '2',
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
               ),
-              onPressed: () async {
-                await _auth.signOut();
-              },
-            )
-          ]),
-      body: Container(
+            ),
+            title: Text('Selecionar dispositivos'),
+            enabled: connectionState == MqttCurrentConnectionState.CONNECTED,
+            onTap: () async {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) {
+                  return StreamProvider<User>.value(
+                      value: Auth().user,
+                      child: DevicesPage(
+                        mqttClientWrapper: mqttClientWrapper,
+                        macAddress1Notifier: macAddress1Notifier,
+                        macAddress2Notifier: macAddress2Notifier,
+                        connectionNotifier: connectionNotifier,
+                      ));
+                }),
+              );
+            },
+          ),
+        )
+      ]),
+
+      /*  Container(
         child: Column(
           mainAxisSize: MainAxisSize.max,
           children: <Widget>[
@@ -254,7 +317,7 @@ class _HomePageState extends State<HomePage> {
         //   initialUrl: 'https://en.wikipedia.org/wiki/Kraken',
         //   javascriptMode: JavascriptMode.unrestricted,
         // ),
-      ),
+      ), */
     );
   }
 }

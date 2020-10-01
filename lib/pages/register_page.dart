@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:rPiInterface/utils/authentication.dart';
 import '../utils/loading_icon.dart';
@@ -14,6 +16,10 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   String _email;
   String _password;
+  String _username;
+
+  final firestoreInstance = Firestore.instance;
+
   bool _loading = false;
   final Auth _auth = Auth();
   final _formKey = GlobalKey<FormState>();
@@ -65,6 +71,39 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
+  Widget showNameInput() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 0.0),
+      child: new TextFormField(
+        maxLines: 1,
+        obscureText: true,
+        autofocus: false,
+        decoration: new InputDecoration(
+            hintText: 'Nome',
+            icon: new Icon(
+              Icons.person,
+              color: Colors.grey,
+            )),
+        validator: (value) => value.length == 0 ? 'Por favor introduzir um nome' : null,
+        onChanged: (value) {
+          setState((){
+            _username = value.trim();
+          });
+        }
+      ),
+    );
+  }
+
+  void _submitNewProfile(_newName) async {
+    var firebaseUser = await FirebaseAuth.instance.currentUser();
+    firestoreInstance
+        .collection("users")
+        .document(firebaseUser.uid)
+        .setData({"userName": _newName}, merge: true).then((_) {
+      print("New profile submitted!!");
+    });
+  }
+
   Widget showPrimaryButton() {
     return new Padding(
         padding: EdgeInsets.fromLTRB(0.0, 45.0, 0.0, 0.0),
@@ -81,6 +120,7 @@ class _RegisterPageState extends State<RegisterPage> {
               if (_formKey.currentState.validate()) {
                 setState(() => _loading = true);
                 await _auth.signUp(_email, _password);
+                _submitNewProfile(_username);
                 setState(() {
                   _loading = false;
                 });
@@ -115,6 +155,7 @@ class _RegisterPageState extends State<RegisterPage> {
             children: <Widget>[
               showEmailInput(),
               showPasswordInput(),
+              showNameInput(),
               showPrimaryButton(),
               showSecondaryButton(),
               //showErrorMessage(),

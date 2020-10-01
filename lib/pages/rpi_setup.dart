@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:rPiInterface/utils/models.dart';
-import '../utils/authentication.dart';
 import '../mqtt_wrapper.dart';
+import '../utils/authentication.dart';
+
 
 // programar button "Usar default" e "Usar novo" para enviar MACAddress para RPi e voltar à HomePage
 // programar button "Definir novo default" para enviar MACAddress para RPi e mudar "defaultBIT"
