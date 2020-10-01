@@ -6,8 +6,10 @@ import 'package:rPiInterface/pages/devices_setup.dart';
 import 'package:rPiInterface/pages/profile_page.dart';
 import 'package:rPiInterface/pages/rpi_setup.dart';
 import 'package:provider/provider.dart';
+import 'package:rPiInterface/pages/webview_page.dart';
 import 'package:rPiInterface/utils/authentication.dart';
 import 'package:rPiInterface/utils/models.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import '../mqtt_wrapper.dart';
 
 class HomePage extends StatefulWidget {
@@ -208,73 +210,20 @@ class _HomePageState extends State<HomePage> {
         )
       ]),
       body: ListView(children: <Widget>[
-        Card(
-          child: ListTile(
-            leading: CircleAvatar(
-              backgroundColor: Colors.blue[300],
-              child: Text(
-                '1',
-                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        Padding(
+          padding: EdgeInsets.fromLTRB(10, 20, 10, 10),
+          child: Card(
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: Colors.blue[300],
+                child: Text(
+                  '1',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.white),
+                ),
               ),
-            ),
-            title: Text('Conectar a RaspberryPi'),
-            onTap: () async {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) {
-                  return StreamProvider<User>.value(
-                      value: Auth().user,
-                      child: RPiPage(
-                        mqttClientWrapper: mqttClientWrapper,
-                        connectionState: connectionState,
-                        connectionNotifier: connectionNotifier,
-                      ));
-                }),
-              );
-            },
-          ),
-        ),
-        Card(
-          child: ListTile(
-            leading: CircleAvatar(
-              backgroundColor: Colors.blue[300],
-              child: Text(
-                '2',
-                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-              ),
-            ),
-            title: Text('Selecionar dispositivos'),
-            enabled: connectionState == MqttCurrentConnectionState.CONNECTED,
-            onTap: () async {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) {
-                  return StreamProvider<User>.value(
-                      value: Auth().user,
-                      child: DevicesPage(
-                        mqttClientWrapper: mqttClientWrapper,
-                        macAddress1Notifier: macAddress1Notifier,
-                        macAddress2Notifier: macAddress2Notifier,
-                        connectionNotifier: connectionNotifier,
-                      ));
-                }),
-              );
-            },
-          ),
-        )
-      ]),
-
-      /*  Container(
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          children: <Widget>[
-            FlatButton.icon(
-              label: Text(
-                'Conectar a RaspberyPi',
-                style: TextStyle(color: Colors.black, fontSize: 16),
-              ),
-              icon: rPiTask,
-              onPressed: () async {
+              title: Text('Conectar a RaspberryPi'),
+              onTap: () async {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) {
@@ -289,13 +238,23 @@ class _HomePageState extends State<HomePage> {
                 );
               },
             ),
-            FlatButton.icon(
-              label: Text(
-                'Selecionar dispositivos',
-                style: TextStyle(color: Colors.black, fontSize: 16),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+          child: Card(
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: Colors.blue[300],
+                child: Text(
+                  '2',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.white),
+                ),
               ),
-              icon: devicesTask,
-              onPressed: () async {
+              title: Text('Selecionar dispositivos'),
+              enabled: connectionState == MqttCurrentConnectionState.CONNECTED,
+              onTap: () async {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) {
@@ -311,13 +270,36 @@ class _HomePageState extends State<HomePage> {
                 );
               },
             ),
-          ],
+          ),
         ),
-        // body: WebView(
-        //   initialUrl: 'https://en.wikipedia.org/wiki/Kraken',
-        //   javascriptMode: JavascriptMode.unrestricted,
-        // ),
-      ), */
+        Padding(
+          padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+          child: Card(
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: Colors.blue[300],
+                child: Text(
+                  '3',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+              ),
+              title: Text('Iniciar Visualização'),
+              //enabled: ,
+              onTap: () async {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) {
+                    return StreamProvider<User>.value(
+                        value: Auth().user,
+                        child: WebviewPage());
+                  }),
+                );
+              },
+            ),
+          ),
+        ),
+      ]),
     );
   }
 }
