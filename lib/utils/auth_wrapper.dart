@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rPiInterface/pages/non_auth_page.dart';
-import 'pages/home_page.dart';
-import 'utils/authentication.dart';
+import '../pages/home_page.dart';
+import 'authentication.dart';
 
 
 class AuthWrapper extends StatelessWidget {
@@ -16,9 +16,7 @@ class AuthWrapper extends StatelessWidget {
     return user == null
         ? NonAuth()
         : HomePage();
-        /* : ChangeNotifierProvider<MQTTAppState>(
-        create: (_) => MQTTAppState(),
-        child: MQTTView(),); */
+
           
   }
 }

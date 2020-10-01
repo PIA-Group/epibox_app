@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mqtt_client/mqtt_client.dart';
 import 'package:rPiInterface/utils/models.dart';
 
 import '../utils/authentication.dart';

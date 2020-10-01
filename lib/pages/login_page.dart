@@ -1,4 +1,4 @@
-import 'package:firebase_auth/firebase_auth.dart';
+//import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:rPiInterface/utils/authentication.dart';
 import 'package:rPiInterface/utils/loading_icon.dart';
@@ -23,9 +23,9 @@ class _LoginPageState extends State<LoginPage> {
   User result;
   final _formKey = GlobalKey<FormState>();
 
-  User _userFromFirebaseUser(FirebaseUser user) {
+  /* User _userFromFirebaseUser(FirebaseUser user) {
     return user != null ? User(uid: user.uid) : null;
-  }
+  } */
 
   Widget showEmailInput() {
     return Padding(

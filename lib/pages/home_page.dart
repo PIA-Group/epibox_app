@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:rPiInterface/pages/devices_setup.dart';
+import 'package:rPiInterface/pages/profile_page.dart';
 import 'package:rPiInterface/pages/rpi_setup.dart';
 import 'package:provider/provider.dart';
 import 'package:rPiInterface/utils/authentication.dart';
@@ -23,6 +24,8 @@ class _HomePageState extends State<HomePage> {
   String macAddress1;
   String macAddress2;
   String message;
+
+  String patientName = 'Name';
 
   MqttCurrentConnectionState connectionState;
   MQTTClientWrapper mqttClientWrapper;
@@ -97,11 +100,42 @@ class _HomePageState extends State<HomePage> {
             padding: EdgeInsets.zero,
             children: <Widget>[
               DrawerHeader(
-                child: Text('Drawer Header'),
                 decoration: BoxDecoration(
                   color: Colors.blue,
                 ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    Text('Paciente: $patientName',
+                        style: TextStyle(color: Colors.white, fontSize: 16)),
+                    Text('ID:',
+                        style: TextStyle(color: Colors.white, fontSize: 16)),
+                  ],
+                ),
               ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  child: FlatButton.icon(
+                    label:
+                        Text('Editar perfil', style: TextStyle(fontSize: 16)),
+                    icon: Icon(
+                      Icons.settings,
+                      color: Colors.black,
+                    ),
+                    onPressed: () async {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) {
+                          return StreamProvider<User>.value(
+                              value: Auth().user,
+                              child: ProfilePage());
+                        }),
+                      );
+                    },
+                  ),
+                ),
+              )
             ]),
       ),
       appBar: new AppBar(
