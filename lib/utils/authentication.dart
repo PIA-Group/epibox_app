@@ -27,14 +27,14 @@ abstract class BaseAuth {
 class Auth implements BaseAuth {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  User _userFromFirebaseUser(FirebaseUser user) {
+  User userFromFirebaseUser(FirebaseUser user) {
     return user != null ? User(uid: user.uid) : null;
   }
 
   Stream<User> get user {
     return _auth.onAuthStateChanged
     //.map((FirebaseUser user) => _userFromFirebaseUser(user));
-    .map(_userFromFirebaseUser);
+    .map(userFromFirebaseUser);
     }
 
   Future<void> signIn(String email, String password) async {
@@ -62,6 +62,12 @@ class Auth implements BaseAuth {
   Future<FirebaseUser> getCurrentUser() async {
     FirebaseUser user = await _auth.currentUser();
     return user;
+  }
+
+  Future<String> getCurrentUserStr() async {
+    FirebaseUser user = await _auth.currentUser();
+    print(user.uid);
+    return user.uid;
   }
 
   Future<void> signOut() async {

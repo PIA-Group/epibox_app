@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:rPiInterface/pages/devices_setup.dart';
@@ -20,6 +22,7 @@ class _HomePageState extends State<HomePage> {
   ValueNotifier<String> macAddress2Notifier = ValueNotifier('Endereço MAC');
 
   final Auth _auth = Auth();
+  final firestoreInstance = Firestore.instance;
 
   String macAddress1;
   String macAddress2;
@@ -44,7 +47,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
-  void initState() {
+  void initState() async {
     super.initState();
     macAddress1 = 'Endereço MAC';
     macAddress2 = 'Endereço MAC';
@@ -91,6 +94,21 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<String> currentUserID() async {
+    var firebaseUser = await FirebaseAuth.instance.currentUser();
+    print('id: ${firebaseUser.uid}');
+    return firebaseUser.uid;
+  }
+
+  Future<DocumentSnapshot> getUserName(uid) async {
+    var userName =  firestoreInstance 
+    .collection("users")
+    .document(uid)
+    .get();
+    print(userName);
+    return userName;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -106,10 +124,39 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
-                    Text('Paciente: $patientName',
-                        style: TextStyle(color: Colors.white, fontSize: 16)),
-                    Text('ID:',
-                        style: TextStyle(color: Colors.white, fontSize: 16)),
+                    FutureBuilder(
+                        future: currentUserID(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.done) {
+                            return FutureBuilder(
+                                future: getUserName(snapshot.data),
+                                builder: (context, snapshot2) {
+                                  if (snapshot2.connectionState ==
+                                      ConnectionState.done) {
+                                    return Text('Paciente: ${snapshot2.data.data["userName"]}',
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 16));
+                                  } else {
+                                    return CircularProgressIndicator();
+                                  }
+                                });
+                          } else {
+                            return CircularProgressIndicator();
+                          }
+                        }),
+                    FutureBuilder(
+                        future: _auth.getCurrentUserStr(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.done) {
+                            return Text('ID: ${snapshot.data}',
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 16));
+                          } else {
+                            return CircularProgressIndicator();
+                          }
+                        })
                   ],
                 ),
               ),
@@ -128,8 +175,7 @@ class _HomePageState extends State<HomePage> {
                         context,
                         MaterialPageRoute(builder: (context) {
                           return StreamProvider<User>.value(
-                              value: Auth().user,
-                              child: ProfilePage());
+                              value: Auth().user, child: ProfilePage());
                         }),
                       );
                     },
