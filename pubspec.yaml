@@ -23,12 +23,13 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  firebase_auth: ^0.18.1
+  firebase_auth: ^0.16.1
   provider: ^4.3.1
   flutter_spinkit: ^4.1.2
   webview_flutter: ^0.3.22+1
   mqtt_client: ^8.0.0
-  cloud_firestore: ^0.14.1
+  firebase_core: ^0.4.4
+  cloud_firestore: ^0.13.7
 
   
 

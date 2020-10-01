@@ -21,9 +21,10 @@ class _ProfilePageState extends State<ProfilePage> {
         .collection("users")
         .document(firebaseUser.uid)
         .setData({"userName": _newName}, merge: true).then((_) {
-      print("success!");
+      print("New profile submitted!!");
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -99,6 +100,7 @@ class _ProfilePageState extends State<ProfilePage> {
               padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 0.0),
               child: RaisedButton(
                 onPressed: () => _submitNewProfile(_newName),
+                //onPressed: () => _createRecord(),
                 child: new Text("Submeter"),
               ),
             ),

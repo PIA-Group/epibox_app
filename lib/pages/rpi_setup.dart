@@ -48,6 +48,7 @@ class _RPiPageState extends State<RPiPage> {
           ),
           onPressed: () async {
             await _auth.signOut();
+            Navigator.pop(context);
           },
         )
       ]),

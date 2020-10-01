@@ -75,6 +75,7 @@ class _DevicesPageState extends State<DevicesPage> {
           ),
           onPressed: () async {
             await _auth.signOut();
+            Navigator.pop(context);
           },
         )
       ]),
