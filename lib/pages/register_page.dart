@@ -76,7 +76,7 @@ class _RegisterPageState extends State<RegisterPage> {
       padding: const EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 0.0),
       child: new TextFormField(
         maxLines: 1,
-        obscureText: true,
+        obscureText: false,
         autofocus: false,
         decoration: new InputDecoration(
             hintText: 'Nome',

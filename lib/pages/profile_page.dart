@@ -22,6 +22,7 @@ class _ProfilePageState extends State<ProfilePage> {
         .document(firebaseUser.uid)
         .setData({"userName": _newName}, merge: true).then((_) {
       print("New profile submitted!!");
+      Navigator.pop(context);
     });
   }
 
@@ -89,7 +90,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             labelText: "Nome",
                           ),
                           onChanged: (text) {
-                            setState(() => _newName = text);
+                            setState(() => _newName = text.trim());
                           }),
                     ),
                   ],

@@ -70,7 +70,7 @@ class MQTTClientWrapper {
     client.subscribe('rpi2', MqttQos.atMostOnce);
     print('SUBSCRIPTION DONE TO TOPIC rpi2');
 
-    await publishMessage('Send MAC Addresses');
+    await publishMessage("'Send MAC Addresses'");
     print('After subscription: $connectionState');
 
     client.updates.listen((List<MqttReceivedMessage<MqttMessage>> c) {
@@ -89,7 +89,7 @@ class MQTTClientWrapper {
     builder.addString(message);
 
     print('MQTTClientWrapper::Publishing message $message to topic ${Constants.topicName}');
-    client.publishMessage(Constants.topicName, MqttQos.exactlyOnce, builder.payload);
+    client.publishMessage(Constants.topicName, MqttQos.atLeastOnce, builder.payload);
   }
 
   void _onSubscribed(String topic) {

@@ -16,6 +16,8 @@ class DevicesPage extends StatefulWidget {
   ValueNotifier<String> macAddress1Notifier;
   ValueNotifier<String> macAddress2Notifier;
 
+  ValueNotifier<String> acquisitionNotifier;
+
   /* String macAddress1;
   String macAddress2; */
 
@@ -23,7 +25,8 @@ class DevicesPage extends StatefulWidget {
       {this.mqttClientWrapper,
       this.macAddress1Notifier,
       this.macAddress2Notifier,
-      this.connectionNotifier});
+      this.connectionNotifier,
+      this.acquisitionNotifier});
 
   @override
   _DevicesPageState createState() => _DevicesPageState();
@@ -49,8 +52,8 @@ class _DevicesPageState extends State<DevicesPage> {
     super.initState();
     _controller1.text = widget.macAddress1Notifier.value;
     _controller2.text = widget.macAddress2Notifier.value;
-    _controller1.addListener(_setNewDefault1);
-    _controller2.addListener(_setNewDefault2);
+    //_controller1.addListener(_setNewDefault1);
+    //_controller2.addListener(_setNewDefault2);
   }
 
   void _setNewDefault1() {
@@ -64,7 +67,7 @@ class _DevicesPageState extends State<DevicesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: new AppBar(title: new Text('Dispositivos'), actions: <Widget>[
+      appBar: new AppBar(title: new Text('BITalino(s)'), actions: <Widget>[
         FlatButton.icon(
           label: Text(
             'Sign out',
@@ -103,6 +106,34 @@ class _DevicesPageState extends State<DevicesPage> {
                               : state == MqttCurrentConnectionState.CONNECTING
                                   ? 'A conectar...'
                                   : 'Disconectado',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            //fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+                ValueListenableBuilder(
+                valueListenable: widget.acquisitionNotifier,
+                builder: (BuildContext context,
+                    String state, Widget child) {
+                  return Container(
+                    height: 20,
+                    color: state ==
+                            'acquiring'
+                        ? Colors.green[50]
+                        : Colors.red[50],
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: Container(
+                        child: Text(
+                          state ==
+                                  'acquiring'
+                              ? 'Aquisição ligada'
+                              : 'Aquisição desligada',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             //fontWeight: FontWeight.bold,
@@ -231,7 +262,12 @@ class _DevicesPageState extends State<DevicesPage> {
                 Padding(
                   padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 0.0),
                   child: RaisedButton(
-                    onPressed: () => print("Button Pressed"),
+                    onPressed: () {
+                      widget.mqttClientWrapper.publishMessage(
+                        "['USE',{'MAC1':'${widget.macAddress1Notifier.value}','MAC2':'${widget.macAddress2Notifier.value}'}]");
+                        _auth.getCurrentUserStr().then((value) {
+                          widget.mqttClientWrapper.publishMessage("['ID', '$value']");});
+                    },
                     child: new Text("Usar default"),
                   ),
                 ),
@@ -277,26 +313,25 @@ class _DevicesPageState extends State<DevicesPage> {
                         Padding(
                           padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
                           child: TextField(
-                              controller: _controller1,
-                              decoration: InputDecoration(
+                            style: TextStyle(color: Colors.grey[600]),
+                            controller: _controller1,
+                            decoration: InputDecoration(
                                 border: OutlineInputBorder(),
                                 labelText: 'Endereço MAC',
                               ),
-                              onChanged: (text) => print(
-                                  "Novo MAC address 1: ${_controller1.text}")),
+                              onChanged: null)
                         ),
                         Padding(
                           padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
                           child: TextField(
+                            style: TextStyle(color: Colors.grey[600]),
                             controller: _controller2,
                             decoration: InputDecoration(
                               border: OutlineInputBorder(),
                               labelText: 'Endereço MAC',
                             ),
-                            onChanged: (text) => print(
-                                "Novo MAC address 1: ${_controller2.text}"),
+                            onChanged: null)
                           ),
-                        ),
                       ],
                     ),
                   ),
@@ -310,11 +345,15 @@ class _DevicesPageState extends State<DevicesPage> {
                         onPressed: () {
                           widget.mqttClientWrapper.publishMessage(
                               "['USE',{'MAC1':'${_controller1.text}','MAC2':'${_controller2.text}'}]");
+                              _auth.getCurrentUserStr().then((value) {
+                                widget.mqttClientWrapper.publishMessage("['ID', '$value']");});
                         },
                         child: new Text("Usar novo"),
                       ),
                       RaisedButton(
                         onPressed: () {
+                          _setNewDefault1();
+                          _setNewDefault2();
                           widget.mqttClientWrapper.publishMessage(
                               "['NEW',{'MAC1':'${_controller1.text}','MAC2':'${_controller2.text}'}]");
                         },

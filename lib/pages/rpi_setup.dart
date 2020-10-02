@@ -12,8 +12,9 @@ class RPiPage extends StatefulWidget {
   ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
   MQTTClientWrapper mqttClientWrapper;
   MqttCurrentConnectionState connectionState;
+  ValueNotifier<bool> receivedMACNotifier;
 
-  RPiPage({this.mqttClientWrapper, this.connectionState, this.connectionNotifier});
+  RPiPage({this.mqttClientWrapper, this.connectionState, this.connectionNotifier, this.receivedMACNotifier});
 
   @override
   _RPiPageState createState() => _RPiPageState();
@@ -26,18 +27,33 @@ class _RPiPageState extends State<RPiPage> {
   Color _connectionColor; */
 
   String message;
-  String _hostAddress = '192.168.2.112';
+
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is removed from the
+    // widget tree.
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.text = '192.168.2.112';
+  }
 
   Future<void> setup() async {
     //widget.mqttClientWrapper = MQTTClientWrapper(() => {}, (newMessage) => gotNewMessage(newMessage));
-    await widget.mqttClientWrapper.prepareMqttClient(_hostAddress);
+    await widget.mqttClientWrapper.prepareMqttClient(_controller.text);
     //Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: new Text('Conectar RPi'), actions: <Widget>[
+      appBar: AppBar(title: new Text('Conectar a RPi'), actions: <Widget>[
         FlatButton.icon(
           label: Text(
             'Sign out',
@@ -90,6 +106,32 @@ class _RPiPageState extends State<RPiPage> {
                     ),
                   );
                 }),
+                ValueListenableBuilder(
+                valueListenable: widget.receivedMACNotifier,
+                builder: (BuildContext context,
+                    bool state, Widget child) {
+                  return Container(
+                    height: 20,
+                    color: state
+                        ? Colors.green[50]
+                        : Colors.red[50],
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: Container(
+                        child: Text(
+                          state
+                              ? 'Processo completo'
+                              : 'Processo incompleto',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            //fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
             Padding(
               padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
               child: Column(children: [
@@ -99,7 +141,7 @@ class _RPiPageState extends State<RPiPage> {
                     alignment: Alignment.centerLeft,
                     child: Container(
                       child: Text(
-                        'Endereço RPi',
+                        'Endereço Raspberry Pi',
                         textAlign: TextAlign.left,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
@@ -130,14 +172,13 @@ class _RPiPageState extends State<RPiPage> {
                         Padding(
                           padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
                           child: TextField(
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                labelText: _hostAddress,
+                            style: TextStyle(color: Colors.grey[600]),
+                            controller: _controller,
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: 'Endereço RPi',
                               ),
-                              onChanged: (text) {
-                                setState(() => _hostAddress = text);
-                                print("Novo host: $_hostAddress");
-                              }),
+                              onChanged: null),
                         ),
                       ],
                     ),
@@ -147,7 +188,7 @@ class _RPiPageState extends State<RPiPage> {
                   padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 0.0),
                   child: RaisedButton(
                     onPressed: () {
-                      setState(() => setup());
+                      setup();
                     },
                     child: new Text("Conectar"),
                   ),

@@ -9,7 +9,6 @@ import 'package:provider/provider.dart';
 import 'package:rPiInterface/pages/webview_page.dart';
 import 'package:rPiInterface/utils/authentication.dart';
 import 'package:rPiInterface/utils/models.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 import '../mqtt_wrapper.dart';
 
 class HomePage extends StatefulWidget {
@@ -22,6 +21,8 @@ class _HomePageState extends State<HomePage> {
       ValueNotifier(MqttCurrentConnectionState.DISCONNECTED);
   ValueNotifier<String> macAddress1Notifier = ValueNotifier('Endereço MAC');
   ValueNotifier<String> macAddress2Notifier = ValueNotifier('Endereço MAC');
+  ValueNotifier<String> acquisitionNotifier = ValueNotifier('not acquiring');
+  ValueNotifier<bool> receivedMACNotifier = ValueNotifier(false);
 
   final Auth _auth = Auth();
   final firestoreInstance = Firestore.instance;
@@ -30,12 +31,11 @@ class _HomePageState extends State<HomePage> {
   String macAddress2;
   String message;
 
+  //String acquisitionState = 'NO';
+
   MqttCurrentConnectionState connectionState;
   MQTTClientWrapper mqttClientWrapper;
   MqttClient client;
-
-  Icon rPiTask = Icon(Icons.remove_circle_outline, color: Colors.black);
-  Icon devicesTask = Icon(Icons.remove_circle_outline, color: Colors.black);
 
   void setupHome() {
     mqttClientWrapper = MQTTClientWrapper(
@@ -57,24 +57,24 @@ class _HomePageState extends State<HomePage> {
   void gotNewMessage(String newMessage) {
     setState(() => message = newMessage);
     print('This is the new message: $message');
-    isMACAddress(message);
+    _isMACAddress(message);
+    _isAcquisitionStarting(message);
   }
 
   void updatedConnection(MqttCurrentConnectionState newConnectionState) {
-    setState(
-        () => rPiTask = Icon(Icons.check_circle_outline, color: Colors.black));
     setState(() => connectionState = newConnectionState);
     connectionNotifier.value = newConnectionState;
     print('This is the new connection state $connectionState');
   }
 
-  void isMACAddress(String message) {
+  void _isMACAddress(String message) {
     if (message.contains('DEFAULT')) {
       try {
         final List<String> listMAC = message.split(",");
         setState(() {
           macAddress1Notifier.value = listMAC[1].split("'")[1];
           macAddress2Notifier.value = listMAC[2].split("'")[1];
+          receivedMACNotifier.value = true;
           /* macAddress1Notifier.value = listMAC[1];
           macAddress2Notifier.value = listMAC[2]; */
         });
@@ -91,6 +91,13 @@ class _HomePageState extends State<HomePage> {
           macAddress2 = 'Endereço MAC 2';
         });
       }
+    }
+  }
+
+  void _isAcquisitionStarting(String message) {
+    if (message.contains('STARTING')) {
+      setState(() => acquisitionNotifier.value = 'acquiring');
+      print('ACQUISITION STARTING');
     }
   }
 
@@ -233,6 +240,7 @@ class _HomePageState extends State<HomePage> {
                           mqttClientWrapper: mqttClientWrapper,
                           connectionState: connectionState,
                           connectionNotifier: connectionNotifier,
+                          receivedMACNotifier: receivedMACNotifier,
                         ));
                   }),
                 );
@@ -265,6 +273,7 @@ class _HomePageState extends State<HomePage> {
                           macAddress1Notifier: macAddress1Notifier,
                           macAddress2Notifier: macAddress2Notifier,
                           connectionNotifier: connectionNotifier,
+                          acquisitionNotifier: acquisitionNotifier,
                         ));
                   }),
                 );
@@ -284,8 +293,8 @@ class _HomePageState extends State<HomePage> {
                       fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),
-              title: Text('Iniciar Visualização'),
-              //enabled: ,
+              title: Text('Iniciar visualização'),
+              enabled: acquisitionNotifier.value == 'acquiring',
               onTap: () async {
                 Navigator.push(
                   context,
