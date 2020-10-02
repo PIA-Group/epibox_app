@@ -3,18 +3,20 @@ import 'package:rPiInterface/utils/models.dart';
 import '../mqtt_wrapper.dart';
 import '../utils/authentication.dart';
 
-
 // programar button "Usar default" e "Usar novo" para enviar MACAddress para RPi e voltar à HomePage
 // programar button "Definir novo default" para enviar MACAddress para RPi e mudar "defaultBIT"
 
 class RPiPage extends StatefulWidget {
-
   ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
   MQTTClientWrapper mqttClientWrapper;
   MqttCurrentConnectionState connectionState;
   ValueNotifier<bool> receivedMACNotifier;
 
-  RPiPage({this.mqttClientWrapper, this.connectionState, this.connectionNotifier, this.receivedMACNotifier});
+  RPiPage(
+      {this.mqttClientWrapper,
+      this.connectionState,
+      this.connectionNotifier,
+      this.receivedMACNotifier});
 
   @override
   _RPiPageState createState() => _RPiPageState();
@@ -22,9 +24,6 @@ class RPiPage extends StatefulWidget {
 
 class _RPiPageState extends State<RPiPage> {
   final Auth _auth = Auth();
-
-  /* String _connectionText;
-  Color _connectionColor; */
 
   String message;
 
@@ -44,8 +43,16 @@ class _RPiPageState extends State<RPiPage> {
     _controller.text = '192.168.2.112';
   }
 
-  Future<void> setup() async {
-    //widget.mqttClientWrapper = MQTTClientWrapper(() => {}, (newMessage) => gotNewMessage(newMessage));
+  Future<void> _restart() async {
+     widget.mqttClientWrapper.publishMessage("['RESTART']");
+     setState(() {
+       widget.connectionNotifier.value = MqttCurrentConnectionState.DISCONNECTED;
+       widget.receivedMACNotifier.value = false;
+     });
+     
+  }
+
+  Future<void> _setup() async {
     await widget.mqttClientWrapper.prepareMqttClient(_controller.text);
     //Navigator.pop(context);
   }
@@ -78,22 +85,18 @@ class _RPiPageState extends State<RPiPage> {
                     MqttCurrentConnectionState state, Widget child) {
                   return Container(
                     height: 20,
-                    color: state ==
-                            MqttCurrentConnectionState.CONNECTED
+                    color: state == MqttCurrentConnectionState.CONNECTED
                         ? Colors.green[50]
-                        : state ==
-                                MqttCurrentConnectionState.CONNECTING
+                        : state == MqttCurrentConnectionState.CONNECTING
                             ? Colors.yellow[50]
                             : Colors.red[50],
                     child: Align(
                       alignment: Alignment.center,
                       child: Container(
                         child: Text(
-                          state ==
-                                  MqttCurrentConnectionState.CONNECTED
+                          state == MqttCurrentConnectionState.CONNECTED
                               ? 'Conectado'
-                              : state ==
-                                      MqttCurrentConnectionState.CONNECTING
+                              : state == MqttCurrentConnectionState.CONNECTING
                                   ? 'A conectar...'
                                   : 'Disconectado',
                           textAlign: TextAlign.center,
@@ -106,20 +109,18 @@ class _RPiPageState extends State<RPiPage> {
                     ),
                   );
                 }),
-                ValueListenableBuilder(
+            ValueListenableBuilder(
                 valueListenable: widget.receivedMACNotifier,
-                builder: (BuildContext context,
-                    bool state, Widget child) {
+                builder: (BuildContext context, bool state, Widget child) {
                   return Container(
                     height: 20,
-                    color: state
-                        ? Colors.green[50]
-                        : Colors.red[50],
+                    color: state ? Colors.green[50] : Colors.red[50],
                     child: Align(
                       alignment: Alignment.center,
                       child: Container(
                         child: Text(
-                          state
+                          state 
+                          // && _conn == MqttCurrentConnectionState.CONNECTED)
                               ? 'Processo completo'
                               : 'Processo incompleto',
                           textAlign: TextAlign.center,
@@ -172,11 +173,11 @@ class _RPiPageState extends State<RPiPage> {
                         Padding(
                           padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
                           child: TextField(
-                            style: TextStyle(color: Colors.grey[600]),
-                            controller: _controller,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              labelText: 'Endereço RPi',
+                              style: TextStyle(color: Colors.grey[600]),
+                              controller: _controller,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(),
+                                labelText: 'Endereço RPi',
                               ),
                               onChanged: null),
                         ),
@@ -186,11 +187,22 @@ class _RPiPageState extends State<RPiPage> {
                 ),
                 Padding(
                   padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 0.0),
-                  child: RaisedButton(
-                    onPressed: () {
-                      setup();
-                    },
-                    child: new Text("Conectar"),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      RaisedButton(
+                        onPressed: () {
+                          _setup();
+                        },
+                        child: new Text("Conectar"),
+                      ),
+                      RaisedButton(
+                        onPressed: () {
+                          _restart();
+                        },
+                        child: new Text("Reininciar"),
+                      ),
+                    ],
                   ),
                 ),
               ]),

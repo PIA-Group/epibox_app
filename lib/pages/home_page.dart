@@ -64,6 +64,8 @@ class _HomePageState extends State<HomePage> {
   void updatedConnection(MqttCurrentConnectionState newConnectionState) {
     setState(() => connectionState = newConnectionState);
     connectionNotifier.value = newConnectionState;
+    if (newConnectionState == MqttCurrentConnectionState.DISCONNECTED) {
+      receivedMACNotifier.value = false;}
     print('This is the new connection state $connectionState');
   }
 
@@ -103,13 +105,11 @@ class _HomePageState extends State<HomePage> {
 
   Future<String> currentUserID() async {
     var firebaseUser = await FirebaseAuth.instance.currentUser();
-    print('id: ${firebaseUser.uid}');
     return firebaseUser.uid;
   }
 
   Future<DocumentSnapshot> getUserName(uid) async {
     var userName = firestoreInstance.collection("users").document(uid).get();
-    print(userName);
     return userName;
   }
 

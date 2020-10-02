@@ -65,12 +65,10 @@ class MQTTClientWrapper {
   Future<void> _subscribeToTopic(String topicName) async {
 
     print('MQTTClientWrapper::Subscribing to the $topicName topic');
-    client.subscribe(topicName, MqttQos.atMostOnce);
+    client.subscribe(topicName, MqttQos.exactlyOnce);
     print('SUBSCRIPTION DONE TO TOPIC $topicName');
-    client.subscribe('rpi2', MqttQos.atMostOnce);
-    print('SUBSCRIPTION DONE TO TOPIC rpi2');
 
-    await publishMessage("'Send MAC Addresses'");
+    await publishMessage("['Send MAC Addresses']");
     print('After subscription: $connectionState');
 
     client.updates.listen((List<MqttReceivedMessage<MqttMessage>> c) {
