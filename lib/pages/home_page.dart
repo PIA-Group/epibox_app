@@ -21,7 +21,8 @@ class _HomePageState extends State<HomePage> {
       ValueNotifier(MqttCurrentConnectionState.DISCONNECTED);
   ValueNotifier<String> macAddress1Notifier = ValueNotifier('Endereço MAC');
   ValueNotifier<String> macAddress2Notifier = ValueNotifier('Endereço MAC');
-  ValueNotifier<String> acquisitionNotifier = ValueNotifier('not acquiring');
+  ValueNotifier<String> acquisitionNotifier = ValueNotifier('off');
+  ValueNotifier<String> acquisitionNotifierAux = ValueNotifier('off');
   ValueNotifier<bool> receivedMACNotifier = ValueNotifier(false);
 
   final Auth _auth = Auth();
@@ -49,6 +50,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    acquisitionNotifier.value = 'off';
     macAddress1 = 'Endereço MAC';
     macAddress2 = 'Endereço MAC';
     setupHome();
@@ -100,6 +102,15 @@ class _HomePageState extends State<HomePage> {
     if (message.contains('STARTING')) {
       setState(() => acquisitionNotifier.value = 'acquiring');
       print('ACQUISITION STARTING');
+    } else if (message.contains('RECONNECTING')) {
+      setState(() => acquisitionNotifier.value = 'reconnecting');
+      print('RECONNECTING ACQUISITION');
+    } else if (message.contains('STOPPED')) {
+      setState(() => acquisitionNotifier.value = 'stopped');
+      print('ACQUISITION STOPPED AND SAVED');
+    } else if (message.contains('OFF')){
+      setState(() => acquisitionNotifier.value = 'off');
+      print('ACQUISITION OFF');
     }
   }
 
@@ -241,6 +252,7 @@ class _HomePageState extends State<HomePage> {
                           connectionState: connectionState,
                           connectionNotifier: connectionNotifier,
                           receivedMACNotifier: receivedMACNotifier,
+                          acquisitionNotifier: acquisitionNotifier,
                         ));
                   }),
                 );
@@ -294,14 +306,14 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               title: Text('Iniciar visualização'),
-              enabled: acquisitionNotifier.value == 'acquiring',
+              //enabled: acquisitionNotifier.value == 'acquiring',
               onTap: () async {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) {
                     return StreamProvider<User>.value(
                         value: Auth().user,
-                        child: WebviewPage());
+                        child: WebviewPage(mqttClientWrapper: mqttClientWrapper));
                   }),
                 );
               },

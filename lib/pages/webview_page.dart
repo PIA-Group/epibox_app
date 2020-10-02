@@ -1,15 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:rPiInterface/mqtt_wrapper.dart';
 import 'package:rPiInterface/utils/authentication.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class WebviewPage extends StatefulWidget {
+
+  MQTTClientWrapper mqttClientWrapper;
+
+  WebviewPage({this.mqttClientWrapper});
+
   @override
   _WebviewPageState createState() => _WebviewPageState();
 }
 
 class _WebviewPageState extends State<WebviewPage> {
-
   final Auth _auth = Auth();
+
+  void _stopAcquisition() {
+    widget.mqttClientWrapper.publishMessage("['INTERRUPT']");
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,10 +40,13 @@ class _WebviewPageState extends State<WebviewPage> {
         )
       ]),
       body: WebView(
-        initialUrl: 'https://en.wikipedia.org/wiki/Kraken',
-        javascriptMode: JavascriptMode.unrestricted,
-      ),
-      
+              initialUrl: 'https://en.wikipedia.org/wiki/Kraken',
+              javascriptMode: JavascriptMode.unrestricted,
+            ),
+            floatingActionButton: FloatingActionButton(
+              onPressed: () =>  _stopAcquisition(),
+              child: new Text("Terminar aquisição e guardar dados"),
+            ),
     );
   }
 }

@@ -125,14 +125,19 @@ class _DevicesPageState extends State<DevicesPage> {
                     color: state ==
                             'acquiring'
                         ? Colors.green[50]
+                        : state == 'reconnecting'
+                        ? Colors.yellow[50]
                         : Colors.red[50],
                     child: Align(
                       alignment: Alignment.center,
                       child: Container(
                         child: Text(
-                          state ==
-                                  'acquiring'
-                              ? 'Aquisição ligada'
+                          state == 'acquiring'
+                              ? 'A adquirir dados'
+                              : state == 'reconnecting'  
+                              ? 'A retomar aquisição ...'
+                              : state == 'stopped'
+                              ? 'Aquisição terminada e dados gravados'
                               : 'Aquisição desligada',
                           textAlign: TextAlign.center,
                           style: TextStyle(

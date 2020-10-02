@@ -11,12 +11,14 @@ class RPiPage extends StatefulWidget {
   MQTTClientWrapper mqttClientWrapper;
   MqttCurrentConnectionState connectionState;
   ValueNotifier<bool> receivedMACNotifier;
+  ValueNotifier<String> acquisitionNotifier;
 
   RPiPage(
       {this.mqttClientWrapper,
       this.connectionState,
       this.connectionNotifier,
-      this.receivedMACNotifier});
+      this.receivedMACNotifier,
+      this.acquisitionNotifier});
 
   @override
   _RPiPageState createState() => _RPiPageState();
@@ -48,6 +50,7 @@ class _RPiPageState extends State<RPiPage> {
      setState(() {
        widget.connectionNotifier.value = MqttCurrentConnectionState.DISCONNECTED;
        widget.receivedMACNotifier.value = false;
+       widget.acquisitionNotifier.value = 'off';
      });
      
   }
