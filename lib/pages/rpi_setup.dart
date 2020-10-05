@@ -63,7 +63,7 @@ class _RPiPageState extends State<RPiPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: new Text('Conectar a RPi'), actions: <Widget>[
+      appBar: AppBar(title: new Text('Conectividade'), actions: <Widget>[
         FlatButton.icon(
           label: Text(
             'Sign out',
@@ -98,10 +98,10 @@ class _RPiPageState extends State<RPiPage> {
                       child: Container(
                         child: Text(
                           state == MqttCurrentConnectionState.CONNECTED
-                              ? 'Conectado'
+                              ? 'Conectado ao servidor'
                               : state == MqttCurrentConnectionState.CONNECTING
                                   ? 'A conectar...'
-                                  : 'Disconectado',
+                                  : 'Disconectado do servidor',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             //fontWeight: FontWeight.bold,
@@ -124,8 +124,8 @@ class _RPiPageState extends State<RPiPage> {
                         child: Text(
                           state 
                           // && _conn == MqttCurrentConnectionState.CONNECTED)
-                              ? 'Processo completo'
-                              : 'Processo incompleto',
+                              ? 'Conectado ao RPi'
+                              : 'Disconectado do RPi',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             //fontWeight: FontWeight.bold,
@@ -145,7 +145,7 @@ class _RPiPageState extends State<RPiPage> {
                     alignment: Alignment.centerLeft,
                     child: Container(
                       child: Text(
-                        'Endereço Raspberry Pi',
+                        'Endereço Servidor',
                         textAlign: TextAlign.left,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
@@ -180,7 +180,7 @@ class _RPiPageState extends State<RPiPage> {
                               controller: _controller,
                               decoration: InputDecoration(
                                 border: OutlineInputBorder(),
-                                labelText: 'Endereço RPi',
+                                labelText: 'Endereço',
                               ),
                               onChanged: null),
                         ),

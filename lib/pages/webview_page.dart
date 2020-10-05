@@ -43,9 +43,10 @@ class _WebviewPageState extends State<WebviewPage> {
               initialUrl: 'https://en.wikipedia.org/wiki/Kraken',
               javascriptMode: JavascriptMode.unrestricted,
             ),
-            floatingActionButton: FloatingActionButton(
+            floatingActionButton: FloatingActionButton.extended(
               onPressed: () =>  _stopAcquisition(),
-              child: new Text("Terminar aquisição e guardar dados"),
+              label: Text('Stop'),
+              icon: Icon(Icons.stop),
             ),
     );
   }

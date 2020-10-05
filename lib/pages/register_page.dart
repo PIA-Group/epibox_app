@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:rPiInterface/utils/authentication.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/loading_icon.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -95,12 +96,22 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   void _submitNewProfile(_newName) async {
+    _setAvatar("images/female.jpg");
     var firebaseUser = await FirebaseAuth.instance.currentUser();
     firestoreInstance
         .collection("users")
         .document(firebaseUser.uid)
         .setData({"userName": _newName}, merge: true).then((_) {
       print("New profile submitted!!");
+    });
+  }
+
+  void _setAvatar(_avatar) async {
+    var firebaseUser = await FirebaseAuth.instance.currentUser();
+    firestoreInstance
+        .collection("users")
+        .document(firebaseUser.uid)
+        .setData({"avatar": _avatar}, merge: true).then((_) {
     });
   }
 

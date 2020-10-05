@@ -30,6 +30,7 @@ dependencies:
   mqtt_client: ^8.0.0
   firebase_core: ^0.4.4
   cloud_firestore: ^0.13.7
+  shared_preferences: ^0.5.12
 
   
 
@@ -56,8 +57,9 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  #assets:
-  #  - images/one.png
+  assets:
+    - images/female.jpg
+    - images/male.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

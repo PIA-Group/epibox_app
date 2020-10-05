@@ -3,12 +3,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:rPiInterface/pages/devices_setup.dart';
-import 'package:rPiInterface/pages/profile_page.dart';
 import 'package:rPiInterface/pages/rpi_setup.dart';
 import 'package:provider/provider.dart';
 import 'package:rPiInterface/pages/webview_page.dart';
 import 'package:rPiInterface/utils/authentication.dart';
 import 'package:rPiInterface/utils/models.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../mqtt_wrapper.dart';
 
 class HomePage extends StatefulWidget {
@@ -38,6 +38,8 @@ class _HomePageState extends State<HomePage> {
   MQTTClientWrapper mqttClientWrapper;
   MqttClient client;
 
+  final TextEditingController _nameController = TextEditingController();
+
   void setupHome() {
     mqttClientWrapper = MQTTClientWrapper(
       client,
@@ -54,6 +56,15 @@ class _HomePageState extends State<HomePage> {
     macAddress1 = 'Endereço MAC';
     macAddress2 = 'Endereço MAC';
     setupHome();
+    _nameController.text = " ";
+  }
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is removed from the
+    // widget tree.
+    _nameController.dispose();
+    super.dispose();
   }
 
   void gotNewMessage(String newMessage) {
@@ -67,7 +78,8 @@ class _HomePageState extends State<HomePage> {
     setState(() => connectionState = newConnectionState);
     connectionNotifier.value = newConnectionState;
     if (newConnectionState == MqttCurrentConnectionState.DISCONNECTED) {
-      receivedMACNotifier.value = false;}
+      receivedMACNotifier.value = false;
+    }
     print('This is the new connection state $connectionState');
   }
 
@@ -108,7 +120,7 @@ class _HomePageState extends State<HomePage> {
     } else if (message.contains('STOPPED')) {
       setState(() => acquisitionNotifier.value = 'stopped');
       print('ACQUISITION STOPPED AND SAVED');
-    } else if (message.contains('OFF')){
+    } else if (message.contains('OFF')) {
       setState(() => acquisitionNotifier.value = 'off');
       print('ACQUISITION OFF');
     }
@@ -119,9 +131,85 @@ class _HomePageState extends State<HomePage> {
     return firebaseUser.uid;
   }
 
-  Future<DocumentSnapshot> getUserName(uid) async {
-    var userName = firestoreInstance.collection("users").document(uid).get();
-    return userName;
+  /* String getUserName() {
+    currentUserID()
+        .then(
+            (uid) => firestoreInstance.collection("users").document(uid).get())
+        .then((userName) =>
+            setState(() => _userName = userName.data["UserName"]));
+    return _userName;
+  } */
+
+  Future<DocumentSnapshot> getUserName(uid) {
+    return firestoreInstance.collection("users").document(uid).get();
+  }
+
+  void _submitNewProfile(_newName) async {
+    var firebaseUser = await FirebaseAuth.instance.currentUser();
+    firestoreInstance
+        .collection("users")
+        .document(firebaseUser.uid)
+        .setData({"userName": _newName}, merge: true).then((_) {
+      print("New profile submitted!!");
+    });
+  }
+
+  Future<void> _showAvatars() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Escolher novo avatar'),
+          content: SingleChildScrollView(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                InkWell(
+                  onTap: () {
+                    _setAvatar('images/female.jpg');
+                    Navigator.pop(context);
+                    Navigator.pop(context);
+                  },
+                  child: CircleAvatar(
+                    radius: 30.0,
+                    //backgroundColor: Colors.blue[300],
+                    backgroundImage: AssetImage('images/female.jpg'),
+                  ),
+                ),
+                InkWell(
+                  onTap: () {
+                    _setAvatar('images/male.jpg');
+                    Navigator.pop(context);
+                    Navigator.pop(context);
+                  },
+                  child: CircleAvatar(
+                    radius: 30.0,
+                    //backgroundColor: Colors.blue[300],
+                    backgroundImage: AssetImage('images/male.jpg'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[],
+        );
+      },
+    );
+  }
+
+  Future<DocumentSnapshot> _getAvatar(uid) async {
+    return firestoreInstance.collection("users").document(uid).get();
+  }
+
+  void _setAvatar(_avatar) async {
+    var firebaseUser = await FirebaseAuth.instance.currentUser();
+    firestoreInstance
+        .collection("users")
+        .document(firebaseUser.uid)
+        .setData({"avatar": _avatar}, merge: true).then((_) {
+      print("New avatar submitted!!");
+    });
   }
 
   @override
@@ -137,28 +225,28 @@ class _HomePageState extends State<HomePage> {
                   color: Colors.blue,
                 ),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
-                    Text('PACIENTE:',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          decoration: TextDecoration.underline,
-                        )),
                     FutureBuilder(
                         future: currentUserID(),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.done) {
                             return FutureBuilder(
-                                future: getUserName(snapshot.data),
+                                future: _getAvatar(snapshot.data),
                                 builder: (context, snapshot2) {
                                   if (snapshot2.connectionState ==
                                       ConnectionState.done) {
-                                    return Text(
-                                        '${snapshot2.data.data["userName"]}',
-                                        style: TextStyle(
-                                            color: Colors.white, fontSize: 16));
+                                    return InkWell(
+                                        onTap: () {
+                                          _showAvatars();
+                                        },
+                                        child: CircleAvatar(
+                                            radius: 40.0,
+                                            backgroundImage: AssetImage(
+                                                snapshot2.data.data["avatar"])),
+                                      
+                                    );
                                   } else {
                                     return CircularProgressIndicator();
                                   }
@@ -184,32 +272,99 @@ class _HomePageState extends State<HomePage> {
                           } else {
                             return CircularProgressIndicator();
                           }
-                        })
+                        }),
                   ],
                 ),
               ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Container(
-                  child: FlatButton.icon(
-                    label:
-                        Text('Editar perfil', style: TextStyle(fontSize: 16)),
-                    icon: Icon(
-                      Icons.settings,
-                      color: Colors.black,
-                    ),
-                    onPressed: () async {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) {
-                          return StreamProvider<User>.value(
-                              value: Auth().user, child: ProfilePage());
-                        }),
-                      );
-                    },
+              Padding(
+                padding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 0.0),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Nome: ',
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          FutureBuilder(
+                              future: currentUserID(),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.done) {
+                                  return FutureBuilder(
+                                      future: getUserName(snapshot.data),
+                                      builder: (context, snapshot2) {
+                                        if (snapshot2.connectionState ==
+                                            ConnectionState.done) {
+                                          return Text(
+                                            '${snapshot2.data.data["userName"]}',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                            ),
+                                          );
+                                        } else {
+                                          return CircularProgressIndicator();
+                                        }
+                                      });
+                                } else {
+                                  return CircularProgressIndicator();
+                                }
+                              }),
+                        ]),
                   ),
                 ),
-              )
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(10.0, 50.0, 10.0, 0.0),
+                child: Container(
+                  height: 150.0,
+                  width: 200.0,
+                  color: Colors.transparent,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.rectangle,
+                      borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                      boxShadow: [
+                        BoxShadow(
+                            color: Colors.grey[200],
+                            offset: new Offset(5.0, 5.0))
+                      ],
+                    ),
+                    child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
+                            child: TextField(
+                              decoration: InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  labelText: "Novo nome"),
+                              controller: _nameController,
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
+                            child: RaisedButton(
+                              onPressed: () {
+                                _submitNewProfile(_nameController.text.trim());
+                                setState(() => _nameController.text = " ");
+                                Navigator.pop(context);
+                              },
+                              child: new Text("Submeter"),
+                            ),
+                          ),
+                        ]),
+                  ),
+                ),
+              ),
             ]),
       ),
       appBar: new AppBar(title: new Text('PreEpiSeizures'), actions: <Widget>[
@@ -240,7 +395,7 @@ class _HomePageState extends State<HomePage> {
                       fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),
-              title: Text('Conectar a RaspberryPi'),
+              title: Text('Conectividade'),
               onTap: () async {
                 Navigator.push(
                   context,
@@ -273,7 +428,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               title: Text('Selecionar dispositivos'),
-              enabled: connectionState == MqttCurrentConnectionState.CONNECTED,
+              //enabled: connectionState == MqttCurrentConnectionState.CONNECTED,
               onTap: () async {
                 Navigator.push(
                   context,
@@ -313,7 +468,8 @@ class _HomePageState extends State<HomePage> {
                   MaterialPageRoute(builder: (context) {
                     return StreamProvider<User>.value(
                         value: Auth().user,
-                        child: WebviewPage(mqttClientWrapper: mqttClientWrapper));
+                        child:
+                            WebviewPage(mqttClientWrapper: mqttClientWrapper));
                   }),
                 );
               },

@@ -52,8 +52,6 @@ class _DevicesPageState extends State<DevicesPage> {
     super.initState();
     _controller1.text = widget.macAddress1Notifier.value;
     _controller2.text = widget.macAddress2Notifier.value;
-    //_controller1.addListener(_setNewDefault1);
-    //_controller2.addListener(_setNewDefault2);
   }
 
   void _setNewDefault1() {
@@ -102,10 +100,10 @@ class _DevicesPageState extends State<DevicesPage> {
                       child: Container(
                         child: Text(
                           state == MqttCurrentConnectionState.CONNECTED
-                              ? 'Conectado'
+                              ? 'Conectado ao servidor'
                               : state == MqttCurrentConnectionState.CONNECTING
                                   ? 'A conectar...'
-                                  : 'Disconectado',
+                                  : 'Disconectado do servidor',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             //fontWeight: FontWeight.bold,
