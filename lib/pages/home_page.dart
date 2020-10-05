@@ -8,7 +8,6 @@ import 'package:provider/provider.dart';
 import 'package:rPiInterface/pages/webview_page.dart';
 import 'package:rPiInterface/utils/authentication.dart';
 import 'package:rPiInterface/utils/models.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../mqtt_wrapper.dart';
 
 class HomePage extends StatefulWidget {
@@ -162,35 +161,91 @@ class _HomePageState extends State<HomePage> {
         return AlertDialog(
           title: Text('Escolher novo avatar'),
           content: SingleChildScrollView(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                InkWell(
-                  onTap: () {
-                    _setAvatar('images/female.jpg');
-                    Navigator.pop(context);
-                    Navigator.pop(context);
-                  },
-                  child: CircleAvatar(
-                    radius: 30.0,
-                    //backgroundColor: Colors.blue[300],
-                    backgroundImage: AssetImage('images/female.jpg'),
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 20.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          _setAvatar('images/owl.jpg');
+                          Navigator.pop(context);
+                          Navigator.pop(context);
+                        },
+                        child: CircleAvatar(
+                          radius: 30.0,
+                          backgroundImage: AssetImage('images/owl.jpg'),
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () {
+                          _setAvatar('images/penguin.jpg');
+                          Navigator.pop(context);
+                          Navigator.pop(context);
+                        },
+                        child: CircleAvatar(
+                          radius: 30.0,
+                          backgroundImage: AssetImage('images/penguin.jpg'),
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () {
+                          _setAvatar('images/pig.jpg');
+                          Navigator.pop(context);
+                          Navigator.pop(context);
+                        },
+                        child: CircleAvatar(
+                          radius: 30.0,
+                          backgroundImage: AssetImage('images/pig.jpg'),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                InkWell(
-                  onTap: () {
-                    _setAvatar('images/male.jpg');
-                    Navigator.pop(context);
-                    Navigator.pop(context);
-                  },
-                  child: CircleAvatar(
-                    radius: 30.0,
-                    //backgroundColor: Colors.blue[300],
-                    backgroundImage: AssetImage('images/male.jpg'),
                   ),
-                ),
-              ],
-            ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          _setAvatar('images/fox.jpg');
+                          Navigator.pop(context);
+                          Navigator.pop(context);
+                        },
+                        child: CircleAvatar(
+                          radius: 30.0,
+                          //backgroundColor: Colors.blue[300],
+                          backgroundImage: AssetImage('images/fox.jpg'),
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () {
+                          _setAvatar('images/dog.jpg');
+                          Navigator.pop(context);
+                          Navigator.pop(context);
+                        },
+                        child: CircleAvatar(
+                          radius: 30.0,
+                          //backgroundColor: Colors.blue[300],
+                          backgroundImage: AssetImage('images/dog.jpg'),
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () {
+                          _setAvatar('images/cat.jpg');
+                          Navigator.pop(context);
+                          Navigator.pop(context);
+                        },
+                        child: CircleAvatar(
+                          radius: 30.0,
+                          backgroundImage: AssetImage('images/cat.jpg'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ]),
           ),
           actions: <Widget>[],
         );
@@ -238,14 +293,13 @@ class _HomePageState extends State<HomePage> {
                                   if (snapshot2.connectionState ==
                                       ConnectionState.done) {
                                     return InkWell(
-                                        onTap: () {
-                                          _showAvatars();
-                                        },
-                                        child: CircleAvatar(
-                                            radius: 40.0,
-                                            backgroundImage: AssetImage(
-                                                snapshot2.data.data["avatar"])),
-                                      
+                                      onTap: () {
+                                        _showAvatars();
+                                      },
+                                      child: CircleAvatar(
+                                          radius: 40.0,
+                                          backgroundImage: AssetImage(
+                                              snapshot2.data.data["avatar"])),
                                     );
                                   } else {
                                     return CircularProgressIndicator();
@@ -428,7 +482,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               title: Text('Selecionar dispositivos'),
-              //enabled: connectionState == MqttCurrentConnectionState.CONNECTED,
+              enabled: connectionState == MqttCurrentConnectionState.CONNECTED,
               onTap: () async {
                 Navigator.push(
                   context,
@@ -461,15 +515,17 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               title: Text('Iniciar visualização'),
-              //enabled: acquisitionNotifier.value == 'acquiring',
+              enabled: acquisitionNotifier.value == 'acquiring',
               onTap: () async {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) {
                     return StreamProvider<User>.value(
                         value: Auth().user,
-                        child:
-                            WebviewPage(mqttClientWrapper: mqttClientWrapper));
+                        child: WebviewPage(
+                          mqttClientWrapper: mqttClientWrapper,
+                          acquisitionNotifier: acquisitionNotifier,
+                        ));
                   }),
                 );
               },

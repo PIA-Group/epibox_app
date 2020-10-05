@@ -30,12 +30,14 @@ class _RPiPageState extends State<RPiPage> {
   String message;
 
   final TextEditingController _controller = TextEditingController();
+  final TextEditingController _controllerPEN = TextEditingController();
 
   @override
   void dispose() {
     // Clean up the controller when the widget is removed from the
     // widget tree.
     _controller.dispose();
+    _controllerPEN.dispose();
     super.dispose();
   }
 
@@ -43,21 +45,21 @@ class _RPiPageState extends State<RPiPage> {
   void initState() {
     super.initState();
     _controller.text = '192.168.2.112';
+    _controllerPEN.text = 'PEN_MARIANA/Asus_Ana/acquisitions';
   }
 
   Future<void> _restart() async {
-     widget.mqttClientWrapper.publishMessage("['RESTART']");
-     setState(() {
-       widget.connectionNotifier.value = MqttCurrentConnectionState.DISCONNECTED;
-       widget.receivedMACNotifier.value = false;
-       widget.acquisitionNotifier.value = 'off';
-     });
-     
+    widget.mqttClientWrapper.publishMessage("['RESTART']");
+    setState(() {
+      widget.connectionNotifier.value = MqttCurrentConnectionState.DISCONNECTED;
+      widget.receivedMACNotifier.value = false;
+      widget.acquisitionNotifier.value = 'off';
+    });
   }
 
   Future<void> _setup() async {
     await widget.mqttClientWrapper.prepareMqttClient(_controller.text);
-    //Navigator.pop(context);
+    widget.mqttClientWrapper.publishMessage("['FOLDER', '${_controllerPEN.text}']");
   }
 
   @override
@@ -122,8 +124,8 @@ class _RPiPageState extends State<RPiPage> {
                       alignment: Alignment.center,
                       child: Container(
                         child: Text(
-                          state 
-                          // && _conn == MqttCurrentConnectionState.CONNECTED)
+                          state
+                              // && _conn == MqttCurrentConnectionState.CONNECTED)
                               ? 'Conectado ao RPi'
                               : 'Disconectado do RPi',
                           textAlign: TextAlign.center,
@@ -181,6 +183,55 @@ class _RPiPageState extends State<RPiPage> {
                               decoration: InputDecoration(
                                 border: OutlineInputBorder(),
                                 labelText: 'Endereço',
+                              ),
+                              onChanged: null),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(20.0, 20.0, 0.0, 10.0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      child: Text(
+                        'Pasta para armazenamento',
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  height: 150.0,
+                  width: 300.0,
+                  color: Colors.transparent,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.rectangle,
+                      borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                      boxShadow: [
+                        BoxShadow(
+                            color: Colors.grey[200],
+                            offset: new Offset(5.0, 5.0))
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
+                          child: TextField(
+                              style: TextStyle(color: Colors.grey[600]),
+                              controller: _controllerPEN,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(),
+                                labelText: 'Armazenamento',
                               ),
                               onChanged: null),
                         ),

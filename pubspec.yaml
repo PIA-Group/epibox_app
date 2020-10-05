@@ -31,7 +31,7 @@ dependencies:
   firebase_core: ^0.4.4
   cloud_firestore: ^0.13.7
   shared_preferences: ^0.5.12
-
+  flutter_launcher_icons: ^0.8.1
   
 
 
@@ -60,6 +60,12 @@ flutter:
   assets:
     - images/female.jpg
     - images/male.jpg
+    - images/owl.jpg
+    - images/penguin.jpg
+    - images/pig.jpg
+    - images/fox.jpg
+    - images/dog.jpg
+    - images/cat.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

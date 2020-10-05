@@ -6,7 +6,7 @@ class LoadingIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: new AppBar(
-        title: new Text('Aquisição de biossinais'),
+        title: new Text('PreEpiSeizures'),
       ),
       body: Container(
         child: Center(

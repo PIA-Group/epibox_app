@@ -96,7 +96,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   void _submitNewProfile(_newName) async {
-    _setAvatar("images/female.jpg");
+    _setAvatar("images/owl.jpg");
     var firebaseUser = await FirebaseAuth.instance.currentUser();
     firestoreInstance
         .collection("users")
@@ -155,7 +155,7 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return _loading ? LoadingIcon() : Scaffold(
       appBar: new AppBar(
-        title: new Text('Aquisição de biossinais'),
+        title: new Text('PreEpiSeizures'),
       ),
       body: Container(
         padding: EdgeInsets.all(16.0),

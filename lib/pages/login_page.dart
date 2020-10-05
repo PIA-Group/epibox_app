@@ -126,7 +126,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return _loading ? LoadingIcon() : Scaffold(
       appBar: new AppBar(
-        title: new Text('Aquisição de biossinais'),
+        title: new Text('PreEpiSeizures'),
       ),
       body: Container(
         padding: EdgeInsets.all(16.0),
