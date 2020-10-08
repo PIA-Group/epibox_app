@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:rPiInterface/utils/authentication.dart';
 import 'package:rPiInterface/utils/models.dart';
-import '../mqtt_wrapper.dart';
-import '../utils/authentication.dart';
+import 'package:rPiInterface/utils/mqtt_wrapper.dart';
+
 
 // programar button "Usar default" e "Usar novo" para enviar MACAddress para RPi e voltar à HomePage
 // programar button "Definir novo default" para enviar MACAddress para RPi e mudar "defaultBIT"
@@ -65,22 +66,7 @@ class _RPiPageState extends State<RPiPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: new Text('Conectividade'), actions: <Widget>[
-        FlatButton.icon(
-          label: Text(
-            'Sign out',
-            style: TextStyle(color: Colors.white),
-          ),
-          icon: Icon(
-            Icons.person,
-            color: Colors.white,
-          ),
-          onPressed: () async {
-            await _auth.signOut();
-            Navigator.pop(context);
-          },
-        )
-      ]),
+      appBar: AppBar(title: new Text('Conectividade'), ),
       body: Center(
         child: ListView(
           children: <Widget>[

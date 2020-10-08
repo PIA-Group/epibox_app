@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rPiInterface/pages/non_auth_page.dart';
-import '../pages/home_page.dart';
-import 'authentication.dart';
-
+import 'package:rPiInterface/patient_pages/home_page.dart';
+import 'package:rPiInterface/patient_pages/non_auth_page.dart';
+import 'package:rPiInterface/utils/authentication.dart';
 
 class AuthWrapper extends StatelessWidget {
 

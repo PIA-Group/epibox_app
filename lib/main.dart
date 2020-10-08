@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:rPiInterface/common_pages/mode_selection.dart';
 import 'package:rPiInterface/utils/authentication.dart';
-import 'package:rPiInterface/utils/auth_wrapper.dart';
 import 'package:provider/provider.dart';
 
 void main() => runApp(new InterfaceRPi());
 
 class InterfaceRPi extends StatelessWidget {
-  
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -14,9 +14,9 @@ class InterfaceRPi extends StatelessWidget {
     return StreamProvider<User>.value(
       value: Auth().user,
       child: MaterialApp(
-          title: 'Aquisição de biossinais',
+          title: 'PreEpiSeizures',
           debugShowCheckedModeBanner: false,
-          home: AuthWrapper(),
+          home: ModeSelectionPage(),
         ),
     );
   }

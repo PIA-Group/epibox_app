@@ -1,31 +1,30 @@
-//import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:rPiInterface/utils/authentication.dart';
 import 'package:rPiInterface/utils/loading_icon.dart';
 
-class LoginPage extends StatefulWidget {
-  
+
+class RegisterPage extends StatefulWidget {
+ 
   final Function toggleView;
-  LoginPage({this.toggleView});
+  RegisterPage({this.toggleView});
   
   @override
-  _LoginPageState createState() => _LoginPageState();
+  _RegisterPageState createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
-  
-  String _email = '';
-  String _password = '';
-  String _error = '';
-  bool _loading = false;
+class _RegisterPageState extends State<RegisterPage> {
+  String _email;
+  String _password;
+  String _username;
 
+  final firestoreInstance = Firestore.instance;
+
+  bool _loading = false;
   final Auth _auth = Auth();
-  User result;
   final _formKey = GlobalKey<FormState>();
 
-  /* User _userFromFirebaseUser(FirebaseUser user) {
-    return user != null ? User(uid: user.uid) : null;
-  } */
 
   Widget showEmailInput() {
     return Padding(
@@ -63,7 +62,7 @@ class _LoginPageState extends State<LoginPage> {
               Icons.lock,
               color: Colors.grey,
             )),
-        validator: (value) => value.isEmpty ? 'Password não pode estar vazia' : null,
+        validator: (value) => value.length < 6 ? 'Por favor escolher uma password com 6+ caracteres' : null,
         onChanged: (value) {
           setState((){
             _password = value.trim();
@@ -71,6 +70,49 @@ class _LoginPageState extends State<LoginPage> {
         }
       ),
     );
+  }
+
+  Widget showNameInput() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 0.0),
+      child: new TextFormField(
+        maxLines: 1,
+        obscureText: false,
+        autofocus: false,
+        decoration: new InputDecoration(
+            hintText: 'Nome',
+            icon: new Icon(
+              Icons.person,
+              color: Colors.grey,
+            )),
+        validator: (value) => value.length == 0 ? 'Por favor introduzir um nome' : null,
+        onChanged: (value) {
+          setState((){
+            _username = value.trim();
+          });
+        }
+      ),
+    );
+  }
+
+  void _submitNewProfile(_newName) async {
+    _setAvatar("images/owl.jpg");
+    var firebaseUser = await FirebaseAuth.instance.currentUser();
+    firestoreInstance
+        .collection("users")
+        .document(firebaseUser.uid)
+        .setData({"userName": _newName}, merge: true).then((_) {
+      print("New profile submitted!!");
+    });
+  }
+
+  void _setAvatar(_avatar) async {
+    var firebaseUser = await FirebaseAuth.instance.currentUser();
+    firestoreInstance
+        .collection("users")
+        .document(firebaseUser.uid)
+        .setData({"avatar": _avatar}, merge: true).then((_) {
+    });
   }
 
   Widget showPrimaryButton() {
@@ -83,43 +125,30 @@ class _LoginPageState extends State<LoginPage> {
             shape: new RoundedRectangleBorder(
                 borderRadius: new BorderRadius.circular(30.0)),
             color: Colors.blue,
-            child: new Text('Login',
+            child: new Text('Registar',
                 style: new TextStyle(fontSize: 20.0, color: Colors.white)),
             onPressed: () async {
               if (_formKey.currentState.validate()) {
                 setState(() => _loading = true);
-                await _auth.signIn(_email, _password);
-                //result = _userFromFirebaseUser(await _auth.getCurrentUser());
-                //result = await _auth.getCurrentUser();
-                if (result == null) {
-                  setState(() {
-                    _error = 'Credenciais incorretas!';
-                    _loading = false;
-                  });
-                } else {
-                  setState(() {
-                    _error = '';
-                    _loading = false;
-                  });
-                }
+                await _auth.signUp(_email, _password);
+                _submitNewProfile(_username);
+                setState(() {
+                  _loading = false;
+                });
               }
             }),
           ),
         );
   }
 
-  Widget showSecondaryButton() {
-    return FlatButton(
-        child: new Text('Ainda não tem conta? Registar',
-            style: new TextStyle(fontSize: 18.0, fontWeight: FontWeight.w300)),
-        onPressed: () => widget.toggleView());
-  }
 
-  Widget showErrorMessage() {
-    return Text(_error,
-    textAlign: TextAlign.center,
-    style: TextStyle(color: Colors.red.withOpacity(0.6)));
-    // add error message if network connection fails
+  Widget showSecondaryButton() {
+    return new FlatButton(
+        child: new Text('Já tem conta? Login',
+            style: new TextStyle(fontSize: 18.0, fontWeight: FontWeight.w300)),
+        onPressed: () {
+          widget.toggleView();
+        });
   }
 
   @override
@@ -137,9 +166,10 @@ class _LoginPageState extends State<LoginPage> {
             children: <Widget>[
               showEmailInput(),
               showPasswordInput(),
+              showNameInput(),
               showPrimaryButton(),
               showSecondaryButton(),
-              showErrorMessage(),
+              //showErrorMessage(),
             ],
           ),
         ),

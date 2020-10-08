@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
-import 'utils/constants.dart' as Constants;
+import 'constants.dart' as Constants;
 import 'package:mqtt_client/mqtt_client.dart';
-import 'utils/models.dart';
+import 'models.dart';
 
 class MQTTClientWrapper {
 

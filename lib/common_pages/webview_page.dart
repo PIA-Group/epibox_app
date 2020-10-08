@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:rPiInterface/mqtt_wrapper.dart';
+import 'package:rPiInterface/utils/mqtt_wrapper.dart';
 import 'package:rPiInterface/utils/authentication.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -55,22 +55,7 @@ class _WebviewPageState extends State<WebviewPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: new AppBar(title: new Text('Visualização'), actions: <Widget>[
-        FlatButton.icon(
-          label: Text(
-            'Sign out',
-            style: TextStyle(color: Colors.white),
-          ),
-          icon: Icon(
-            Icons.person,
-            color: Colors.white,
-          ),
-          onPressed: () async {
-            await _auth.signOut();
-            Navigator.pop(context);
-          },
-        )
-      ]),
+      appBar: new AppBar(title: new Text('Visualização'), ),
       key: _scaffoldKey,
       body: WebView(
         initialUrl: 'https://en.wikipedia.org/wiki/Kraken',

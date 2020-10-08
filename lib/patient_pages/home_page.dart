@@ -2,13 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mqtt_client/mqtt_client.dart';
-import 'package:rPiInterface/pages/devices_setup.dart';
-import 'package:rPiInterface/pages/rpi_setup.dart';
 import 'package:provider/provider.dart';
-import 'package:rPiInterface/pages/webview_page.dart';
+import 'package:rPiInterface/patient_pages/devices_setup.dart';
+import 'package:rPiInterface/common_pages/rpi_setup.dart';
+import 'package:rPiInterface/common_pages/webview_page.dart';
 import 'package:rPiInterface/utils/authentication.dart';
 import 'package:rPiInterface/utils/models.dart';
-import '../mqtt_wrapper.dart';
+import 'package:rPiInterface/utils/mqtt_wrapper.dart';
+
 
 class HomePage extends StatefulWidget {
   @override
@@ -129,15 +130,6 @@ class _HomePageState extends State<HomePage> {
     var firebaseUser = await FirebaseAuth.instance.currentUser();
     return firebaseUser.uid;
   }
-
-  /* String getUserName() {
-    currentUserID()
-        .then(
-            (uid) => firestoreInstance.collection("users").document(uid).get())
-        .then((userName) =>
-            setState(() => _userName = userName.data["UserName"]));
-    return _userName;
-  } */
 
   Future<DocumentSnapshot> getUserName(uid) {
     return firestoreInstance.collection("users").document(uid).get();
