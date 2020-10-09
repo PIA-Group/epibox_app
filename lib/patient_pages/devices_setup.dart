@@ -1,9 +1,10 @@
+import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:rPiInterface/utils/authentication.dart';
 import 'package:rPiInterface/utils/models.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
-
-
 
 // programar button "Usar default" e "Usar novo" para enviar MACAddress para RPi e voltar à HomePage
 // programar button "Definir novo default" para enviar MACAddress para RPi e mudar "defaultBIT"
@@ -64,8 +65,14 @@ class _DevicesPageState extends State<DevicesPage> {
 
   @override
   Widget build(BuildContext context) {
+
+    final bodyWidth = MediaQuery.of(context).size.width -
+        MediaQuery.of(context).viewInsets.left - MediaQuery.of(context).viewInsets.right;
+
     return Scaffold(
-      appBar: new AppBar(title: new Text('BITalino(s)'), ),
+      appBar: new AppBar(
+        title: new Text('BITalino(s)'),
+      ),
       body: Center(
         child: ListView(
           children: <Widget>[
@@ -99,29 +106,27 @@ class _DevicesPageState extends State<DevicesPage> {
                     ),
                   );
                 }),
-                ValueListenableBuilder(
+            ValueListenableBuilder(
                 valueListenable: widget.acquisitionNotifier,
-                builder: (BuildContext context,
-                    String state, Widget child) {
+                builder: (BuildContext context, String state, Widget child) {
                   return Container(
                     height: 20,
-                    color: state ==
-                            'acquiring'
+                    color: state == 'acquiring'
                         ? Colors.green[50]
                         : state == 'reconnecting'
-                        ? Colors.yellow[50]
-                        : Colors.red[50],
+                            ? Colors.yellow[50]
+                            : Colors.red[50],
                     child: Align(
                       alignment: Alignment.center,
                       child: Container(
                         child: Text(
                           state == 'acquiring'
                               ? 'A adquirir dados'
-                              : state == 'reconnecting'  
-                              ? 'A retomar aquisição ...'
-                              : state == 'stopped'
-                              ? 'Aquisição terminada e dados gravados'
-                              : 'Aquisição desligada',
+                              : state == 'reconnecting'
+                                  ? 'A retomar aquisição ...'
+                                  : state == 'stopped'
+                                      ? 'Aquisição terminada e dados gravados'
+                                      : 'Aquisição desligada',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             //fontWeight: FontWeight.bold,
@@ -252,9 +257,11 @@ class _DevicesPageState extends State<DevicesPage> {
                   child: RaisedButton(
                     onPressed: () {
                       widget.mqttClientWrapper.publishMessage(
-                        "['USE',{'MAC1':'${widget.macAddress1Notifier.value}','MAC2':'${widget.macAddress2Notifier.value}'}]");
-                        _auth.getCurrentUserStr().then((value) {
-                          widget.mqttClientWrapper.publishMessage("['ID', '$value']");});
+                          "['USE',{'MAC1':'${widget.macAddress1Notifier.value}','MAC2':'${widget.macAddress2Notifier.value}'}]");
+                      _auth.getCurrentUserStr().then((value) {
+                        widget.mqttClientWrapper
+                            .publishMessage("['ID', '$value']");
+                      });
                     },
                     child: new Text("Usar default"),
                   ),
@@ -282,7 +289,7 @@ class _DevicesPageState extends State<DevicesPage> {
                 ),
                 Container(
                   height: 150.0,
-                  width: 300.0,
+                  width: 0.95 * bodyWidth,
                   color: Colors.transparent,
                   child: Container(
                     decoration: BoxDecoration(
@@ -300,26 +307,44 @@ class _DevicesPageState extends State<DevicesPage> {
                       children: [
                         Padding(
                           padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
-                          child: TextField(
-                            style: TextStyle(color: Colors.grey[600]),
-                            controller: _controller1,
-                            decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                labelText: 'Endereço MAC',
-                              ),
-                              onChanged: null)
+                          child: Row(children: [
+                            Expanded(
+                              child: TextField(
+                                  style: TextStyle(color: Colors.grey[600]),
+                                  controller: _controller1,
+                                  decoration: InputDecoration(
+                                    border: OutlineInputBorder(),
+                                    labelText: 'Endereço MAC',
+                                  ),
+                                  onChanged: null),
+                            ),
+                            IconButton(
+                                icon: Icon(
+                                  MdiIcons.qrcode,
+                                ),
+                                onPressed: () => scan(_controller1))
+                          ]),
                         ),
                         Padding(
                           padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
-                          child: TextField(
-                            style: TextStyle(color: Colors.grey[600]),
-                            controller: _controller2,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              labelText: 'Endereço MAC',
+                          child: Row(children: [
+                            Expanded(
+                              child: TextField(
+                                  style: TextStyle(color: Colors.grey[600]),
+                                  controller: _controller2,
+                                  decoration: InputDecoration(
+                                    border: OutlineInputBorder(),
+                                    labelText: 'Endereço MAC',
+                                  ),
+                                  onChanged: null),
                             ),
-                            onChanged: null)
-                          ),
+                            IconButton(
+                                icon: Icon(
+                                  MdiIcons.qrcode,
+                                ),
+                                onPressed: () => scan(_controller2))
+                          ]),
+                        ),
                       ],
                     ),
                   ),
@@ -333,8 +358,10 @@ class _DevicesPageState extends State<DevicesPage> {
                         onPressed: () {
                           widget.mqttClientWrapper.publishMessage(
                               "['USE',{'MAC1':'${_controller1.text}','MAC2':'${_controller2.text}'}]");
-                              _auth.getCurrentUserStr().then((value) {
-                                widget.mqttClientWrapper.publishMessage("['ID', '$value']");});
+                          _auth.getCurrentUserStr().then((value) {
+                            widget.mqttClientWrapper
+                                .publishMessage("['ID', '$value']");
+                          });
                         },
                         child: new Text("Usar novo"),
                       ),
@@ -356,5 +383,15 @@ class _DevicesPageState extends State<DevicesPage> {
         ),
       ),
     );
+  }
+
+  Future scan(TextEditingController controller) async {
+    try {
+      var scan = (await BarcodeScanner.scan());
+      String scanString = scan.rawContent;
+      setState(() => controller.text = scanString);
+    } on PlatformException catch (e) {
+      print(e);
+    }
   }
 }

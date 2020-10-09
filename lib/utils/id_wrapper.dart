@@ -12,10 +12,8 @@ class IDWrapper extends StatelessWidget {
         valueListenable: patientNotifier,
         builder: (BuildContext context, String state, Widget child) {
           return patientNotifier.value == null
-              ? ScanPage(
-                  patientNotifier: patientNotifier,
-                )
-              : HomeHPage(patientNotifier: patientNotifier,);
+              ? ScanPage(patientNotifier: patientNotifier)
+              : HomeHPage(patientNotifier: patientNotifier);
         });
   }
 }

@@ -1,4 +1,7 @@
+import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:rPiInterface/utils/authentication.dart';
 import 'package:rPiInterface/utils/models.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
@@ -66,6 +69,10 @@ class _DevicesPageState extends State<DevicesPage> {
 
   @override
   Widget build(BuildContext context) {
+
+    final bodyWidth = MediaQuery.of(context).size.width -
+        MediaQuery.of(context).viewInsets.left - MediaQuery.of(context).viewInsets.right;
+
     return Scaffold(
       appBar: new AppBar(title: new Text('BITalino(s)'),),
       body: Center(
@@ -283,7 +290,7 @@ class _DevicesPageState extends State<DevicesPage> {
                 ),
                 Container(
                   height: 150.0,
-                  width: 300.0,
+                  width: 0.95 * bodyWidth,
                   color: Colors.transparent,
                   child: Container(
                     decoration: BoxDecoration(
@@ -301,26 +308,44 @@ class _DevicesPageState extends State<DevicesPage> {
                       children: [
                         Padding(
                           padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
-                          child: TextField(
-                            style: TextStyle(color: Colors.grey[600]),
-                            controller: _controller1,
-                            decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                labelText: 'Endereço MAC',
-                              ),
-                              onChanged: null)
+                          child: Row(children: [
+                            Expanded(
+                              child: TextField(
+                                  style: TextStyle(color: Colors.grey[600]),
+                                  controller: _controller1,
+                                  decoration: InputDecoration(
+                                    border: OutlineInputBorder(),
+                                    labelText: 'Endereço MAC',
+                                  ),
+                                  onChanged: null),
+                            ),
+                            IconButton(
+                                icon: Icon(
+                                  MdiIcons.qrcode,
+                                ),
+                                onPressed: () => scan(_controller1))
+                          ]),
                         ),
                         Padding(
                           padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
-                          child: TextField(
-                            style: TextStyle(color: Colors.grey[600]),
-                            controller: _controller2,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              labelText: 'Endereço MAC',
+                          child: Row(children: [
+                            Expanded(
+                              child: TextField(
+                                  style: TextStyle(color: Colors.grey[600]),
+                                  controller: _controller2,
+                                  decoration: InputDecoration(
+                                    border: OutlineInputBorder(),
+                                    labelText: 'Endereço MAC',
+                                  ),
+                                  onChanged: null),
                             ),
-                            onChanged: null)
-                          ),
+                            IconButton(
+                                icon: Icon(
+                                  MdiIcons.qrcode,
+                                ),
+                                onPressed: () => scan(_controller2))
+                          ]),
+                        ),
                       ],
                     ),
                   ),
@@ -357,4 +382,15 @@ class _DevicesPageState extends State<DevicesPage> {
       ),
     );
   }
+
+  Future scan(TextEditingController controller) async {
+    try {
+      var scan = (await BarcodeScanner.scan());
+      String scanString = scan.rawContent;
+      setState(() => controller.text = scanString);
+    } on PlatformException catch (e) {
+      print(e);
+    }
+  }
+  
 }

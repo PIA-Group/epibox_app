@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class ScanPage extends StatefulWidget {
 
@@ -25,7 +26,7 @@ class _ScanPageState extends State<ScanPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: new AppBar(
-          title: new Text('QR Code Scanner'),
+          title: new Text('Scanner de código QR'),
         ),
         body: new Center(
           child: new Column(
@@ -34,12 +35,15 @@ class _ScanPageState extends State<ScanPage> {
             children: <Widget>[
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                child: RaisedButton(
+                child: RaisedButton.icon(
                     color: Colors.blue,
                     textColor: Colors.white,
                     splashColor: Colors.blueGrey,
-                    onPressed: scan,
-                    child: const Text('START CAMERA SCAN')
+                    onPressed: () => scan(widget.patientNotifier),
+                    icon: Icon(
+                    MdiIcons.qrcode,
+                  ),
+                    label: const Text('INICIAR SCAN')
                 ),
               )
               ,
@@ -53,21 +57,27 @@ class _ScanPageState extends State<ScanPage> {
         ));
   }
 
-  Future scan() async {
+  Future scan(ValueNotifier<String> notifier) async {
     try {
-      //String patient = (await BarcodeScanner.scan()) as String;
-      setState(() => widget.patientNotifier.value = "4ZVV8kC1mHNSyPF4OFGA9RVHcdJ2");
-      setState(() => this.barcode = widget.patientNotifier.value);
+      var scan = (await BarcodeScanner.scan());
+      String scanString = scan.rawContent;
+      if (scan.format != BarcodeFormat.unknown) {
+        setState(() => notifier.value = scanString);
+        setState(() => this.barcode = 'ID: ${widget.patientNotifier.value}');
+      }
+      print('HERE: ${notifier.value}');
     } on PlatformException catch (e) {
       if (e.code == BarcodeScanner.cameraAccessDenied) {
         setState(() {
-          this.barcode = 'The user did not grant the camera permission!';
+          this.barcode = 'É necessário permissão para aceder à camera!';
         });
       } else {
         setState(() => this.barcode = 'Unknown error: $e');
       }
     } on FormatException{
-      setState(() => this.barcode = 'null (User returned using the "back"-button before scanning anything. Result)');
+      print('HERE: ${notifier.value}');
+      setState(() => notifier.value = null);
+      setState(() => this.barcode = 'Scan não completo.');
     } catch (e) {
       setState(() => this.barcode = 'Unknown error: $e');
     }

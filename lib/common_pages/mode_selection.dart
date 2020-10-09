@@ -12,27 +12,53 @@ class ModeSelectionPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            RaisedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) {
-                    return AuthWrapper();
-                  }),
-                );
-              },
-              child: new Text("Paciente"),
+            Padding(
+              padding: EdgeInsets.fromLTRB(40.0, 0.0, 0.0, 20.0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text("Escolha a modalidade:",
+                    style:
+                        TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.grey[600])),
+              ),
             ),
-            RaisedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) {
-                    return IDWrapper();
-                  }),
-                );
-              },
-              child: new Text("Ambiente hospitalar"),
+            Padding(
+              padding: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 15.0),
+              child: ButtonTheme(
+                minWidth: 215.0,
+                child: RaisedButton(
+                  color: Colors.blue,
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) {
+                        return AuthWrapper();
+                      }),
+                    );
+                  },
+                  child: new Text(
+                    "PACIENTE",
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ),
+              ),
+            ),
+            ButtonTheme(
+              minWidth: 215.0,
+              child: RaisedButton(
+                color: Colors.blue,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) {
+                      return IDWrapper();
+                    }),
+                  );
+                },
+                child: new Text(
+                  "AMBIENTE HOSPITALAR",
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+              ),
             ),
           ],
         ),

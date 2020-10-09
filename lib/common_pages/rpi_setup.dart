@@ -26,7 +26,6 @@ class RPiPage extends StatefulWidget {
 }
 
 class _RPiPageState extends State<RPiPage> {
-  final Auth _auth = Auth();
 
   String message;
 

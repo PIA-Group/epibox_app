@@ -1,128 +1,113 @@
+import 'package:esys_flutter_share/esys_flutter_share.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:flutter/services.dart';
 import 'dart:async';
 import 'dart:typed_data';
-import 'dart:ui';
 import 'dart:io';
-import 'package:flutter/rendering.dart';
+import 'package:rPiInterface/utils/authentication.dart';
+import 'package:screenshot/screenshot.dart';
 
-class GenerateScreen extends StatefulWidget {
-
+class QRPage extends StatefulWidget {
   @override
-  State<StatefulWidget> createState() => GenerateScreenState();
+  State<StatefulWidget> createState() => _QRPageState();
 }
 
-class GenerateScreenState extends State<GenerateScreen> {
-
-  static const double _topSectionTopPadding = 50.0;
-  static const double _topSectionBottomPadding = 20.0;
-  static const double _topSectionHeight = 50.0;
+class _QRPageState extends State<QRPage> {
+  final Auth _auth = Auth();
 
   GlobalKey globalKey = new GlobalKey();
-  String _dataString = "Hello from this QR";
-  String _inputErrorText;
-  final TextEditingController _textController =  TextEditingController();
+
+  ScreenshotController screenshotController = ScreenshotController();
+
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final bodyHeight = MediaQuery.of(context).size.height -
+        MediaQuery.of(context).viewInsets.bottom;
+
     return Scaffold(
+      key: globalKey,
       appBar: AppBar(
-        title: Text('QR Code Generator'),
+        title: Text('Código QR'),
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.share),
-            onPressed: null
-            //_captureAndSharePng,
-          )
+            onPressed: _captureAndShare,
+          ),
         ],
       ),
-      body: _contentWidget(),
+      body: Center(
+        child: RepaintBoundary(
+          child: FutureBuilder(
+              future: _auth.getCurrentUserStr(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  return Screenshot(
+                    controller: screenshotController,
+                    child: 
+                    Container(
+                      color: Colors.white,
+                      child: QrImage(
+                      data: snapshot.data,
+                      size: 0.5 * bodyHeight,
+                      /* onError: (ex) {
+                              print("[QR] ERROR - $ex");
+                              setState((){
+                                _inputErrorText = "Error! Maybe your input value is too long?";
+                              });
+                            }, */
+                    ),
+                  ),);
+                } else {
+                  return CircularProgressIndicator();
+                }
+              }),
+        ),
+      ),
     );
+  }
+
+  Future<void> _captureAndShare() async {
+    try {
+      screenshotController
+          .capture(pixelRatio: 1.5, delay: Duration(milliseconds: 10))
+          .then((File image) async {
+            Uint8List pngBytes = image.readAsBytesSync().buffer.asUint8List();
+            await Share.file('esys image', 'esys.png', pngBytes, 'image/png');
+      });
+    } catch (e) {
+      print('error');
+      print(e);
+    }
   }
 
   /* Future<void> _captureAndSharePng() async {
     try {
-      RenderRepaintBoundary boundary = globalKey.currentContext.findRenderObject();
+      RenderRepaintBoundary boundary =
+          globalKey.currentContext.findRenderObject();
+      print('here');
       var image = await boundary.toImage();
+      print('here2');
       ByteData byteData = await image.toByteData(format: ImageByteFormat.png);
+      print('here3');
       Uint8List pngBytes = byteData.buffer.asUint8List();
+      print('here4');
 
-      final tempDir = await getTemporaryDirectory();
+      await Share.file('esys image', 'esys.png', pngBytes, 'image/png');
+      print('here5');
+      /* final tempDir = await getTemporaryDirectory();
       final file = await new File('${tempDir.path}/image.png').create();
       await file.writeAsBytes(pngBytes);
 
       final channel = const MethodChannel('channel:me.alfian.share/share');
-      channel.invokeMethod('shareFile', 'image.png');
+      channel.invokeMethod('shareFile', 'image.png'); */
 
-    } catch(e) {
+    } catch (e) {
+      print('here6');
       print(e.toString());
     }
   } */
-
-  _contentWidget() {
-    final bodyHeight = MediaQuery.of(context).size.height - MediaQuery.of(context).viewInsets.bottom;
-    return  Container(
-      color: const Color(0xFFFFFFFF),
-      child:  Column(
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(
-              top: _topSectionTopPadding,
-              left: 20.0,
-              right: 10.0,
-              bottom: _topSectionBottomPadding,
-            ),
-            child:  Container(
-              height: _topSectionHeight,
-              child:  Row(
-                mainAxisSize: MainAxisSize.max,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  Expanded(
-                    child:  TextField(
-                      controller: _textController,
-                      decoration:  InputDecoration(
-                        hintText: "Enter a custom message",
-                        errorText: _inputErrorText,
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 10.0),
-                    child:  FlatButton(
-                      child:  Text("SUBMIT"),
-                      onPressed: () {
-                        setState((){
-                          _dataString = _textController.text;
-                          _inputErrorText = null;
-                        });
-                      },
-                    ),
-                  )
-                ],
-              ),
-            ),
-          ),
-          Expanded(
-            child:  Center(
-              child: RepaintBoundary(
-                key: globalKey,
-                child: QrImage(
-                  data: _dataString,
-                  size: 0.5 * bodyHeight,
-                  /* onError: (ex) {
-                    print("[QR] ERROR - $ex");
-                    setState((){
-                      _inputErrorText = "Error! Maybe your input value is too long?";
-                    });
-                  }, */
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

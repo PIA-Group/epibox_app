@@ -3,13 +3,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:provider/provider.dart';
+import 'package:rPiInterface/common_pages/config_page.dart';
 import 'package:rPiInterface/patient_pages/devices_setup.dart';
 import 'package:rPiInterface/common_pages/rpi_setup.dart';
 import 'package:rPiInterface/common_pages/webview_page.dart';
+import 'package:rPiInterface/patient_pages/qr_page.dart';
 import 'package:rPiInterface/utils/authentication.dart';
 import 'package:rPiInterface/utils/models.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
-
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -158,44 +160,44 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   Padding(
                     padding: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 20.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      InkWell(
-                        onTap: () {
-                          _setAvatar('images/owl.jpg');
-                          Navigator.pop(context);
-                          Navigator.pop(context);
-                        },
-                        child: CircleAvatar(
-                          radius: 30.0,
-                          backgroundImage: AssetImage('images/owl.jpg'),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            _setAvatar('images/owl.jpg');
+                            Navigator.pop(context);
+                            Navigator.pop(context);
+                          },
+                          child: CircleAvatar(
+                            radius: 30.0,
+                            backgroundImage: AssetImage('images/owl.jpg'),
+                          ),
                         ),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          _setAvatar('images/penguin.jpg');
-                          Navigator.pop(context);
-                          Navigator.pop(context);
-                        },
-                        child: CircleAvatar(
-                          radius: 30.0,
-                          backgroundImage: AssetImage('images/penguin.jpg'),
+                        InkWell(
+                          onTap: () {
+                            _setAvatar('images/penguin.jpg');
+                            Navigator.pop(context);
+                            Navigator.pop(context);
+                          },
+                          child: CircleAvatar(
+                            radius: 30.0,
+                            backgroundImage: AssetImage('images/penguin.jpg'),
+                          ),
                         ),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          _setAvatar('images/pig.jpg');
-                          Navigator.pop(context);
-                          Navigator.pop(context);
-                        },
-                        child: CircleAvatar(
-                          radius: 30.0,
-                          backgroundImage: AssetImage('images/pig.jpg'),
+                        InkWell(
+                          onTap: () {
+                            _setAvatar('images/pig.jpg');
+                            Navigator.pop(context);
+                            Navigator.pop(context);
+                          },
+                          child: CircleAvatar(
+                            radius: 30.0,
+                            backgroundImage: AssetImage('images/pig.jpg'),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -334,9 +336,9 @@ class _HomePageState extends State<HomePage> {
                             'Nome: ',
                             textAlign: TextAlign.left,
                             style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: Colors.grey[600]),
                           ),
                           FutureBuilder(
                               future: currentUserID(),
@@ -351,9 +353,9 @@ class _HomePageState extends State<HomePage> {
                                           return Text(
                                             '${snapshot2.data.data["userName"]}',
                                             style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
-                                            ),
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                                color: Colors.grey[600]),
                                           );
                                         } else {
                                           return CircularProgressIndicator();
@@ -411,6 +413,28 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(0.0, 50.0, 0.0, 0.0),
+                child: FlatButton.icon(
+                  label: Text(
+                    'Gerar código QR',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  icon: Icon(
+                    MdiIcons.qrcode,
+                    color: Colors.grey,
+                  ),
+                  onPressed: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) {
+                      return QRPage();
+                    }));
+                  },
+                ),
+              )
             ]),
       ),
       appBar: new AppBar(title: new Text('PreEpiSeizures'), actions: <Widget>[
@@ -473,8 +497,35 @@ class _HomePageState extends State<HomePage> {
                       fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),
+              title: Text('Configurações'),
+              //enabled: connectionState == MqttCurrentConnectionState.CONNECTED,
+              onTap: () async {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) {
+                    return StreamProvider<User>.value(
+                        value: Auth().user,
+                        child: ConfigPage());
+                  }),
+                );
+              },
+            ),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+          child: Card(
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: Colors.blue[300],
+                child: Text(
+                  '3',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+              ),
               title: Text('Selecionar dispositivos'),
-              enabled: connectionState == MqttCurrentConnectionState.CONNECTED,
+              //enabled: connectionState == MqttCurrentConnectionState.CONNECTED,
               onTap: () async {
                 Navigator.push(
                   context,
@@ -501,13 +552,13 @@ class _HomePageState extends State<HomePage> {
               leading: CircleAvatar(
                 backgroundColor: Colors.blue[300],
                 child: Text(
-                  '3',
+                  '4',
                   style: TextStyle(
                       fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),
               title: Text('Iniciar visualização'),
-              enabled: acquisitionNotifier.value == 'acquiring',
+              //enabled: acquisitionNotifier.value == 'acquiring',
               onTap: () async {
                 Navigator.push(
                   context,

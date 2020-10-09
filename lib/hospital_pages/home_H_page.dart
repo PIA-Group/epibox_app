@@ -3,11 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:provider/provider.dart';
-
+import 'package:rPiInterface/common_pages/config_page.dart';
 import 'package:rPiInterface/patient_pages/devices_setup.dart';
 import 'package:rPiInterface/common_pages/rpi_setup.dart';
 import 'package:rPiInterface/common_pages/webview_page.dart';
-import 'package:rPiInterface/utils/authentication.dart';
 import 'package:rPiInterface/utils/models.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
 
@@ -129,24 +128,11 @@ class _HomeHPageState extends State<HomeHPage> {
     }
   }
 
-/*   Future<String> currentUserID() async {
-    var firebaseUser = await FirebaseAuth.instance.currentUser();
-    return firebaseUser.uid;
-  } */
-
   Future<DocumentSnapshot> getUserName(uid) {
     return firestoreInstance.collection("users").document(uid).get();
   }
 
-  void _submitNewProfile(_newName) async {
-    var firebaseUser = await FirebaseAuth.instance.currentUser();
-    firestoreInstance
-        .collection("users")
-        .document(firebaseUser.uid)
-        .setData({"userName": _newName}, merge: true).then((_) {
-      print("New profile submitted!!");
-    });
-  }
+
 
   Future<void> _showAvatars() async {
     return showDialog<void>(
@@ -376,15 +362,13 @@ class _HomeHPageState extends State<HomeHPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) {
-                    return StreamProvider<User>.value(
-                        value: Auth().user,
-                        child: RPiPage(
+                    return RPiPage(
                           mqttClientWrapper: mqttClientWrapper,
                           connectionState: connectionState,
                           connectionNotifier: connectionNotifier,
                           receivedMACNotifier: receivedMACNotifier,
                           acquisitionNotifier: acquisitionNotifier,
-                        ));
+                        );
                   }),
                 );
               },
@@ -403,21 +387,13 @@ class _HomeHPageState extends State<HomeHPage> {
                       fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),
-              title: Text('Selecionar dispositivos'),
-              enabled: connectionState == MqttCurrentConnectionState.CONNECTED,
+              title: Text('Configurações'),
+              //enabled: connectionState == MqttCurrentConnectionState.CONNECTED,
               onTap: () async {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) {
-                    return StreamProvider<User>.value(
-                        value: Auth().user,
-                        child: DevicesPage(
-                          mqttClientWrapper: mqttClientWrapper,
-                          macAddress1Notifier: macAddress1Notifier,
-                          macAddress2Notifier: macAddress2Notifier,
-                          connectionNotifier: connectionNotifier,
-                          acquisitionNotifier: acquisitionNotifier,
-                        ));
+                    return ConfigPage();
                   }),
                 );
               },
@@ -436,18 +412,47 @@ class _HomeHPageState extends State<HomeHPage> {
                       fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),
-              title: Text('Iniciar visualização'),
-              enabled: acquisitionNotifier.value == 'acquiring',
+              title: Text('Selecionar dispositivos'),
+              //enabled: connectionState == MqttCurrentConnectionState.CONNECTED,
               onTap: () async {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) {
-                    return StreamProvider<User>.value(
-                        value: Auth().user,
-                        child: WebviewPage(
+                    return DevicesPage(
+                          mqttClientWrapper: mqttClientWrapper,
+                          macAddress1Notifier: macAddress1Notifier,
+                          macAddress2Notifier: macAddress2Notifier,
+                          connectionNotifier: connectionNotifier,
+                          acquisitionNotifier: acquisitionNotifier,
+                        );
+                  }),
+                );
+              },
+            ),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+          child: Card(
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: Colors.blue[300],
+                child: Text(
+                  '4',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+              ),
+              title: Text('Iniciar visualização'),
+              //enabled: acquisitionNotifier.value == 'acquiring',
+              onTap: () async {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) {
+                    return WebviewPage(
                           mqttClientWrapper: mqttClientWrapper,
                           acquisitionNotifier: acquisitionNotifier,
-                        ));
+                        );
                   }),
                 );
               },
