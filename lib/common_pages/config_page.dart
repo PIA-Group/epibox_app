@@ -24,7 +24,7 @@ class _ConfigPageState extends State<ConfigPage> {
   List<bool> _bit1Selections = List.generate(6, (_) => false);
   List<bool> _bit2Selections = List.generate(6, (_) => false);
 
-  List<List<String>> _channels2Send;
+  List<List<String>> _channels2Send = [];
 
   final TextEditingController _controllerFreq = TextEditingController();
 
@@ -38,8 +38,10 @@ class _ConfigPageState extends State<ConfigPage> {
   Future<void> _setup() async {
     widget.mqttClientWrapper.publishMessage("['FOLDER', '$_chosenDrive']");
     widget.mqttClientWrapper.publishMessage("['FS', '${_controllerFreq.text}']");
-    _bit1Selections.map((channel) => null);
-    widget.mqttClientWrapper.publishMessage("['CHANNELS', '$']");
+    _bit1Selections.asMap().forEach((channel, value) => value ? _channels2Send.add(['MAC1', (channel+1).toString()]) : null);
+    _bit2Selections.asMap().forEach((channel, value) => value ? _channels2Send.add(['MAC2', (channel+1).toString()]) : null);
+    widget.mqttClientWrapper.publishMessage("['CHANNELS', '$_channels2Send']"); 
+    setState(() => _channels2Send = []);
   }
 
   @override

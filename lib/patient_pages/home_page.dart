@@ -524,7 +524,34 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
-
+        Padding(
+          padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+          child: Card(
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: Colors.blue[300],
+                child: Text(
+                  '4',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+              ),
+              title: Text('Iniciar visualização'),
+              //enabled: acquisitionNotifier.value == 'acquiring',
+              onTap: () async {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) {
+                    return WebviewPage(
+                          mqttClientWrapper: mqttClientWrapper,
+                          acquisitionNotifier: acquisitionNotifier,
+                        );
+                  }),
+                );
+              },
+            ),
+          ),
+        ),
       ]),
     );
   }
