@@ -1,8 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mqtt_client/mqtt_client.dart';
-import 'package:provider/provider.dart';
 import 'package:rPiInterface/common_pages/config_page.dart';
 import 'package:rPiInterface/patient_pages/devices_setup.dart';
 import 'package:rPiInterface/common_pages/rpi_setup.dart';
@@ -20,18 +18,22 @@ class HomeHPage extends StatefulWidget {
 }
 
 class _HomeHPageState extends State<HomeHPage> {
+
   ValueNotifier<MqttCurrentConnectionState> connectionNotifier =
       ValueNotifier(MqttCurrentConnectionState.DISCONNECTED);
+
   ValueNotifier<String> macAddress1Notifier = ValueNotifier('Endereço MAC');
   ValueNotifier<String> macAddress2Notifier = ValueNotifier('Endereço MAC');
+
+  ValueNotifier<List<String>> driveListNotifier = ValueNotifier(['Armazenamento interno']);
+
   ValueNotifier<String> acquisitionNotifier = ValueNotifier('off');
   ValueNotifier<String> acquisitionNotifierAux = ValueNotifier('off');
+
   ValueNotifier<bool> receivedMACNotifier = ValueNotifier(false);
 
   final firestoreInstance = Firestore.instance;
 
-  String macAddress1;
-  String macAddress2;
   String message;
 
   //String acquisitionState = 'NO';
@@ -55,8 +57,6 @@ class _HomeHPageState extends State<HomeHPage> {
   void initState() {
     super.initState();
     acquisitionNotifier.value = 'off';
-    macAddress1 = 'Endereço MAC';
-    macAddress2 = 'Endereço MAC';
     setupHome();
     _nameController.text = " ";
   }
@@ -73,6 +73,7 @@ class _HomeHPageState extends State<HomeHPage> {
     setState(() => message = newMessage);
     print('This is the new message: $message');
     _isMACAddress(message);
+    _isDrivesList(message);
     _isAcquisitionStarting(message);
   }
 
@@ -96,18 +97,21 @@ class _HomeHPageState extends State<HomeHPage> {
           /* macAddress1Notifier.value = listMAC[1];
           macAddress2Notifier.value = listMAC[2]; */
         });
-        print('Default MAC: $macAddress1, $macAddress2');
-      } on Exception catch (e) {
-        print('$e');
-        setState(() {
-          macAddress1 = 'Endereço MAC 1';
-          macAddress2 = 'Endereço MAC 2';
-        });
       } catch (e) {
-        setState(() {
-          macAddress1 = 'Endereço MAC 1';
-          macAddress2 = 'Endereço MAC 2';
-        });
+        print(e);
+      }
+    }
+  }
+
+  void _isDrivesList(String message) {
+    if (message.contains('DRIVES')) {
+      try {
+        List<String> listDrives = message.split(",");
+        listDrives.removeAt(0);
+        listDrives = listDrives.map((drive) => drive.split("'")[1]).toList();
+        setState(() => driveListNotifier.value = listDrives); // CONFIRMAR ISTO!!!
+      } catch (e) {
+        print(e);
       }
     }
   }
@@ -133,120 +137,10 @@ class _HomeHPageState extends State<HomeHPage> {
   }
 
 
-
-  Future<void> _showAvatars() async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Escolher novo avatar'),
-          content: SingleChildScrollView(
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 20.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        InkWell(
-                          onTap: () {
-                            _setAvatar('images/owl.jpg');
-                            Navigator.pop(context);
-                            Navigator.pop(context);
-                          },
-                          child: CircleAvatar(
-                            radius: 30.0,
-                            backgroundImage: AssetImage('images/owl.jpg'),
-                          ),
-                        ),
-                        InkWell(
-                          onTap: () {
-                            _setAvatar('images/penguin.jpg');
-                            Navigator.pop(context);
-                            Navigator.pop(context);
-                          },
-                          child: CircleAvatar(
-                            radius: 30.0,
-                            backgroundImage: AssetImage('images/penguin.jpg'),
-                          ),
-                        ),
-                        InkWell(
-                          onTap: () {
-                            _setAvatar('images/pig.jpg');
-                            Navigator.pop(context);
-                            Navigator.pop(context);
-                          },
-                          child: CircleAvatar(
-                            radius: 30.0,
-                            backgroundImage: AssetImage('images/pig.jpg'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      InkWell(
-                        onTap: () {
-                          _setAvatar('images/fox.jpg');
-                          Navigator.pop(context);
-                          Navigator.pop(context);
-                        },
-                        child: CircleAvatar(
-                          radius: 30.0,
-                          //backgroundColor: Colors.blue[300],
-                          backgroundImage: AssetImage('images/fox.jpg'),
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          _setAvatar('images/dog.jpg');
-                          Navigator.pop(context);
-                          Navigator.pop(context);
-                        },
-                        child: CircleAvatar(
-                          radius: 30.0,
-                          //backgroundColor: Colors.blue[300],
-                          backgroundImage: AssetImage('images/dog.jpg'),
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          _setAvatar('images/cat.jpg');
-                          Navigator.pop(context);
-                          Navigator.pop(context);
-                        },
-                        child: CircleAvatar(
-                          radius: 30.0,
-                          backgroundImage: AssetImage('images/cat.jpg'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ]),
-          ),
-          actions: <Widget>[],
-        );
-      },
-    );
-  }
-
   Future<DocumentSnapshot> _getAvatar(uid) async {
     return firestoreInstance.collection("users").document(uid).get();
   }
 
-  void _setAvatar(_avatar) async {
-    var firebaseUser = await FirebaseAuth.instance.currentUser();
-    firestoreInstance
-        .collection("users")
-        .document(firebaseUser.uid)
-        .setData({"avatar": _avatar}, merge: true).then((_) {
-      print("New avatar submitted!!");
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -393,7 +287,11 @@ class _HomeHPageState extends State<HomeHPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) {
-                    return ConfigPage();
+                    return ConfigPage(
+                      mqttClientWrapper: mqttClientWrapper,
+                      connectionNotifier: connectionNotifier,
+                      driveListNotifier: driveListNotifier,
+                    );
                   }),
                 );
               },

@@ -58,7 +58,7 @@ class _WebviewPageState extends State<WebviewPage> {
       appBar: new AppBar(title: new Text('Visualização'), ),
       key: _scaffoldKey,
       body: WebView(
-        initialUrl: 'https://en.wikipedia.org/wiki/Kraken',
+        initialUrl: 'https://192.168.2.112:8080/',
         javascriptMode: JavascriptMode.unrestricted,
       ),
       floatingActionButton: FloatingActionButton.extended(

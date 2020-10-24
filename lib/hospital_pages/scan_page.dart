@@ -39,7 +39,8 @@ class _ScanPageState extends State<ScanPage> {
                     color: Colors.blue,
                     textColor: Colors.white,
                     splashColor: Colors.blueGrey,
-                    onPressed: () => scan(widget.patientNotifier),
+                    //onPressed: () => scan(widget.patientNotifier),
+                    onPressed: () => widget.patientNotifier.value = 'AN3rFiHJO8cKcHEYjGeiKhwMgxu1',
                     icon: Icon(
                     MdiIcons.qrcode,
                   ),

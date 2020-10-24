@@ -36,7 +36,7 @@ class ModeSelectionPage extends StatelessWidget {
                     );
                   },
                   child: new Text(
-                    "PACIENTE",
+                    "ÁREA DO PACIENTE",
                     style: TextStyle(color: Colors.white, fontSize: 16),
                   ),
                 ),
@@ -55,7 +55,7 @@ class ModeSelectionPage extends StatelessWidget {
                   );
                 },
                 child: new Text(
-                  "AMBIENTE HOSPITALAR",
+                  "ÁREA DO INVESTIGADOR",
                   style: TextStyle(color: Colors.white, fontSize: 16),
                 ),
               ),

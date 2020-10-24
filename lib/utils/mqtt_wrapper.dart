@@ -69,7 +69,7 @@ class MQTTClientWrapper {
     print('SUBSCRIPTION DONE TO TOPIC $topicName');
 
     await publishMessage("['Send MAC Addresses']");
-    print('After subscription: $connectionState');
+    await publishMessage("['Send drives']");
 
     client.updates.listen((List<MqttReceivedMessage<MqttMessage>> c) {
       final MqttPublishMessage recMess = c[0].payload;

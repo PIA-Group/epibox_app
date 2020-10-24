@@ -21,17 +21,20 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   ValueNotifier<MqttCurrentConnectionState> connectionNotifier =
       ValueNotifier(MqttCurrentConnectionState.DISCONNECTED);
+
   ValueNotifier<String> macAddress1Notifier = ValueNotifier('Endereço MAC');
   ValueNotifier<String> macAddress2Notifier = ValueNotifier('Endereço MAC');
+
+  ValueNotifier<List<String>> driveListNotifier = ValueNotifier(['Armazenamento interno']);
+
   ValueNotifier<String> acquisitionNotifier = ValueNotifier('off');
   ValueNotifier<String> acquisitionNotifierAux = ValueNotifier('off');
+
   ValueNotifier<bool> receivedMACNotifier = ValueNotifier(false);
 
   final Auth _auth = Auth();
   final firestoreInstance = Firestore.instance;
 
-  String macAddress1;
-  String macAddress2;
   String message;
 
   //String acquisitionState = 'NO';
@@ -55,8 +58,6 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     acquisitionNotifier.value = 'off';
-    macAddress1 = 'Endereço MAC';
-    macAddress2 = 'Endereço MAC';
     setupHome();
     _nameController.text = " ";
   }
@@ -73,6 +74,7 @@ class _HomePageState extends State<HomePage> {
     setState(() => message = newMessage);
     print('This is the new message: $message');
     _isMACAddress(message);
+    _isDrivesList(message);
     _isAcquisitionStarting(message);
   }
 
@@ -96,18 +98,21 @@ class _HomePageState extends State<HomePage> {
           /* macAddress1Notifier.value = listMAC[1];
           macAddress2Notifier.value = listMAC[2]; */
         });
-        print('Default MAC: $macAddress1, $macAddress2');
-      } on Exception catch (e) {
-        print('$e');
-        setState(() {
-          macAddress1 = 'Endereço MAC 1';
-          macAddress2 = 'Endereço MAC 2';
-        });
       } catch (e) {
-        setState(() {
-          macAddress1 = 'Endereço MAC 1';
-          macAddress2 = 'Endereço MAC 2';
-        });
+        print(e);
+      }
+    }
+  }
+
+  void _isDrivesList(String message) {
+    if (message.contains('DRIVES')) {
+      try {
+        List<String> listDrives = message.split(",");
+        listDrives.removeAt(0);
+        listDrives = listDrives.map((drive) => drive.split("'")[1]).toList();
+        setState(() => driveListNotifier.value = listDrives); 
+      } catch (e) {
+        print(e);
       }
     }
   }
@@ -127,6 +132,7 @@ class _HomePageState extends State<HomePage> {
       print('ACQUISITION OFF');
     }
   }
+
 
   Future<String> currentUserID() async {
     var firebaseUser = await FirebaseAuth.instance.currentUser();
@@ -497,33 +503,6 @@ class _HomePageState extends State<HomePage> {
                       fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),
-              title: Text('Configurações'),
-              //enabled: connectionState == MqttCurrentConnectionState.CONNECTED,
-              onTap: () async {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) {
-                    return StreamProvider<User>.value(
-                        value: Auth().user,
-                        child: ConfigPage());
-                  }),
-                );
-              },
-            ),
-          ),
-        ),
-        Padding(
-          padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-          child: Card(
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: Colors.blue[300],
-                child: Text(
-                  '3',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-              ),
               title: Text('Selecionar dispositivos'),
               //enabled: connectionState == MqttCurrentConnectionState.CONNECTED,
               onTap: () async {
@@ -545,36 +524,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
-        Padding(
-          padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-          child: Card(
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: Colors.blue[300],
-                child: Text(
-                  '4',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-              ),
-              title: Text('Iniciar visualização'),
-              //enabled: acquisitionNotifier.value == 'acquiring',
-              onTap: () async {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) {
-                    return StreamProvider<User>.value(
-                        value: Auth().user,
-                        child: WebviewPage(
-                          mqttClientWrapper: mqttClientWrapper,
-                          acquisitionNotifier: acquisitionNotifier,
-                        ));
-                  }),
-                );
-              },
-            ),
-          ),
-        ),
+
       ]),
     );
   }

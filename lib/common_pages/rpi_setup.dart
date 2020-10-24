@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:rPiInterface/utils/authentication.dart';
 import 'package:rPiInterface/utils/models.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
-
+import 'package:ping_discover_network/ping_discover_network.dart';
 
 // programar button "Usar default" e "Usar novo" para enviar MACAddress para RPi e voltar à HomePage
 // programar button "Definir novo default" para enviar MACAddress para RPi e mudar "defaultBIT"
@@ -19,7 +18,8 @@ class RPiPage extends StatefulWidget {
       this.connectionState,
       this.connectionNotifier,
       this.receivedMACNotifier,
-      this.acquisitionNotifier});
+      this.acquisitionNotifier,
+      });
 
   @override
   _RPiPageState createState() => _RPiPageState();
@@ -30,14 +30,12 @@ class _RPiPageState extends State<RPiPage> {
   String message;
 
   final TextEditingController _controller = TextEditingController();
-  final TextEditingController _controllerPEN = TextEditingController();
 
   @override
   void dispose() {
     // Clean up the controller when the widget is removed from the
     // widget tree.
     _controller.dispose();
-    _controllerPEN.dispose();
     super.dispose();
   }
 
@@ -45,7 +43,6 @@ class _RPiPageState extends State<RPiPage> {
   void initState() {
     super.initState();
     _controller.text = '192.168.2.112';
-    _controllerPEN.text = 'PEN_MARIANA/Asus_Ana/acquisitions';
   }
 
   Future<void> _restart() async {
@@ -57,15 +54,46 @@ class _RPiPageState extends State<RPiPage> {
     });
   }
 
+  void checkPortRange(String subnet, int fromPort, int toPort) {
+    if (fromPort > toPort) {
+      return;
+      }
+      print('port $fromPort');
+
+      final stream = NetworkAnalyzer.discover2(subnet, fromPort); 
+
+      stream.listen((NetworkAddress addr) {
+      if (addr.exists) {
+        print('Found device: ${addr.ip} | port:$fromPort');
+        }
+    }).onDone(() {
+      checkPortRange(subnet, fromPort+1, toPort);
+    });
+  }
+
   Future<void> _setup() async {
     await widget.mqttClientWrapper.prepareMqttClient(_controller.text);
-    widget.mqttClientWrapper.publishMessage("['FOLDER', '${_controllerPEN.text}']");
+    /* final String ip = await Wifi.ip;
+    final String subnet = ip.substring(0, ip.lastIndexOf('.'));
+    final int port = 24;
+
+    final stream = NetworkAnalyzer.discover2(subnet, port); 
+
+      stream.listen((NetworkAddress addr) {
+      if (addr.exists) {
+        print('Found device: ${addr.ip}');
+        }
+    }); */
+
+    //checkPortRange(subnet, 1, 1024);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: new Text('Conectividade'), ),
+      appBar: AppBar(
+        title: new Text('Conectividade'),
+      ),
       body: Center(
         child: ListView(
           children: <Widget>[
@@ -175,55 +203,7 @@ class _RPiPageState extends State<RPiPage> {
                     ),
                   ),
                 ),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(20.0, 20.0, 0.0, 10.0),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Container(
-                      child: Text(
-                        'Pasta para armazenamento',
-                        textAlign: TextAlign.left,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Container(
-                  height: 150.0,
-                  width: 300.0,
-                  color: Colors.transparent,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.rectangle,
-                      borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                      boxShadow: [
-                        BoxShadow(
-                            color: Colors.grey[200],
-                            offset: new Offset(5.0, 5.0))
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
-                          child: TextField(
-                              style: TextStyle(color: Colors.grey[600]),
-                              controller: _controllerPEN,
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                labelText: 'Armazenamento',
-                              ),
-                              onChanged: null),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                
                 Padding(
                   padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 0.0),
                   child: Row(
