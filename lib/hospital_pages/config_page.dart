@@ -8,10 +8,20 @@ class ConfigPage extends StatefulWidget {
   ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
   ValueNotifier<List<String>> driveListNotifier;
 
+  ValueNotifier<bool> isBit1Enabled;
+  ValueNotifier<bool> isBit2Enabled;
+
+  ValueNotifier<String> macAddress1Notifier;
+  ValueNotifier<String> macAddress2Notifier;
+
   ConfigPage({
     this.mqttClientWrapper,
     this.connectionNotifier,
     this.driveListNotifier,
+    this.isBit1Enabled,
+    this.isBit2Enabled,
+    this.macAddress1Notifier,
+    this.macAddress2Notifier
   });
 
   @override
@@ -24,7 +34,7 @@ class _ConfigPageState extends State<ConfigPage> {
   List<bool> _bit1Selections = List.generate(6, (_) => false);
   List<bool> _bit2Selections = List.generate(6, (_) => false);
 
-  List<List<String>> _channels2Send = [];
+  List<String> _channels2Send = [];
 
   final TextEditingController _controllerFreq = TextEditingController();
 
@@ -37,9 +47,19 @@ class _ConfigPageState extends State<ConfigPage> {
 
   Future<void> _setup() async {
     widget.mqttClientWrapper.publishMessage("['FOLDER', '$_chosenDrive']");
-    widget.mqttClientWrapper.publishMessage("['FS', '${_controllerFreq.text}']");
-    _bit1Selections.asMap().forEach((channel, value) => value ? _channels2Send.add(['MAC1', (channel+1).toString()]) : null);
-    _bit2Selections.asMap().forEach((channel, value) => value ? _channels2Send.add(['MAC2', (channel+1).toString()]) : null);
+    widget.mqttClientWrapper.publishMessage("['FS', ${_controllerFreq.text}]");
+    _bit1Selections.asMap().forEach((channel, value) {
+      if (value) {
+      _channels2Send.add(widget.macAddress1Notifier.value);
+      _channels2Send.add((channel+1).toString());
+      }
+    });
+    _bit2Selections.asMap().forEach((channel, value) {
+      if (value) {
+      _channels2Send.add(widget.macAddress2Notifier.value);
+      _channels2Send.add((channel+1).toString());
+      }
+    });
     widget.mqttClientWrapper.publishMessage("['CHANNELS', '$_channels2Send']"); 
     setState(() => _channels2Send = []);
   }
@@ -240,12 +260,14 @@ class _ConfigPageState extends State<ConfigPage> {
                                   Text('A6'),
                                 ],
                                 isSelected: _bit1Selections,
-                                onPressed: (int index) {
+                                onPressed: widget.isBit1Enabled.value ? 
+                                (int index) {
                                   setState(() {
                                     _bit1Selections[index] =
                                         !_bit1Selections[index];
                                   });
-                                },
+                                } 
+                                : null,
                               )
                             ]),
                         Padding(
@@ -277,13 +299,14 @@ class _ConfigPageState extends State<ConfigPage> {
                                   Text('A6'),
                                 ],
                                 isSelected: _bit2Selections,
-                                onPressed: (int index) {
+                                onPressed: widget.isBit2Enabled.value ? 
+                                (int index) {
                                   setState(() {
                                     _bit2Selections[index] =
                                         !_bit2Selections[index];
                                   });
-                                },
-                              )
+                                } 
+                                : null,)
                             ]),
                       ],
                     ),

@@ -22,8 +22,8 @@ class DevicesPage extends StatefulWidget {
   ValueNotifier<String> acquisitionNotifier;
   ValueNotifier<String> patientNotifier;
 
-  /* String macAddress1;
-  String macAddress2; */
+  ValueNotifier<bool> isBit1Enabled;
+  ValueNotifier<bool> isBit2Enabled;
 
   DevicesPage(
       {this.mqttClientWrapper,
@@ -31,14 +31,15 @@ class DevicesPage extends StatefulWidget {
       this.macAddress2Notifier,
       this.connectionNotifier,
       this.acquisitionNotifier,
-      this.patientNotifier});
+      this.patientNotifier,
+      this.isBit1Enabled,
+      this.isBit2Enabled});
 
   @override
   _DevicesPageState createState() => _DevicesPageState();
 }
 
 class _DevicesPageState extends State<DevicesPage> {
-  final Auth _auth = Auth();
 
   final TextEditingController _controller1 = TextEditingController();
   final TextEditingController _controller2 = TextEditingController();
@@ -262,7 +263,13 @@ class _DevicesPageState extends State<DevicesPage> {
                     onPressed: () {
                       widget.mqttClientWrapper.publishMessage(
                         "['USE',{'MAC1':'${widget.macAddress1Notifier.value}','MAC2':'${widget.macAddress2Notifier.value}'}]");
-                      widget.mqttClientWrapper.publishMessage("['ID', ${widget.patientNotifier.value}]");
+                      widget.mqttClientWrapper.publishMessage("['ID', '${widget.patientNotifier.value}']");
+                      if (widget.macAddress1Notifier.value != ' ') {
+                        setState(() => widget.isBit1Enabled.value = true);
+                      }
+                      if (widget.macAddress2Notifier.value != ' ') {
+                        setState(() => widget.isBit2Enabled.value = true);
+                      }
                     },
                     child: new Text("Usar default"),
                   ),
@@ -359,7 +366,13 @@ class _DevicesPageState extends State<DevicesPage> {
                         onPressed: () {
                           widget.mqttClientWrapper.publishMessage(
                               "['USE',{'MAC1':'${_controller1.text}','MAC2':'${_controller2.text}'}]");
-                          widget.mqttClientWrapper.publishMessage("['ID', ${widget.patientNotifier.value}]");
+                          widget.mqttClientWrapper.publishMessage("['ID', '${widget.patientNotifier.value}']");
+                          if (widget.macAddress1Notifier.value != ' ') {
+                            setState(() => widget.isBit1Enabled.value = true);
+                          }
+                          if (widget.macAddress2Notifier.value != ' ') {
+                            setState(() => widget.isBit2Enabled.value = true);
+                          }
                         },
                         child: new Text("Usar novo"),
                       ),

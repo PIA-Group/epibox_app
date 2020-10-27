@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:provider/provider.dart';
-import 'package:rPiInterface/common_pages/config_page.dart';
+import 'package:rPiInterface/hospital_pages/config_page.dart';
 import 'package:rPiInterface/patient_pages/devices_setup.dart';
 import 'package:rPiInterface/common_pages/rpi_setup.dart';
 import 'package:rPiInterface/common_pages/webview_page.dart';

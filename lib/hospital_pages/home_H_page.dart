@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:mqtt_client/mqtt_client.dart';
-import 'package:rPiInterface/common_pages/config_page.dart';
-import 'package:rPiInterface/patient_pages/devices_setup.dart';
+import 'package:rPiInterface/hospital_pages/config_page.dart';
 import 'package:rPiInterface/common_pages/rpi_setup.dart';
 import 'package:rPiInterface/common_pages/webview_page.dart';
+import 'package:rPiInterface/hospital_pages/devices_H_setup.dart';
 import 'package:rPiInterface/utils/models.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
 
@@ -31,6 +31,9 @@ class _HomeHPageState extends State<HomeHPage> {
   ValueNotifier<String> acquisitionNotifierAux = ValueNotifier('off');
 
   ValueNotifier<bool> receivedMACNotifier = ValueNotifier(false);
+
+  ValueNotifier<bool> isBit1Enabled = ValueNotifier(false);
+  ValueNotifier<bool> isBit2Enabled = ValueNotifier(false);
 
   final firestoreInstance = Firestore.instance;
 
@@ -281,17 +284,22 @@ class _HomeHPageState extends State<HomeHPage> {
                       fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),
-              title: Text('Configurações'),
+              title: Text('Selecionar dispositivos'),
               //enabled: connectionState == MqttCurrentConnectionState.CONNECTED,
               onTap: () async {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) {
-                    return ConfigPage(
-                      mqttClientWrapper: mqttClientWrapper,
-                      connectionNotifier: connectionNotifier,
-                      driveListNotifier: driveListNotifier,
-                    );
+                    return DevicesPage(
+                          patientNotifier: widget.patientNotifier,
+                          mqttClientWrapper: mqttClientWrapper,
+                          macAddress1Notifier: macAddress1Notifier,
+                          macAddress2Notifier: macAddress2Notifier,
+                          connectionNotifier: connectionNotifier,
+                          acquisitionNotifier: acquisitionNotifier,
+                          isBit1Enabled: isBit1Enabled,
+                          isBit2Enabled: isBit2Enabled
+                        );
                   }),
                 );
               },
@@ -310,19 +318,21 @@ class _HomeHPageState extends State<HomeHPage> {
                       fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),
-              title: Text('Selecionar dispositivos'),
+              title: Text('Configurações'),
               //enabled: connectionState == MqttCurrentConnectionState.CONNECTED,
               onTap: () async {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) {
-                    return DevicesPage(
-                          mqttClientWrapper: mqttClientWrapper,
-                          macAddress1Notifier: macAddress1Notifier,
-                          macAddress2Notifier: macAddress2Notifier,
-                          connectionNotifier: connectionNotifier,
-                          acquisitionNotifier: acquisitionNotifier,
-                        );
+                    return ConfigPage(
+                      mqttClientWrapper: mqttClientWrapper,
+                      connectionNotifier: connectionNotifier,
+                      driveListNotifier: driveListNotifier,
+                      isBit1Enabled: isBit1Enabled,
+                      isBit2Enabled: isBit2Enabled,
+                      macAddress1Notifier: macAddress1Notifier,
+                      macAddress2Notifier: macAddress1Notifier
+                    );
                   }),
                 );
               },

@@ -3,7 +3,9 @@ import 'package:rPiInterface/hospital_pages/home_H_page.dart';
 import 'package:rPiInterface/hospital_pages/scan_page.dart';
 
 class IDWrapper extends StatelessWidget {
+
   ValueNotifier<String> patientNotifier = ValueNotifier(null);
+  
   @override
   Widget build(BuildContext context) {
     //final mqttMessage = Provider.of<String>(context);
