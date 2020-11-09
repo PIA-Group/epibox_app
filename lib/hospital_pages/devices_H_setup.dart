@@ -2,7 +2,6 @@ import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:rPiInterface/utils/authentication.dart';
 import 'package:rPiInterface/utils/models.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
 
@@ -25,6 +24,9 @@ class DevicesPage extends StatefulWidget {
   ValueNotifier<bool> isBit1Enabled;
   ValueNotifier<bool> isBit2Enabled;
 
+  ValueNotifier<bool> receivedMACNotifier;
+  ValueNotifier<bool> sentMACNotifier;
+
   DevicesPage(
       {this.mqttClientWrapper,
       this.macAddress1Notifier,
@@ -33,7 +35,9 @@ class DevicesPage extends StatefulWidget {
       this.acquisitionNotifier,
       this.patientNotifier,
       this.isBit1Enabled,
-      this.isBit2Enabled});
+      this.isBit2Enabled,
+      this.receivedMACNotifier,
+      this.sentMACNotifier});
 
   @override
   _DevicesPageState createState() => _DevicesPageState();
@@ -80,58 +84,21 @@ class _DevicesPageState extends State<DevicesPage> {
         child: ListView(
           children: <Widget>[
             ValueListenableBuilder(
-                valueListenable: widget.connectionNotifier,
+                valueListenable: widget.sentMACNotifier,
                 builder: (BuildContext context,
-                    MqttCurrentConnectionState state, Widget child) {
+                    bool state, Widget child) {
                   return Container(
                     height: 20,
-                    color: state == MqttCurrentConnectionState.CONNECTED
+                    color: state
                         ? Colors.green[50]
-                        : state == MqttCurrentConnectionState.CONNECTING
-                            ? Colors.yellow[50]
-                            : Colors.red[50],
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Container(
-                        child: Text(
-                          state == MqttCurrentConnectionState.CONNECTED
-                              ? 'Conectado ao servidor'
-                              : state == MqttCurrentConnectionState.CONNECTING
-                                  ? 'A conectar...'
-                                  : 'Disconectado do servidor',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            //fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-                ValueListenableBuilder(
-                valueListenable: widget.acquisitionNotifier,
-                builder: (BuildContext context,
-                    String state, Widget child) {
-                  return Container(
-                    height: 20,
-                    color: state ==
-                            'acquiring'
-                        ? Colors.green[50]
-                        : state == 'reconnecting'
-                        ? Colors.yellow[50]
                         : Colors.red[50],
                     child: Align(
                       alignment: Alignment.center,
                       child: Container(
                         child: Text(
-                          state == 'acquiring'
-                              ? 'A adquirir dados'
-                              : state == 'reconnecting'  
-                              ? 'A retomar aquisição ...'
-                              : state == 'stopped'
-                              ? 'Aquisição terminada e dados gravados'
-                              : 'Aquisição desligada',
+                          state
+                              ? 'Enviado'
+                              : 'Selecione "Usar default" ou "Usar novo" para proceder',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             //fontWeight: FontWeight.bold,
@@ -141,7 +108,7 @@ class _DevicesPageState extends State<DevicesPage> {
                       ),
                     ),
                   );
-                }),
+                }),                
             Padding(
               padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
               child: Column(children: [
@@ -265,10 +232,15 @@ class _DevicesPageState extends State<DevicesPage> {
                         "['USE',{'MAC1':'${widget.macAddress1Notifier.value}','MAC2':'${widget.macAddress2Notifier.value}'}]");
                       widget.mqttClientWrapper.publishMessage("['ID', '${widget.patientNotifier.value}']");
                       if (widget.macAddress1Notifier.value != ' ') {
+                        print('mac1: ${widget.macAddress1Notifier.value}');
                         setState(() => widget.isBit1Enabled.value = true);
                       }
                       if (widget.macAddress2Notifier.value != ' ') {
+                        print('mac2: ${widget.macAddress2Notifier.value}');
                         setState(() => widget.isBit2Enabled.value = true);
+                      }
+                      if (widget.sentMACNotifier.value) {
+                        Navigator.pop(context);
                       }
                     },
                     child: new Text("Usar default"),
@@ -367,11 +339,16 @@ class _DevicesPageState extends State<DevicesPage> {
                           widget.mqttClientWrapper.publishMessage(
                               "['USE',{'MAC1':'${_controller1.text}','MAC2':'${_controller2.text}'}]");
                           widget.mqttClientWrapper.publishMessage("['ID', '${widget.patientNotifier.value}']");
-                          if (widget.macAddress1Notifier.value != ' ') {
+                          if (_controller1.text != ' ' && _controller1.text != '') {
+                            print('mac1: ${_controller1.text}');
                             setState(() => widget.isBit1Enabled.value = true);
                           }
-                          if (widget.macAddress2Notifier.value != ' ') {
+                          if (_controller2.text != ' ' && _controller2.text != '') {
+                            print('mac2: ${_controller2.text}');
                             setState(() => widget.isBit2Enabled.value = true);
+                          }
+                          if (widget.sentMACNotifier.value) {
+                            Navigator.pop(context);
                           }
                         },
                         child: new Text("Usar novo"),

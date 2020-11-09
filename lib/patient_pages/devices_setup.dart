@@ -19,6 +19,9 @@ class DevicesPage extends StatefulWidget {
 
   ValueNotifier<String> acquisitionNotifier;
 
+  ValueNotifier<bool> receivedMACNotifier;
+  ValueNotifier<bool> sentMACNotifier;
+
   /* String macAddress1;
   String macAddress2; */
 
@@ -27,7 +30,9 @@ class DevicesPage extends StatefulWidget {
       this.macAddress1Notifier,
       this.macAddress2Notifier,
       this.connectionNotifier,
-      this.acquisitionNotifier});
+      this.acquisitionNotifier,
+      this.receivedMACNotifier,
+      this.sentMACNotifier});
 
   @override
   _DevicesPageState createState() => _DevicesPageState();
@@ -76,57 +81,22 @@ class _DevicesPageState extends State<DevicesPage> {
       body: Center(
         child: ListView(
           children: <Widget>[
-            ValueListenableBuilder(
-                valueListenable: widget.connectionNotifier,
+           ValueListenableBuilder(
+                valueListenable: widget.sentMACNotifier,
                 builder: (BuildContext context,
-                    MqttCurrentConnectionState state, Widget child) {
+                    bool state, Widget child) {
                   return Container(
                     height: 20,
-                    color: state == MqttCurrentConnectionState.CONNECTED
+                    color: state
                         ? Colors.green[50]
-                        : state == MqttCurrentConnectionState.CONNECTING
-                            ? Colors.yellow[50]
-                            : Colors.red[50],
+                        : Colors.red[50],
                     child: Align(
                       alignment: Alignment.center,
                       child: Container(
                         child: Text(
-                          state == MqttCurrentConnectionState.CONNECTED
-                              ? 'Conectado ao servidor'
-                              : state == MqttCurrentConnectionState.CONNECTING
-                                  ? 'A conectar...'
-                                  : 'Disconectado do servidor',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            //fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-            ValueListenableBuilder(
-                valueListenable: widget.acquisitionNotifier,
-                builder: (BuildContext context, String state, Widget child) {
-                  return Container(
-                    height: 20,
-                    color: state == 'acquiring'
-                        ? Colors.green[50]
-                        : state == 'reconnecting'
-                            ? Colors.yellow[50]
-                            : Colors.red[50],
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Container(
-                        child: Text(
-                          state == 'acquiring'
-                              ? 'A adquirir dados'
-                              : state == 'reconnecting'
-                                  ? 'A retomar aquisição ...'
-                                  : state == 'stopped'
-                                      ? 'Aquisição terminada e dados gravados'
-                                      : 'Aquisição desligada',
+                          state
+                              ? 'Enviado'
+                              : 'Selecione "Usar default" ou "Usar novo" para proceder',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             //fontWeight: FontWeight.bold,
@@ -262,6 +232,9 @@ class _DevicesPageState extends State<DevicesPage> {
                         widget.mqttClientWrapper
                             .publishMessage("['ID', '$value']");
                       });
+                      if (widget.sentMACNotifier.value) {
+                        Navigator.pop(context);
+                      }
                     },
                     child: new Text("Usar default"),
                   ),
@@ -362,6 +335,9 @@ class _DevicesPageState extends State<DevicesPage> {
                             widget.mqttClientWrapper
                                 .publishMessage("['ID', '$value']");
                           });
+                          if (widget.sentMACNotifier.value) {
+                            Navigator.pop(context);
+                          }
                         },
                         child: new Text("Usar novo"),
                       ),

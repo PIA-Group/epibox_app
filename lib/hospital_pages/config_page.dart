@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:rPiInterface/utils/models.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
 
@@ -14,15 +13,17 @@ class ConfigPage extends StatefulWidget {
   ValueNotifier<String> macAddress1Notifier;
   ValueNotifier<String> macAddress2Notifier;
 
-  ConfigPage({
-    this.mqttClientWrapper,
-    this.connectionNotifier,
-    this.driveListNotifier,
-    this.isBit1Enabled,
-    this.isBit2Enabled,
-    this.macAddress1Notifier,
-    this.macAddress2Notifier
-  });
+  ValueNotifier<bool> sentConfigNotifier;
+
+  ConfigPage(
+      {this.mqttClientWrapper,
+      this.connectionNotifier,
+      this.driveListNotifier,
+      this.isBit1Enabled,
+      this.isBit2Enabled,
+      this.macAddress1Notifier,
+      this.macAddress2Notifier,
+      this.sentConfigNotifier});
 
   @override
   _ConfigPageState createState() => _ConfigPageState();
@@ -46,22 +47,24 @@ class _ConfigPageState extends State<ConfigPage> {
   }
 
   Future<void> _setup() async {
+    print('mac1: ${widget.macAddress1Notifier.value}, mac2: ${widget.macAddress2Notifier.value}');
     widget.mqttClientWrapper.publishMessage("['FOLDER', '$_chosenDrive']");
     widget.mqttClientWrapper.publishMessage("['FS', ${_controllerFreq.text}]");
     _bit1Selections.asMap().forEach((channel, value) {
       if (value) {
-      _channels2Send.add(widget.macAddress1Notifier.value);
-      _channels2Send.add((channel+1).toString());
+        _channels2Send.add(widget.macAddress1Notifier.value);
+        _channels2Send.add((channel + 1).toString());
       }
     });
     _bit2Selections.asMap().forEach((channel, value) {
       if (value) {
-      _channels2Send.add(widget.macAddress2Notifier.value);
-      _channels2Send.add((channel+1).toString());
+        _channels2Send.add(widget.macAddress2Notifier.value);
+        _channels2Send.add((channel + 1).toString());
       }
     });
-    widget.mqttClientWrapper.publishMessage("['CHANNELS', '$_channels2Send']"); 
+    widget.mqttClientWrapper.publishMessage("['CHANNELS', '$_channels2Send']");
     setState(() => _channels2Send = []);
+    Navigator.pop(context);
   }
 
   @override
@@ -78,25 +81,21 @@ class _ConfigPageState extends State<ConfigPage> {
         child: ListView(
           children: <Widget>[
             ValueListenableBuilder(
-                valueListenable: widget.connectionNotifier,
+                valueListenable: widget.sentConfigNotifier,
                 builder: (BuildContext context,
-                    MqttCurrentConnectionState state, Widget child) {
+                    bool state, Widget child) {
                   return Container(
                     height: 20,
-                    color: state == MqttCurrentConnectionState.CONNECTED
+                    color: state
                         ? Colors.green[50]
-                        : state == MqttCurrentConnectionState.CONNECTING
-                            ? Colors.yellow[50]
-                            : Colors.red[50],
+                        : Colors.red[50],
                     child: Align(
                       alignment: Alignment.center,
                       child: Container(
                         child: Text(
-                          state == MqttCurrentConnectionState.CONNECTED
-                              ? 'Conectado ao servidor'
-                              : state == MqttCurrentConnectionState.CONNECTING
-                                  ? 'A conectar...'
-                                  : 'Disconectado do servidor',
+                          state
+                              ? 'Enviado'
+                              : 'Selecione configurações para proceder',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             //fontWeight: FontWeight.bold,
@@ -216,7 +215,24 @@ class _ConfigPageState extends State<ConfigPage> {
                                 child: Container(
                                   margin:
                                       EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 0.0),
-                                  child: TextField(
+                                  child: DropdownButton(
+                                    value: _controllerFreq.text,
+                                    items: ['1000', '100', '10', '1']
+                                        .map<DropdownMenuItem<String>>(
+                                            (String value) {
+                                      return DropdownMenuItem<String>(
+                                        value: value,
+                                        child: Text(
+                                          value,
+                                          style: TextStyle(
+                                              color: Colors.grey[600]),
+                                        ),
+                                      );
+                                    }).toList(),
+                                    onChanged: (fs) =>
+                                        setState(() => _controllerFreq.text = fs),
+                                  ),
+                                  /* TextField(
                                     controller: _controllerFreq,
                                       keyboardType: TextInputType.number,
                                       style: TextStyle(
@@ -225,7 +241,7 @@ class _ConfigPageState extends State<ConfigPage> {
                                         isDense: true,
                                         //border: OutlineInputBorder(),
                                       ),
-                                      onChanged: null),
+                                      onChanged: null), */
                                 ),
                               ),
                             ],
@@ -260,14 +276,14 @@ class _ConfigPageState extends State<ConfigPage> {
                                   Text('A6'),
                                 ],
                                 isSelected: _bit1Selections,
-                                onPressed: widget.isBit1Enabled.value ? 
-                                (int index) {
-                                  setState(() {
-                                    _bit1Selections[index] =
-                                        !_bit1Selections[index];
-                                  });
-                                } 
-                                : null,
+                                onPressed: widget.isBit1Enabled.value
+                                    ? (int index) {
+                                        setState(() {
+                                          _bit1Selections[index] =
+                                              !_bit1Selections[index];
+                                        });
+                                      }
+                                    : null,
                               )
                             ]),
                         Padding(
@@ -299,14 +315,15 @@ class _ConfigPageState extends State<ConfigPage> {
                                   Text('A6'),
                                 ],
                                 isSelected: _bit2Selections,
-                                onPressed: widget.isBit2Enabled.value ? 
-                                (int index) {
-                                  setState(() {
-                                    _bit2Selections[index] =
-                                        !_bit2Selections[index];
-                                  });
-                                } 
-                                : null,)
+                                onPressed: widget.isBit2Enabled.value
+                                    ? (int index) {
+                                        setState(() {
+                                          _bit2Selections[index] =
+                                              !_bit2Selections[index];
+                                        });
+                                      }
+                                    : null,
+                              )
                             ]),
                       ],
                     ),

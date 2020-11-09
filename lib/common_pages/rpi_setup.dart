@@ -3,23 +3,34 @@ import 'package:rPiInterface/utils/models.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
 import 'package:ping_discover_network/ping_discover_network.dart';
 
-// programar button "Usar default" e "Usar novo" para enviar MACAddress para RPi e voltar à HomePage
-// programar button "Definir novo default" para enviar MACAddress para RPi e mudar "defaultBIT"
-
 class RPiPage extends StatefulWidget {
+
   ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
   MQTTClientWrapper mqttClientWrapper;
-  MqttCurrentConnectionState connectionState;
+
+  ValueNotifier<String> macAddress1Notifier;
+  ValueNotifier<String> macAddress2Notifier;
+
+  ValueNotifier<List<String>> driveListNotifier;
+
   ValueNotifier<bool> receivedMACNotifier;
   ValueNotifier<String> acquisitionNotifier;
+  ValueNotifier<String> hostnameNotifier;
+
+  ValueNotifier<bool> sentMACNotifier;
+  ValueNotifier<bool> sentConfigNotifier;
 
   RPiPage(
       {this.mqttClientWrapper,
-      this.connectionState,
       this.connectionNotifier,
+      this.macAddress1Notifier,
+      this.macAddress2Notifier,
       this.receivedMACNotifier,
+      this.driveListNotifier,
       this.acquisitionNotifier,
-      });
+      this.hostnameNotifier,
+      this.sentMACNotifier,
+      this.sentConfigNotifier,});
 
   @override
   _RPiPageState createState() => _RPiPageState();
@@ -28,7 +39,6 @@ class RPiPage extends StatefulWidget {
 class _RPiPageState extends State<RPiPage> {
 
   String message;
-
   final TextEditingController _controller = TextEditingController();
 
   @override
@@ -42,50 +52,35 @@ class _RPiPageState extends State<RPiPage> {
   @override
   void initState() {
     super.initState();
-    _controller.text = '192.168.2.112';
+    _controller.text = widget.hostnameNotifier.value;
   }
 
   Future<void> _restart() async {
     widget.mqttClientWrapper.publishMessage("['RESTART']");
+    await widget.mqttClientWrapper.diconnectClient();
     setState(() {
-      widget.connectionNotifier.value = MqttCurrentConnectionState.DISCONNECTED;
+      widget.macAddress1Notifier.value = 'Endereço MAC';
+      widget.macAddress2Notifier.value = 'Endereço MAC';
+
       widget.receivedMACNotifier.value = false;
+      widget.sentMACNotifier.value = false;
+      widget.sentConfigNotifier.value = false;
+
       widget.acquisitionNotifier.value = 'off';
+
+      widget.driveListNotifier.value = ['Armazenamento interno'];
     });
   }
 
-  void checkPortRange(String subnet, int fromPort, int toPort) {
-    if (fromPort > toPort) {
-      return;
-      }
-      print('port $fromPort');
-
-      final stream = NetworkAnalyzer.discover2(subnet, fromPort); 
-
-      stream.listen((NetworkAddress addr) {
-      if (addr.exists) {
-        print('Found device: ${addr.ip} | port:$fromPort');
-        }
-    }).onDone(() {
-      checkPortRange(subnet, fromPort+1, toPort);
-    });
-  }
 
   Future<void> _setup() async {
-    await widget.mqttClientWrapper.prepareMqttClient(_controller.text);
-    /* final String ip = await Wifi.ip;
-    final String subnet = ip.substring(0, ip.lastIndexOf('.'));
-    final int port = 24;
-
-    final stream = NetworkAnalyzer.discover2(subnet, port); 
-
-      stream.listen((NetworkAddress addr) {
-      if (addr.exists) {
-        print('Found device: ${addr.ip}');
-        }
-    }); */
-
-    //checkPortRange(subnet, 1, 1024);
+    print(_controller.text.replaceAll(new RegExp(r"\s+"), ""));
+    setState(() => widget.hostnameNotifier.value = _controller.text.replaceAll(new RegExp(r"\s+"), ""));
+    await widget.mqttClientWrapper.prepareMqttClient(_controller.text.replaceAll(new RegExp(r"\s+"), ""));
+    /* if (widget.connectionNotifier.value == MqttCurrentConnectionState.CONNECTED) {
+      Navigator.pop(context);
+    } */
+    //if (widget.receivedMACNotifier.value) {Navigator.pop(context);}
   }
 
   @override
@@ -197,7 +192,8 @@ class _RPiPageState extends State<RPiPage> {
                                 border: OutlineInputBorder(),
                                 labelText: 'Endereço',
                               ),
-                              onChanged: null),
+                              onChanged: null,
+                              ),
                         ),
                       ],
                     ),

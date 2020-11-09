@@ -23,12 +23,12 @@ class MQTTClientWrapper {
     await _connectClient();
     _subscribeToTopic(Constants.topicName);
   }
-
+  
   Future<void> _connectClient() async {
     try {
       print('MQTTClientWrapper::Mosquitto client connecting....');
-      //connectionState = MqttCurrentConnectionState.CONNECTING;
-      //await client.connect();
+      connectionState = MqttCurrentConnectionState.CONNECTING;
+      onNewConnection(connectionState);
       await client.connect(Constants.username, Constants.password);
       print('CONNECTION DONE');
     } on Exception catch (e) {
@@ -39,8 +39,8 @@ class MQTTClientWrapper {
 
     if (client.connectionStatus.state == MqttConnectionState.connected) {
       connectionState = MqttCurrentConnectionState.CONNECTED;
-
       print('MQTTClientWrapper::Mosquitto client connected');
+      
     } else {
       print(
           'MQTTClientWrapper::ERROR Mosquitto client connection failed - disconnecting, status is ${client.connectionStatus}');
@@ -49,10 +49,20 @@ class MQTTClientWrapper {
     }
   }
 
+  Future<void> diconnectClient() async {
+    try {
+      print('MQTTClientWrapper::Mosquitto client disconnecting....');
+      await client.disconnect();
+      print('DISCONNECTION DONE');
+    } on Exception catch (e) {
+      print('MQTTClientWrapper::client exception - $e');
+    }
+  }
+
   void _setupMqttClient(_hostAddress) {
     print('host: $_hostAddress');
     //client = MqttServerClient.withPort('test.mosquitto.org', '#1', Constants.port);
-    client = MqttServerClient.withPort(_hostAddress, '#1', Constants.port);
+    client = MqttServerClient.withPort(_hostAddress, '#1', 1883);
     client.logging(on: false);
     client.keepAlivePeriod = 20;
     //client.secure = true;
@@ -65,7 +75,7 @@ class MQTTClientWrapper {
   Future<void> _subscribeToTopic(String topicName) async {
 
     print('MQTTClientWrapper::Subscribing to the $topicName topic');
-    client.subscribe(topicName, MqttQos.exactlyOnce);
+    await client.subscribe(topicName, MqttQos.exactlyOnce);
     print('SUBSCRIPTION DONE TO TOPIC $topicName');
 
     await publishMessage("['Send MAC Addresses']");

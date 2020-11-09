@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:provider/provider.dart';
-import 'package:rPiInterface/hospital_pages/config_page.dart';
 import 'package:rPiInterface/patient_pages/devices_setup.dart';
 import 'package:rPiInterface/common_pages/rpi_setup.dart';
 import 'package:rPiInterface/common_pages/webview_page.dart';
@@ -19,18 +18,23 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
   ValueNotifier<MqttCurrentConnectionState> connectionNotifier =
       ValueNotifier(MqttCurrentConnectionState.DISCONNECTED);
 
   ValueNotifier<String> macAddress1Notifier = ValueNotifier('Endereço MAC');
   ValueNotifier<String> macAddress2Notifier = ValueNotifier('Endereço MAC');
 
-  ValueNotifier<List<String>> driveListNotifier = ValueNotifier(['Armazenamento interno']);
+  ValueNotifier<List<String>> driveListNotifier =
+      ValueNotifier(['Armazenamento interno']);
+
+  ValueNotifier<String> hostnameNotifier = ValueNotifier('192.168.1.8');
 
   ValueNotifier<String> acquisitionNotifier = ValueNotifier('off');
-  ValueNotifier<String> acquisitionNotifierAux = ValueNotifier('off');
 
   ValueNotifier<bool> receivedMACNotifier = ValueNotifier(false);
+  ValueNotifier<bool> sentMACNotifier = ValueNotifier(false);
 
   final Auth _auth = Auth();
   final firestoreInstance = Firestore.instance;
@@ -60,6 +64,17 @@ class _HomePageState extends State<HomePage> {
     acquisitionNotifier.value = 'off';
     setupHome();
     _nameController.text = " ";
+    acquisitionNotifier.addListener(() {
+      _showSnackBar(
+        acquisitionNotifier.value == 'acquiring'
+            ? 'A adquirir dados'
+            : acquisitionNotifier.value == 'reconnecting'
+                ? 'A retomar aquisição ...'
+                : acquisitionNotifier.value == 'stopped'
+                    ? 'Aquisição terminada e dados gravados'
+                    : 'Aquisição desligada',
+      );
+    });
   }
 
   @override
@@ -75,6 +90,7 @@ class _HomePageState extends State<HomePage> {
     print('This is the new message: $message');
     _isMACAddress(message);
     _isDrivesList(message);
+    _macReceived(message);
     _isAcquisitionStarting(message);
   }
 
@@ -110,10 +126,17 @@ class _HomePageState extends State<HomePage> {
         List<String> listDrives = message.split(",");
         listDrives.removeAt(0);
         listDrives = listDrives.map((drive) => drive.split("'")[1]).toList();
-        setState(() => driveListNotifier.value = listDrives); 
+        setState(() => driveListNotifier.value = listDrives);
+        mqttClientWrapper.publishMessage("['GO TO DEVICES']");
       } catch (e) {
         print(e);
       }
+    }
+  }
+
+  void _macReceived(String message) {
+    if (message.contains('RECEIVED MAC')) {
+      sentMACNotifier.value = true;
     }
   }
 
@@ -133,6 +156,16 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  void _showSnackBar(String _message) {
+    try {
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(
+        content: new Text(_message),
+        backgroundColor: Colors.blue,
+      ));
+    } catch (e) {
+      print(e);
+    }
+  }
 
   Future<String> currentUserID() async {
     var firebaseUser = await FirebaseAuth.instance.currentUser();
@@ -270,6 +303,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       drawer: Drawer(
         child: ListView(
             // Important: Remove any padding from the ListView.
@@ -459,6 +493,61 @@ class _HomePageState extends State<HomePage> {
         )
       ]),
       body: ListView(children: <Widget>[
+        ValueListenableBuilder(
+            valueListenable: receivedMACNotifier,
+            builder: (BuildContext context, bool state, Widget child) {
+              return Container(
+                height: 20,
+                color: state ? Colors.green[50] : Colors.red[50],
+                child: Align(
+                  alignment: Alignment.center,
+                  child: Container(
+                    child: Text(
+                      state
+                          // && _conn == MqttCurrentConnectionState.CONNECTED)
+                          ? 'Conectado ao RPi'
+                          : 'Disconectado do RPi',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        //fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+        ValueListenableBuilder(
+            valueListenable: acquisitionNotifier,
+            builder: (BuildContext context, String state, Widget child) {
+              return Container(
+                height: 20,
+                color: state == 'acquiring'
+                    ? Colors.green[50]
+                    : state == 'reconnecting'
+                        ? Colors.yellow[50]
+                        : Colors.red[50],
+                child: Align(
+                  alignment: Alignment.center,
+                  child: Container(
+                    child: Text(
+                      state == 'acquiring'
+                          ? 'A adquirir dados'
+                          : state == 'reconnecting'
+                              ? 'A retomar aquisição ...'
+                              : state == 'stopped'
+                                  ? 'Aquisição terminada e dados gravados'
+                                  : 'Aquisição desligada',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        //fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
         Padding(
           padding: EdgeInsets.fromLTRB(10, 20, 10, 10),
           child: Card(
@@ -479,12 +568,15 @@ class _HomePageState extends State<HomePage> {
                     return StreamProvider<User>.value(
                         value: Auth().user,
                         child: RPiPage(
-                          mqttClientWrapper: mqttClientWrapper,
-                          connectionState: connectionState,
-                          connectionNotifier: connectionNotifier,
-                          receivedMACNotifier: receivedMACNotifier,
-                          acquisitionNotifier: acquisitionNotifier,
-                        ));
+                            mqttClientWrapper: mqttClientWrapper,
+                            connectionNotifier: connectionNotifier,
+                            macAddress1Notifier: macAddress1Notifier,
+                            macAddress2Notifier: macAddress2Notifier,
+                            receivedMACNotifier: receivedMACNotifier,
+                            driveListNotifier: driveListNotifier,
+                            acquisitionNotifier: acquisitionNotifier,
+                            hostnameNotifier: hostnameNotifier,
+                            sentMACNotifier: sentMACNotifier));
                   }),
                 );
               },
@@ -504,7 +596,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               title: Text('Selecionar dispositivos'),
-              //enabled: connectionState == MqttCurrentConnectionState.CONNECTED,
+              enabled: receivedMACNotifier.value == true,
               onTap: () async {
                 Navigator.push(
                   context,
@@ -512,12 +604,13 @@ class _HomePageState extends State<HomePage> {
                     return StreamProvider<User>.value(
                         value: Auth().user,
                         child: DevicesPage(
-                          mqttClientWrapper: mqttClientWrapper,
-                          macAddress1Notifier: macAddress1Notifier,
-                          macAddress2Notifier: macAddress2Notifier,
-                          connectionNotifier: connectionNotifier,
-                          acquisitionNotifier: acquisitionNotifier,
-                        ));
+                            mqttClientWrapper: mqttClientWrapper,
+                            macAddress1Notifier: macAddress1Notifier,
+                            macAddress2Notifier: macAddress2Notifier,
+                            connectionNotifier: connectionNotifier,
+                            acquisitionNotifier: acquisitionNotifier,
+                            receivedMACNotifier: receivedMACNotifier,
+                            sentMACNotifier: sentMACNotifier));
                   }),
                 );
               },
@@ -537,15 +630,16 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               title: Text('Iniciar visualização'),
-              //enabled: acquisitionNotifier.value == 'acquiring',
+              enabled: acquisitionNotifier.value == 'acquiring',
               onTap: () async {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) {
                     return WebviewPage(
-                          mqttClientWrapper: mqttClientWrapper,
-                          acquisitionNotifier: acquisitionNotifier,
-                        );
+                      mqttClientWrapper: mqttClientWrapper,
+                      acquisitionNotifier: acquisitionNotifier,
+                      hostnameNotifier: hostnameNotifier,
+                    );
                   }),
                 );
               },
@@ -553,6 +647,30 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ]),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: sentMACNotifier.value
+            ? () async {
+                mqttClientWrapper.publishMessage("['START']");
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) {
+                    return WebviewPage(
+                      mqttClientWrapper: mqttClientWrapper,
+                      acquisitionNotifier: acquisitionNotifier,
+                      hostnameNotifier: hostnameNotifier,
+                    );
+                  }),
+                );
+              }
+            : () => {
+                  connectionState != MqttCurrentConnectionState.CONNECTED
+                      ? _showSnackBar('Erro: disconectado do RPi')
+                      : _showSnackBar(
+                          'Erro: dispositivo(s) ainda não selecionado(s)'),
+                },
+        label: Text('Start'),
+        icon: Icon(Icons.play_circle_outline),
+      ),
     );
   }
 }

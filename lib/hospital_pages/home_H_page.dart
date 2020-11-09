@@ -8,7 +8,6 @@ import 'package:rPiInterface/hospital_pages/devices_H_setup.dart';
 import 'package:rPiInterface/utils/models.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
 
-
 class HomeHPage extends StatefulWidget {
   ValueNotifier<String> patientNotifier;
   HomeHPage({this.patientNotifier});
@@ -18,6 +17,7 @@ class HomeHPage extends StatefulWidget {
 }
 
 class _HomeHPageState extends State<HomeHPage> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   ValueNotifier<MqttCurrentConnectionState> connectionNotifier =
       ValueNotifier(MqttCurrentConnectionState.DISCONNECTED);
@@ -25,12 +25,19 @@ class _HomeHPageState extends State<HomeHPage> {
   ValueNotifier<String> macAddress1Notifier = ValueNotifier('Endereço MAC');
   ValueNotifier<String> macAddress2Notifier = ValueNotifier('Endereço MAC');
 
-  ValueNotifier<List<String>> driveListNotifier = ValueNotifier(['Armazenamento interno']);
+  ValueNotifier<String> defaultMacAddress1Notifier = ValueNotifier('Endereço MAC');
+  ValueNotifier<String> defaultMacAddress2Notifier = ValueNotifier('Endereço MAC');
+
+  ValueNotifier<List<String>> driveListNotifier =
+      ValueNotifier(['Armazenamento interno']);
+
+  ValueNotifier<String> hostnameNotifier = ValueNotifier('192.168.1.8');
 
   ValueNotifier<String> acquisitionNotifier = ValueNotifier('off');
-  ValueNotifier<String> acquisitionNotifierAux = ValueNotifier('off');
 
   ValueNotifier<bool> receivedMACNotifier = ValueNotifier(false);
+  ValueNotifier<bool> sentMACNotifier = ValueNotifier(false);
+  ValueNotifier<bool> sentConfigNotifier = ValueNotifier(false);
 
   ValueNotifier<bool> isBit1Enabled = ValueNotifier(false);
   ValueNotifier<bool> isBit2Enabled = ValueNotifier(false);
@@ -39,7 +46,7 @@ class _HomeHPageState extends State<HomeHPage> {
 
   String message;
 
-  //String acquisitionState = 'NO';
+  //var _wifiSubscription;
 
   MqttCurrentConnectionState connectionState;
   MQTTClientWrapper mqttClientWrapper;
@@ -62,14 +69,29 @@ class _HomeHPageState extends State<HomeHPage> {
     acquisitionNotifier.value = 'off';
     setupHome();
     _nameController.text = " ";
+    acquisitionNotifier.addListener(() {
+      _showSnackBar(
+        acquisitionNotifier.value == 'acquiring'
+            ? 'A adquirir dados'
+            : acquisitionNotifier.value == 'reconnecting'
+                ? 'A retomar aquisição ...'
+                : acquisitionNotifier.value == 'stopped'
+                    ? 'Aquisição terminada e dados gravados'
+                    : 'Aquisição desligada',
+      );
+    });
+    /* _wifiSubscription = Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+      print('Connectivity status' + result.toString());
+    }); */
   }
 
   @override
   void dispose() {
     // Clean up the controller when the widget is removed from the
     // widget tree.
-    _nameController.dispose();
     super.dispose();
+    _nameController.dispose();
+    //_wifiSubscription.cancel();
   }
 
   void gotNewMessage(String newMessage) {
@@ -77,6 +99,8 @@ class _HomeHPageState extends State<HomeHPage> {
     print('This is the new message: $message');
     _isMACAddress(message);
     _isDrivesList(message);
+    _macReceived(message);
+    _configReceived(message);
     _isAcquisitionStarting(message);
   }
 
@@ -94,11 +118,9 @@ class _HomeHPageState extends State<HomeHPage> {
       try {
         final List<String> listMAC = message.split(",");
         setState(() {
-          macAddress1Notifier.value = listMAC[1].split("'")[1];
-          macAddress2Notifier.value = listMAC[2].split("'")[1];
+          defaultMacAddress1Notifier.value = listMAC[1].split("'")[1];
+          defaultMacAddress2Notifier.value = listMAC[2].split("'")[1];
           receivedMACNotifier.value = true;
-          /* macAddress1Notifier.value = listMAC[1];
-          macAddress2Notifier.value = listMAC[2]; */
         });
       } catch (e) {
         print(e);
@@ -112,12 +134,32 @@ class _HomeHPageState extends State<HomeHPage> {
         List<String> listDrives = message.split(",");
         listDrives.removeAt(0);
         listDrives = listDrives.map((drive) => drive.split("'")[1]).toList();
-        setState(() => driveListNotifier.value = listDrives); // CONFIRMAR ISTO!!!
+        setState(
+            () => driveListNotifier.value = listDrives); // CONFIRMAR ISTO!!!
+        mqttClientWrapper.publishMessage("['GO TO DEVICES']");
       } catch (e) {
         print(e);
       }
     }
   }
+
+  void _macReceived(String message) {
+    if (message.contains('RECEIVED MAC')) {
+      sentMACNotifier.value = true;
+    }
+  }
+
+  void _configReceived(String message) {
+    if (message.contains('RECEIVED CONFIG')) {
+      sentConfigNotifier.value = true;
+    }
+  }
+
+  /* void _isHostname(String message) {
+    if (message.contains('HOSTNAME')) {
+      setState(() => hostnameNotifier.value = message.split("'")[3]);
+    }
+  } */
 
   void _isAcquisitionStarting(String message) {
     if (message.contains('STARTING')) {
@@ -135,19 +177,57 @@ class _HomeHPageState extends State<HomeHPage> {
     }
   }
 
+  void _showSnackBar(String _message) {
+    try {
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(
+        content: new Text(_message),
+        backgroundColor: Colors.blue,
+      ));
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> _showWifiDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('AlertDialog Title'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('This is a demo alert dialog.'),
+                Text('Would you like to approve of this message?'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Close me!'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            )
+          ],
+        );
+      },
+    );
+  }
+
   Future<DocumentSnapshot> getUserName(uid) {
     return firestoreInstance.collection("users").document(uid).get();
   }
-
 
   Future<DocumentSnapshot> _getAvatar(uid) async {
     return firestoreInstance.collection("users").document(uid).get();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       drawer: Drawer(
         child: ListView(
             // Important: Remove any padding from the ListView.
@@ -242,6 +322,61 @@ class _HomeHPageState extends State<HomeHPage> {
         )
       ]),
       body: ListView(children: <Widget>[
+        ValueListenableBuilder(
+            valueListenable: receivedMACNotifier,
+            builder: (BuildContext context, bool state, Widget child) {
+              return Container(
+                height: 20,
+                color: state ? Colors.green[50] : Colors.red[50],
+                child: Align(
+                  alignment: Alignment.center,
+                  child: Container(
+                    child: Text(
+                      state
+                          // && _conn == MqttCurrentConnectionState.CONNECTED)
+                          ? 'Conectado ao RPi'
+                          : 'Disconectado do RPi',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        //fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+        ValueListenableBuilder(
+            valueListenable: acquisitionNotifier,
+            builder: (BuildContext context, String state, Widget child) {
+              return Container(
+                height: 20,
+                color: state == 'acquiring'
+                    ? Colors.green[50]
+                    : state == 'reconnecting'
+                        ? Colors.yellow[50]
+                        : Colors.red[50],
+                child: Align(
+                  alignment: Alignment.center,
+                  child: Container(
+                    child: Text(
+                      state == 'acquiring'
+                          ? 'A adquirir dados'
+                          : state == 'reconnecting'
+                              ? 'A retomar aquisição ...'
+                              : state == 'stopped'
+                                  ? 'Aquisição terminada e dados gravados'
+                                  : 'Aquisição desligada',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        //fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
         Padding(
           padding: EdgeInsets.fromLTRB(10, 20, 10, 10),
           child: Card(
@@ -260,12 +395,17 @@ class _HomeHPageState extends State<HomeHPage> {
                   context,
                   MaterialPageRoute(builder: (context) {
                     return RPiPage(
-                          mqttClientWrapper: mqttClientWrapper,
-                          connectionState: connectionState,
-                          connectionNotifier: connectionNotifier,
-                          receivedMACNotifier: receivedMACNotifier,
-                          acquisitionNotifier: acquisitionNotifier,
-                        );
+                      mqttClientWrapper: mqttClientWrapper,
+                      connectionNotifier: connectionNotifier,
+                      macAddress1Notifier: macAddress1Notifier,
+                      macAddress2Notifier: macAddress2Notifier,
+                      receivedMACNotifier: receivedMACNotifier,
+                      driveListNotifier: driveListNotifier,
+                      acquisitionNotifier: acquisitionNotifier,
+                      hostnameNotifier: hostnameNotifier,
+                      sentMACNotifier: sentMACNotifier,
+                      sentConfigNotifier: sentConfigNotifier,
+                    );
                   }),
                 );
               },
@@ -285,21 +425,22 @@ class _HomeHPageState extends State<HomeHPage> {
                 ),
               ),
               title: Text('Selecionar dispositivos'),
-              //enabled: connectionState == MqttCurrentConnectionState.CONNECTED,
+              enabled: receivedMACNotifier.value == true,
               onTap: () async {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) {
                     return DevicesPage(
-                          patientNotifier: widget.patientNotifier,
-                          mqttClientWrapper: mqttClientWrapper,
-                          macAddress1Notifier: macAddress1Notifier,
-                          macAddress2Notifier: macAddress2Notifier,
-                          connectionNotifier: connectionNotifier,
-                          acquisitionNotifier: acquisitionNotifier,
-                          isBit1Enabled: isBit1Enabled,
-                          isBit2Enabled: isBit2Enabled
-                        );
+                        patientNotifier: widget.patientNotifier,
+                        mqttClientWrapper: mqttClientWrapper,
+                        macAddress1Notifier: macAddress1Notifier,
+                        macAddress2Notifier: macAddress2Notifier,
+                        connectionNotifier: connectionNotifier,
+                        acquisitionNotifier: acquisitionNotifier,
+                        isBit1Enabled: isBit1Enabled,
+                        isBit2Enabled: isBit2Enabled,
+                        receivedMACNotifier: receivedMACNotifier,
+                        sentMACNotifier: sentMACNotifier);
                   }),
                 );
               },
@@ -319,7 +460,7 @@ class _HomeHPageState extends State<HomeHPage> {
                 ),
               ),
               title: Text('Configurações'),
-              //enabled: connectionState == MqttCurrentConnectionState.CONNECTED,
+              enabled: receivedMACNotifier.value == true,
               onTap: () async {
                 Navigator.push(
                   context,
@@ -331,7 +472,8 @@ class _HomeHPageState extends State<HomeHPage> {
                       isBit1Enabled: isBit1Enabled,
                       isBit2Enabled: isBit2Enabled,
                       macAddress1Notifier: macAddress1Notifier,
-                      macAddress2Notifier: macAddress1Notifier
+                      macAddress2Notifier: macAddress2Notifier,
+                      sentConfigNotifier: sentConfigNotifier,
                     );
                   }),
                 );
@@ -358,9 +500,10 @@ class _HomeHPageState extends State<HomeHPage> {
                   context,
                   MaterialPageRoute(builder: (context) {
                     return WebviewPage(
-                          mqttClientWrapper: mqttClientWrapper,
-                          acquisitionNotifier: acquisitionNotifier,
-                        );
+                      mqttClientWrapper: mqttClientWrapper,
+                      acquisitionNotifier: acquisitionNotifier,
+                      hostnameNotifier: hostnameNotifier,
+                    );
                   }),
                 );
               },
@@ -368,6 +511,30 @@ class _HomeHPageState extends State<HomeHPage> {
           ),
         ),
       ]),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: sentMACNotifier.value
+            ? () async {
+                mqttClientWrapper.publishMessage("['START']");
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) {
+                    return WebviewPage(
+                      mqttClientWrapper: mqttClientWrapper,
+                      acquisitionNotifier: acquisitionNotifier,
+                      hostnameNotifier: hostnameNotifier,
+                    );
+                  }),
+                );
+              }
+            : () => {
+                  connectionState != MqttCurrentConnectionState.CONNECTED
+                      ? _showSnackBar('Erro: disconectado do RPi')
+                      : _showSnackBar(
+                          'Erro: dispositivo(s) ainda não selecionado(s)'),
+                },
+        label: Text('Start'),
+        icon: Icon(Icons.play_circle_outline),
+      ),
     );
   }
 }
