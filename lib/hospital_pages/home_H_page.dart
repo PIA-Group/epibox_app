@@ -46,6 +46,8 @@ class _HomeHPageState extends State<HomeHPage> {
 
   String message;
 
+  ValueNotifier<bool> dialogNotifier = ValueNotifier(false);
+
   //var _wifiSubscription;
 
   MqttCurrentConnectionState connectionState;
@@ -69,7 +71,9 @@ class _HomeHPageState extends State<HomeHPage> {
     acquisitionNotifier.value = 'off';
     setupHome();
     _nameController.text = " ";
-    acquisitionNotifier.addListener(() {
+    /* dialogNotifier.addListener(() => dialogNotifier.value == true ? _showWifiDialog() : {});
+    dialogNotifier.value = true; */
+    /* acquisitionNotifier.addListener(() {
       _showSnackBar(
         acquisitionNotifier.value == 'acquiring'
             ? 'A adquirir dados'
@@ -79,7 +83,7 @@ class _HomeHPageState extends State<HomeHPage> {
                     ? 'Aquisição terminada e dados gravados'
                     : 'Aquisição desligada',
       );
-    });
+    }); */
     /* _wifiSubscription = Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
       print('Connectivity status' + result.toString());
     }); */
@@ -188,11 +192,12 @@ class _HomeHPageState extends State<HomeHPage> {
     }
   }
 
-  Future<void> _showWifiDialog() async {
+  /* Future<void> _showWifiDialog() async {
+    setState(() => dialogNotifier.value = false);
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: Text('AlertDialog Title'),
           content: SingleChildScrollView(
@@ -207,14 +212,14 @@ class _HomeHPageState extends State<HomeHPage> {
             FlatButton(
               child: Text('Close me!'),
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(dialogContext).pop();
               },
             )
           ],
         );
       },
     );
-  }
+  } */
 
   Future<DocumentSnapshot> getUserName(uid) {
     return firestoreInstance.collection("users").document(uid).get();
@@ -397,6 +402,8 @@ class _HomeHPageState extends State<HomeHPage> {
                     return RPiPage(
                       mqttClientWrapper: mqttClientWrapper,
                       connectionNotifier: connectionNotifier,
+                      defaultMacAddress1Notifier: defaultMacAddress1Notifier,
+                      defaultMacAddress2Notifier: defaultMacAddress2Notifier,
                       macAddress1Notifier: macAddress1Notifier,
                       macAddress2Notifier: macAddress2Notifier,
                       receivedMACNotifier: receivedMACNotifier,
@@ -433,6 +440,8 @@ class _HomeHPageState extends State<HomeHPage> {
                     return DevicesPage(
                         patientNotifier: widget.patientNotifier,
                         mqttClientWrapper: mqttClientWrapper,
+                        defaultMacAddress1Notifier: defaultMacAddress1Notifier,
+                        defaultMacAddress2Notifier: defaultMacAddress2Notifier,
                         macAddress1Notifier: macAddress1Notifier,
                         macAddress2Notifier: macAddress2Notifier,
                         connectionNotifier: connectionNotifier,

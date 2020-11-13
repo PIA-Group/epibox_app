@@ -14,6 +14,9 @@ class DevicesPage extends StatefulWidget {
   MQTTClientWrapper mqttClientWrapper;
   MqttCurrentConnectionState connectionState;
 
+  ValueNotifier<String> defaultMacAddress1Notifier;
+  ValueNotifier<String> defaultMacAddress2Notifier;
+
   ValueNotifier<String> macAddress1Notifier;
   ValueNotifier<String> macAddress2Notifier;
 
@@ -27,6 +30,8 @@ class DevicesPage extends StatefulWidget {
 
   DevicesPage(
       {this.mqttClientWrapper,
+      this.defaultMacAddress1Notifier,
+      this.defaultMacAddress2Notifier,
       this.macAddress1Notifier,
       this.macAddress2Notifier,
       this.connectionNotifier,
@@ -56,16 +61,16 @@ class _DevicesPageState extends State<DevicesPage> {
   @override
   void initState() {
     super.initState();
-    _controller1.text = widget.macAddress1Notifier.value;
-    _controller2.text = widget.macAddress2Notifier.value;
+    _controller1.text = widget.defaultMacAddress1Notifier.value;
+    _controller2.text = widget.defaultMacAddress2Notifier.value;
   }
 
   void _setNewDefault1() {
-    setState(() => widget.macAddress1Notifier.value = _controller1.text);
+    setState(() => widget.defaultMacAddress1Notifier.value = _controller1.text);
   }
 
   void _setNewDefault2() {
-    setState(() => widget.macAddress2Notifier.value = _controller2.text);
+    setState(() => widget.defaultMacAddress2Notifier.value = _controller2.text);
   }
 
   @override
@@ -165,7 +170,7 @@ class _DevicesPageState extends State<DevicesPage> {
                                 padding:
                                     EdgeInsets.fromLTRB(11.0, 0.0, 0.0, 0.0),
                                 child: ValueListenableBuilder(
-                                    valueListenable: widget.macAddress1Notifier,
+                                    valueListenable: widget.defaultMacAddress1Notifier,
                                     builder: (BuildContext context,
                                         String macAddress1, Widget child) {
                                       return Text(
@@ -202,7 +207,7 @@ class _DevicesPageState extends State<DevicesPage> {
                                 padding:
                                     EdgeInsets.fromLTRB(11.0, 0.0, 0.0, 0.0),
                                 child: ValueListenableBuilder(
-                                    valueListenable: widget.macAddress2Notifier,
+                                    valueListenable: widget.defaultMacAddress2Notifier,
                                     builder: (BuildContext context,
                                         String macAddress2, Widget child) {
                                       return Text(
@@ -226,8 +231,10 @@ class _DevicesPageState extends State<DevicesPage> {
                   padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 0.0),
                   child: RaisedButton(
                     onPressed: () {
+                      setState(() => widget.macAddress1Notifier.value = widget.defaultMacAddress1Notifier.value);
+                      setState(() => widget.macAddress2Notifier.value = widget.defaultMacAddress2Notifier.value);
                       widget.mqttClientWrapper.publishMessage(
-                          "['USE',{'MAC1':'${widget.macAddress1Notifier.value}','MAC2':'${widget.macAddress2Notifier.value}'}]");
+                          "['USE',{'MAC1':'${widget.defaultMacAddress1Notifier.value}','MAC2':'${widget.defaultMacAddress2Notifier.value}'}]");
                       _auth.getCurrentUserStr().then((value) {
                         widget.mqttClientWrapper
                             .publishMessage("['ID', '$value']");
@@ -329,8 +336,10 @@ class _DevicesPageState extends State<DevicesPage> {
                     children: [
                       RaisedButton(
                         onPressed: () {
+                          setState(() => widget.macAddress1Notifier.value = _controller1.text.replaceAll(new RegExp(r"\s+"), ""));
+                          setState(() => widget.macAddress2Notifier.value = _controller2.text.replaceAll(new RegExp(r"\s+"), ""));
                           widget.mqttClientWrapper.publishMessage(
-                              "['USE',{'MAC1':'${_controller1.text}','MAC2':'${_controller2.text}'}]");
+                              "['USE',{'MAC1':'${widget.macAddress1Notifier.value}','MAC2':'${widget.macAddress2Notifier.value}'}]");
                           _auth.getCurrentUserStr().then((value) {
                             widget.mqttClientWrapper
                                 .publishMessage("['ID', '$value']");
@@ -343,10 +352,12 @@ class _DevicesPageState extends State<DevicesPage> {
                       ),
                       RaisedButton(
                         onPressed: () {
+                          setState(() => widget.macAddress1Notifier.value = _controller1.text.replaceAll(new RegExp(r"\s+"), ""));
+                          setState(() => widget.macAddress2Notifier.value = _controller2.text.replaceAll(new RegExp(r"\s+"), ""));
                           _setNewDefault1();
                           _setNewDefault2();
                           widget.mqttClientWrapper.publishMessage(
-                              "['NEW',{'MAC1':'${_controller1.text}','MAC2':'${_controller2.text}'}]");
+                              "['NEW',{'MAC1':'${widget.macAddress1Notifier.value}','MAC2':'${widget.macAddress2Notifier.value}'}]");
                         },
                         child: new Text("Definir novo default"),
                       ),

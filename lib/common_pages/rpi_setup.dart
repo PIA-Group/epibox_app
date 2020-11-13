@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:rPiInterface/utils/models.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
-import 'package:ping_discover_network/ping_discover_network.dart';
 
 class RPiPage extends StatefulWidget {
 
   ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
   MQTTClientWrapper mqttClientWrapper;
+
+  ValueNotifier<String> defaultMacAddress1Notifier;
+  ValueNotifier<String> defaultMacAddress2Notifier;
 
   ValueNotifier<String> macAddress1Notifier;
   ValueNotifier<String> macAddress2Notifier;
@@ -23,6 +25,8 @@ class RPiPage extends StatefulWidget {
   RPiPage(
       {this.mqttClientWrapper,
       this.connectionNotifier,
+      this.defaultMacAddress1Notifier,
+      this.defaultMacAddress2Notifier,
       this.macAddress1Notifier,
       this.macAddress2Notifier,
       this.receivedMACNotifier,
@@ -59,6 +63,9 @@ class _RPiPageState extends State<RPiPage> {
     widget.mqttClientWrapper.publishMessage("['RESTART']");
     await widget.mqttClientWrapper.diconnectClient();
     setState(() {
+      widget.defaultMacAddress1Notifier.value = 'Endereço MAC';
+      widget.defaultMacAddress2Notifier.value = 'Endereço MAC';
+
       widget.macAddress1Notifier.value = 'Endereço MAC';
       widget.macAddress2Notifier.value = 'Endereço MAC';
 

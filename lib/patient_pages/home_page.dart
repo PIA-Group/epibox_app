@@ -26,6 +26,9 @@ class _HomePageState extends State<HomePage> {
   ValueNotifier<String> macAddress1Notifier = ValueNotifier('Endereço MAC');
   ValueNotifier<String> macAddress2Notifier = ValueNotifier('Endereço MAC');
 
+  ValueNotifier<String> defaultMacAddress1Notifier = ValueNotifier('Endereço MAC');
+  ValueNotifier<String> defaultMacAddress2Notifier = ValueNotifier('Endereço MAC');
+
   ValueNotifier<List<String>> driveListNotifier =
       ValueNotifier(['Armazenamento interno']);
 
@@ -64,7 +67,7 @@ class _HomePageState extends State<HomePage> {
     acquisitionNotifier.value = 'off';
     setupHome();
     _nameController.text = " ";
-    acquisitionNotifier.addListener(() {
+    /* acquisitionNotifier.addListener(() {
       _showSnackBar(
         acquisitionNotifier.value == 'acquiring'
             ? 'A adquirir dados'
@@ -74,7 +77,7 @@ class _HomePageState extends State<HomePage> {
                     ? 'Aquisição terminada e dados gravados'
                     : 'Aquisição desligada',
       );
-    });
+    }); */
   }
 
   @override
@@ -108,8 +111,8 @@ class _HomePageState extends State<HomePage> {
       try {
         final List<String> listMAC = message.split(",");
         setState(() {
-          macAddress1Notifier.value = listMAC[1].split("'")[1];
-          macAddress2Notifier.value = listMAC[2].split("'")[1];
+          defaultMacAddress1Notifier.value = listMAC[1].split("'")[1];
+          defaultMacAddress2Notifier.value = listMAC[2].split("'")[1];
           receivedMACNotifier.value = true;
           /* macAddress1Notifier.value = listMAC[1];
           macAddress2Notifier.value = listMAC[2]; */
@@ -570,6 +573,8 @@ class _HomePageState extends State<HomePage> {
                         child: RPiPage(
                             mqttClientWrapper: mqttClientWrapper,
                             connectionNotifier: connectionNotifier,
+                            defaultMacAddress1Notifier: defaultMacAddress1Notifier,
+                            defaultMacAddress2Notifier: defaultMacAddress2Notifier,
                             macAddress1Notifier: macAddress1Notifier,
                             macAddress2Notifier: macAddress2Notifier,
                             receivedMACNotifier: receivedMACNotifier,
@@ -605,6 +610,8 @@ class _HomePageState extends State<HomePage> {
                         value: Auth().user,
                         child: DevicesPage(
                             mqttClientWrapper: mqttClientWrapper,
+                            defaultMacAddress1Notifier: defaultMacAddress1Notifier,
+                            defaultMacAddress2Notifier: defaultMacAddress2Notifier,
                             macAddress1Notifier: macAddress1Notifier,
                             macAddress2Notifier: macAddress2Notifier,
                             connectionNotifier: connectionNotifier,
