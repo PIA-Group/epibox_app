@@ -1,6 +1,10 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:mqtt_client/mqtt_client.dart';
+import 'package:rPiInterface/common_pages/real_time.dart';
 import 'package:rPiInterface/hospital_pages/config_page.dart';
 import 'package:rPiInterface/common_pages/rpi_setup.dart';
 import 'package:rPiInterface/common_pages/webview_page.dart';
@@ -9,6 +13,7 @@ import 'package:rPiInterface/utils/models.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
 
 class HomeHPage extends StatefulWidget {
+
   ValueNotifier<String> patientNotifier;
   HomeHPage({this.patientNotifier});
 
@@ -17,6 +22,28 @@ class HomeHPage extends StatefulWidget {
 }
 
 class _HomeHPageState extends State<HomeHPage> {
+
+  ValueNotifier<double> value1 = ValueNotifier(0);
+  ValueNotifier<double> value2 = ValueNotifier(0);
+  double radians = 0.0;
+  Timer _timer;
+
+  /// method to generate a Test  Wave Pattern Sets
+  /// this gives us a value between +1  & -1 for sine & cosine
+  _generateTrace(Timer t) {
+    // generate our  values
+    setState(() {
+      value1.value = sin((radians * pi));
+      value2.value = cos((radians * pi));
+    });
+    
+    // adjust to recyle the radian value ( as 0 = 2Pi RADS)
+    radians += 0.05;
+    if (radians >= 2.0) {
+      radians = 0.0;
+    }
+  }
+
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   ValueNotifier<MqttCurrentConnectionState> connectionNotifier =
@@ -68,6 +95,7 @@ class _HomeHPageState extends State<HomeHPage> {
   @override
   void initState() {
     super.initState();
+    _timer = Timer.periodic(Duration(milliseconds: 10), _generateTrace);
     acquisitionNotifier.value = 'off';
     setupHome();
     _nameController.text = " ";
@@ -94,6 +122,7 @@ class _HomeHPageState extends State<HomeHPage> {
     // Clean up the controller when the widget is removed from the
     // widget tree.
     super.dispose();
+    _timer.cancel();
     _nameController.dispose();
     //_wifiSubscription.cancel();
   }
@@ -508,10 +537,14 @@ class _HomeHPageState extends State<HomeHPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) {
-                    return WebviewPage(
+                    /* return WebviewPage(
                       mqttClientWrapper: mqttClientWrapper,
                       acquisitionNotifier: acquisitionNotifier,
                       hostnameNotifier: hostnameNotifier,
+                    ); */
+                    return RealtimePage(
+                      value1: value1,
+                      value2: value2,
                     );
                   }),
                 );
