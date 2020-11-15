@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -23,26 +24,6 @@ class HomeHPage extends StatefulWidget {
 
 class _HomeHPageState extends State<HomeHPage> {
 
-  ValueNotifier<double> value1 = ValueNotifier(0);
-  ValueNotifier<double> value2 = ValueNotifier(0);
-  double radians = 0.0;
-  Timer _timer;
-
-  /// method to generate a Test  Wave Pattern Sets
-  /// this gives us a value between +1  & -1 for sine & cosine
-  _generateTrace(Timer t) {
-    // generate our  values
-    setState(() {
-      value1.value = sin((radians * pi));
-      value2.value = cos((radians * pi));
-    });
-    
-    // adjust to recyle the radian value ( as 0 = 2Pi RADS)
-    radians += 0.05;
-    if (radians >= 2.0) {
-      radians = 0.0;
-    }
-  }
 
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
@@ -75,6 +56,9 @@ class _HomeHPageState extends State<HomeHPage> {
 
   ValueNotifier<bool> dialogNotifier = ValueNotifier(false);
 
+  // dataNotifier: list of lists, each sublist corresponds to a channel acquired
+  ValueNotifier<List> dataNotifier = ValueNotifier([]); 
+  ValueNotifier<List> dataChannelsNotifier = ValueNotifier([]); 
   //var _wifiSubscription;
 
   MqttCurrentConnectionState connectionState;
@@ -95,7 +79,6 @@ class _HomeHPageState extends State<HomeHPage> {
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(Duration(milliseconds: 10), _generateTrace);
     acquisitionNotifier.value = 'off';
     setupHome();
     _nameController.text = " ";
@@ -119,22 +102,19 @@ class _HomeHPageState extends State<HomeHPage> {
 
   @override
   void dispose() {
-    // Clean up the controller when the widget is removed from the
-    // widget tree.
     super.dispose();
-    _timer.cancel();
     _nameController.dispose();
-    //_wifiSubscription.cancel();
   }
 
   void gotNewMessage(String newMessage) {
     setState(() => message = newMessage);
-    print('This is the new message: $message');
+    //print('This is the new message: $message');
     _isMACAddress(message);
     _isDrivesList(message);
     _macReceived(message);
     _configReceived(message);
     _isAcquisitionStarting(message);
+    _isData(message);
   }
 
   void updatedConnection(MqttCurrentConnectionState newConnectionState) {
@@ -207,6 +187,14 @@ class _HomeHPageState extends State<HomeHPage> {
     } else if (message.contains('OFF')) {
       setState(() => acquisitionNotifier.value = 'off');
       print('ACQUISITION OFF');
+    }
+  }
+
+  void _isData(String message) {
+    if (message.contains('DATA')) {
+      List message2List = json.decode(message);
+      setState(() => dataNotifier.value = message2List[1]);
+      setState(() => dataChannelsNotifier.value = message2List[2]);
     }
   }
 
@@ -543,8 +531,8 @@ class _HomeHPageState extends State<HomeHPage> {
                       hostnameNotifier: hostnameNotifier,
                     ); */
                     return RealtimePage(
-                      value1: value1,
-                      value2: value2,
+                      dataNotifier: dataNotifier,
+                      dataChannelsNotifier: dataChannelsNotifier,
                     );
                   }),
                 );

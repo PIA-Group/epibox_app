@@ -26,6 +26,7 @@ import 'package:flutter/material.dart';
 
 
 class Oscilloscope extends StatefulWidget {
+
   final List<double> dataSet;
   double yAxisMin;
   double yAxisMax;
@@ -34,7 +35,6 @@ class Oscilloscope extends StatefulWidget {
   final Color traceColor;
   final Color yAxisColor;
   final bool showCanvas;
-  final bool showXAxis;
 
   Oscilloscope(
       {this.traceColor = Colors.blue,
@@ -44,7 +44,6 @@ class Oscilloscope extends StatefulWidget {
       this.yAxisMax = 1.0,
       this.yAxisMin = -1.0,
       this.showCanvas = true,
-      this.showXAxis = true,
       @required this.dataSet});
 
   @override

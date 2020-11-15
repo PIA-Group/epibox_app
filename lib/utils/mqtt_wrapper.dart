@@ -85,7 +85,7 @@ class MQTTClientWrapper {
       final MqttPublishMessage recMess = c[0].payload;
       final String newMessage =
       MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
-      print("MQTTClientWrapper::GOT A NEW MESSAGE $newMessage");
+      //print("MQTTClientWrapper::GOT A NEW MESSAGE $newMessage");
       onNewMessage(newMessage);
     });
 
