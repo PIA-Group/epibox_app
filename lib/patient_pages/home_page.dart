@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:provider/provider.dart';
+import 'package:rPiInterface/common_pages/real_time.dart';
 import 'package:rPiInterface/patient_pages/devices_setup.dart';
 import 'package:rPiInterface/common_pages/rpi_setup.dart';
 import 'package:rPiInterface/common_pages/webview_page.dart';
@@ -44,7 +47,9 @@ class _HomePageState extends State<HomePage> {
 
   String message;
 
-  //String acquisitionState = 'NO';
+  // dataNotifier: list of lists, each sublist corresponds to a channel acquired
+  ValueNotifier<List> dataNotifier = ValueNotifier([]); 
+  ValueNotifier<List> dataChannelsNotifier = ValueNotifier([]); 
 
   MqttCurrentConnectionState connectionState;
   MQTTClientWrapper mqttClientWrapper;
@@ -95,6 +100,7 @@ class _HomePageState extends State<HomePage> {
     _isDrivesList(message);
     _macReceived(message);
     _isAcquisitionStarting(message);
+    _isData(message);
   }
 
   void updatedConnection(MqttCurrentConnectionState newConnectionState) {
@@ -156,6 +162,14 @@ class _HomePageState extends State<HomePage> {
     } else if (message.contains('OFF')) {
       setState(() => acquisitionNotifier.value = 'off');
       print('ACQUISITION OFF');
+    }
+  }
+
+  void _isData(String message) {
+    if (message.contains('DATA')) {
+      List message2List = json.decode(message);
+      setState(() => dataNotifier.value = message2List[1]);
+      setState(() => dataChannelsNotifier.value = message2List[2]);
     }
   }
 
@@ -642,9 +656,10 @@ class _HomePageState extends State<HomePage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) {
-                    return WebviewPage(
+                    return RealtimePage(
+                      dataNotifier: dataNotifier,
+                      dataChannelsNotifier: dataChannelsNotifier,
                       mqttClientWrapper: mqttClientWrapper,
-                      acquisitionNotifier: acquisitionNotifier,
                       hostnameNotifier: hostnameNotifier,
                     );
                   }),
@@ -661,9 +676,10 @@ class _HomePageState extends State<HomePage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) {
-                    return WebviewPage(
+                    return RealtimePage(
+                      dataNotifier: dataNotifier,
+                      dataChannelsNotifier: dataChannelsNotifier,
                       mqttClientWrapper: mqttClientWrapper,
-                      acquisitionNotifier: acquisitionNotifier,
                       hostnameNotifier: hostnameNotifier,
                     );
                   }),

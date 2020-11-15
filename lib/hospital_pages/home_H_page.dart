@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -39,7 +38,7 @@ class _HomeHPageState extends State<HomeHPage> {
   ValueNotifier<List<String>> driveListNotifier =
       ValueNotifier(['Armazenamento interno']);
 
-  ValueNotifier<String> hostnameNotifier = ValueNotifier('192.168.1.8');
+  ValueNotifier<String> hostnameNotifier = ValueNotifier('192.168.2.107');
 
   ValueNotifier<String> acquisitionNotifier = ValueNotifier('off');
 
@@ -533,6 +532,8 @@ class _HomeHPageState extends State<HomeHPage> {
                     return RealtimePage(
                       dataNotifier: dataNotifier,
                       dataChannelsNotifier: dataChannelsNotifier,
+                      mqttClientWrapper: mqttClientWrapper,
+                      hostnameNotifier: hostnameNotifier,
                     );
                   }),
                 );
@@ -548,9 +549,10 @@ class _HomeHPageState extends State<HomeHPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) {
-                    return WebviewPage(
+                    return RealtimePage(
+                      dataNotifier: dataNotifier,
+                      dataChannelsNotifier: dataChannelsNotifier,
                       mqttClientWrapper: mqttClientWrapper,
-                      acquisitionNotifier: acquisitionNotifier,
                       hostnameNotifier: hostnameNotifier,
                     );
                   }),

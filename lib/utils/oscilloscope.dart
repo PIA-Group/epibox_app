@@ -51,13 +51,13 @@ class Oscilloscope extends StatefulWidget {
 }
 
 class _OscilloscopeState extends State<Oscilloscope> {
-  double yRange;
-  double yScale;
 
   @override
   void initState() {
     super.initState();
-    yRange = widget.yAxisMax - widget.yAxisMin;
+    print('max: ${widget.yAxisMax}');
+    print('min: ${widget.yAxisMin}');
+    
   }
 
   @override
@@ -76,7 +76,7 @@ class _OscilloscopeState extends State<Oscilloscope> {
               traceColor: widget.traceColor,
               yMin: widget.yAxisMin,
               yMax: widget.yAxisMax,
-              yRange: yRange),
+              ),
         ),
       ),
     );
@@ -93,13 +93,11 @@ class _TracePainter extends CustomPainter {
   final Color yAxisColor;
   final bool showCanvas;
   final bool showXAxis;
-  final double yRange;
 
   _TracePainter(
       {this.showCanvas,
       this.showXAxis,
       this.yAxisColor,
-      this.yRange,
       this.yMin,
       this.yMax,
       this.dataSet,
@@ -118,6 +116,7 @@ class _TracePainter extends CustomPainter {
       ..strokeWidth = 3.0
       ..color = yAxisColor;
 
+    double yRange = yMax - yMin;
     double yScale = (size.height / yRange);
 
     // only start plot if dataset has data
@@ -131,13 +130,13 @@ class _TracePainter extends CustomPainter {
 
       // Create Path and set Origin to first data point
       Path trace = Path();
-      trace.moveTo(0.0, size.height - (dataSet[0].toDouble() - yMin) * yScale);
+      //trace.moveTo(0.0, size.height - (dataSet[0] - yMin) * yScale);
 
       // generate trace path
       for (int p = 0; p < length; p++) {
         double plotPoint =
-            size.height - ((dataSet[p].toDouble() - yMin) * yScale);
-        trace.lineTo(p.toDouble() * xScale, plotPoint);
+            size.height - (dataSet[p] - yMin) * yScale;
+        trace.lineTo(p * xScale, plotPoint);
       }
 
       // display the trace

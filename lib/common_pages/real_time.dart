@@ -1,15 +1,20 @@
-import 'dart:math';
+
 import 'package:flutter/material.dart';
-import 'package:rPiInterface/utils/oscilloscope.dart';
+import 'package:rPiInterface/utils/mqtt_wrapper.dart';
 import 'package:rPiInterface/utils/plot_data.dart';
 
 class RealtimePage extends StatefulWidget {
+
   ValueNotifier<List> dataNotifier;
   ValueNotifier<List> dataChannelsNotifier;
+  MQTTClientWrapper mqttClientWrapper;
+  ValueNotifier<String> hostnameNotifier;
 
   RealtimePage({
     this.dataNotifier,
     this.dataChannelsNotifier,
+    this.mqttClientWrapper,
+    this.hostnameNotifier,
   });
 
   @override
@@ -17,10 +22,7 @@ class RealtimePage extends StatefulWidget {
 }
 
 class _RealtimePageState extends State<RealtimePage> {
-  //final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
-  /*  ValueNotifier<List<List<double>>> dataList =
-      ValueNotifier(List<List<double>>(10)); */
   List aux;
 
   ValueNotifier<List<double>> data1 = ValueNotifier([]);
@@ -34,8 +36,7 @@ class _RealtimePageState extends State<RealtimePage> {
   ValueNotifier<List<double>> data9 = ValueNotifier([]);
   ValueNotifier<List<double>> data10 = ValueNotifier([]);
 
-  // SET RANGE ACCORDING TO TYPE OF DATA
-  List<double> yRange1 = [5, 10];
+  List<double> yRange1 = [0, 10];
   List<double> yRange2 = [0, 10];
   List<double> yRange3 = [0, 10];
   List<double> yRange4 = [0, 10];
@@ -46,16 +47,20 @@ class _RealtimePageState extends State<RealtimePage> {
   List<double> yRange9 = [0, 10];
   List<double> yRange10 = [0, 10];
 
+  void _stopAcquisition() {
+    print(widget.hostnameNotifier);
+    widget.mqttClientWrapper.publishMessage("['INTERRUPT']");
+    //_showSnackBar('Aquisição terminada e dados gravados');
+  }
+
   bool _rangeUpdateNeeded(List data, List currentRange) {
     bool update = false;
-
     if (data.first < currentRange[0] || currentRange[0] < data.first - 5) {
       update = true;
     }
-    if (data.last > currentRange[1] || currentRange[1] < data.last + 5) {
+    if (data.last > currentRange[1] || currentRange[1] > data.last + 5) {
       update = true;
     }
-
     return update;
   }
 
@@ -64,17 +69,15 @@ class _RealtimePageState extends State<RealtimePage> {
     double max;
 
     if (data.first < currentRange[0] || currentRange[0] < data.first - 5) {
-      min = (data.first - 5).round().toDouble();
+      min = (data.first - 5).floor().toDouble();
     } else {
       min = currentRange[0];
     }
-
     if (data.last > currentRange[1] || currentRange[1] > data.last + 5) {
-      max = (data.last + 5).round().toDouble();
+      max = (data.last + 5).ceil().toDouble();
     } else {
       max = currentRange[1];
     }
-
     return [min, max];
   }
 
@@ -88,103 +91,104 @@ class _RealtimePageState extends State<RealtimePage> {
           channel.asMap().forEach((i, value) {
             if (index == 0) {
               setState(() => data1.value.add(value));
+              if (data1.value.length > canvasWidth) {
+                data1.value.removeAt(0);
+              }
               aux = []..addAll(data1.value);
               aux.sort();
               if (_rangeUpdateNeeded(aux, yRange1)) {
                 setState(() => yRange1 = _updateRange(aux, yRange1));
               }
-              if (data1.value.length > canvasWidth) {
-                data1.value.removeAt(0);
-              }
+              print('yRange1: $yRange1');
             } else if (index == 1) {
               setState(() => data2.value.add(value));
+              if (data2.value.length > canvasWidth) {
+                data2.value.removeAt(0);
+              }
               aux = []..addAll(data2.value);
               aux.sort();
               if (_rangeUpdateNeeded(aux, yRange2)) {
                 setState(() => yRange2 = _updateRange(aux, yRange2));
               }
-              if (data2.value.length > canvasWidth) {
-                data2.value.removeAt(0);
-              }
-            } else if (index == 2) {
+              } else if (index == 2) {
               setState(() => data3.value.add(value));
+              if (data3.value.length > canvasWidth) {
+                data3.value.removeAt(0);
+              }
               aux = []..addAll(data3.value);
               aux.sort();
               if (_rangeUpdateNeeded(aux, yRange3)) {
                 setState(() => yRange3 = _updateRange(aux, yRange3));
               }
-              if (data3.value.length > canvasWidth) {
-                data3.value.removeAt(0);
-              }
             } else if (index == 3) {
               setState(() => data4.value.add(value));
+              if (data4.value.length > canvasWidth) {
+                data4.value.removeAt(0);
+              }
               aux = []..addAll(data4.value);
               aux.sort();
               if (_rangeUpdateNeeded(aux, yRange4)) {
                 setState(() => yRange4 = _updateRange(aux, yRange4));
               }
-              if (data4.value.length > canvasWidth) {
-                data4.value.removeAt(0);
-              }
             } else if (index == 4) {
               setState(() => data5.value.add(value));
+              if (data5.value.length > canvasWidth) {
+                data5.value.removeAt(0);
+              }
               aux = []..addAll(data5.value);
               aux.sort();
               if (_rangeUpdateNeeded(aux, yRange5)) {
                 setState(() => yRange5 = _updateRange(aux, yRange5));
               }
-              if (data5.value.length > canvasWidth) {
-                data5.value.removeAt(0);
-              }
             } else if (index == 5) {
               setState(() => data6.value.add(value));
+              if (data6.value.length > canvasWidth) {
+                data6.value.removeAt(0);
+              }
               aux = []..addAll(data6.value);
               aux.sort();
               if (_rangeUpdateNeeded(aux, yRange6)) {
                 setState(() => yRange6 = _updateRange(aux, yRange6));
               }
-              if (data6.value.length > canvasWidth) {
-                data6.value.removeAt(0);
-              }
             } else if (index == 6) {
               setState(() => data7.value.add(value));
+              if (data7.value.length > canvasWidth) {
+                data7.value.removeAt(0);
+              }
               aux = []..addAll(data7.value);
               aux.sort();
               if (_rangeUpdateNeeded(aux, yRange7)) {
                 setState(() => yRange7 = _updateRange(aux, yRange7));
               }
-              if (data7.value.length > canvasWidth) {
-                data7.value.removeAt(0);
-              }
             } else if (index == 7) {
               setState(() => data8.value.add(value));
+              if (data8.value.length > canvasWidth) {
+                data8.value.removeAt(0);
+              }
               aux = []..addAll(data8.value);
               aux.sort();
               if (_rangeUpdateNeeded(aux, yRange8)) {
                 setState(() => yRange8 = _updateRange(aux, yRange8));
               }
-              if (data8.value.length > canvasWidth) {
-                data8.value.removeAt(0);
-              }
             } else if (index == 8) {
               setState(() => data9.value.add(value));
+              if (data9.value.length > canvasWidth) {
+                data9.value.removeAt(0);
+              }
               aux = []..addAll(data9.value);
               aux.sort();
               if (_rangeUpdateNeeded(aux, yRange9)) {
                 setState(() => yRange9 = _updateRange(aux, yRange9));
               }
-              if (data9.value.length > canvasWidth) {
-                data9.value.removeAt(0);
-              }
             } else if (index == 9) {
               setState(() => data10.value.add(value));
+              if (data10.value.length > canvasWidth) {
+                data10.value.removeAt(0);
+              }
               aux = []..addAll(data10.value);
               aux.sort();
               if (_rangeUpdateNeeded(aux, yRange10)) {
                 setState(() => yRange10 = _updateRange(aux, yRange10));
-              }
-              if (data10.value.length > canvasWidth) {
-                data10.value.removeAt(0);
               }
             }
           });
@@ -214,8 +218,6 @@ class _RealtimePageState extends State<RealtimePage> {
                   ValueListenableBuilder(
                       valueListenable: data1,
                       builder: (BuildContext context, List data, Widget child) {
-                        // This builder will only get called when the _counter
-                        // is updated.
                         return PlotData(yRange: yRange1, data: data);
                       }),
                 // ############### PLOT 2 ###############
@@ -225,8 +227,6 @@ class _RealtimePageState extends State<RealtimePage> {
                   ValueListenableBuilder(
                       valueListenable: data2,
                       builder: (BuildContext context, List data, Widget child) {
-                        // This builder will only get called when the _counter
-                        // is updated.
                         return PlotData(yRange: yRange2, data: data);
                       }),
                 // ############### PLOT 3 ###############
@@ -236,8 +236,6 @@ class _RealtimePageState extends State<RealtimePage> {
                   ValueListenableBuilder(
                       valueListenable: data3,
                       builder: (BuildContext context, List data, Widget child) {
-                        // This builder will only get called when the _counter
-                        // is updated.
                         return PlotData(yRange: yRange3, data: data);
                       }),
                 // ############### PLOT 4 ###############
@@ -247,8 +245,6 @@ class _RealtimePageState extends State<RealtimePage> {
                   ValueListenableBuilder(
                       valueListenable: data4,
                       builder: (BuildContext context, List data, Widget child) {
-                        // This builder will only get called when the _counter
-                        // is updated.
                         return PlotData(yRange: yRange4, data: data);
                       }),
                 // ############### PLOT 5 ###############
@@ -258,8 +254,6 @@ class _RealtimePageState extends State<RealtimePage> {
                   ValueListenableBuilder(
                       valueListenable: data5,
                       builder: (BuildContext context, List data, Widget child) {
-                        // This builder will only get called when the _counter
-                        // is updated.
                         return PlotData(yRange: yRange5, data: data);
                       }),
                 // ############### PLOT 6 ###############
@@ -269,8 +263,6 @@ class _RealtimePageState extends State<RealtimePage> {
                   ValueListenableBuilder(
                       valueListenable: data6,
                       builder: (BuildContext context, List data, Widget child) {
-                        // This builder will only get called when the _counter
-                        // is updated.
                         return PlotData(yRange: yRange6, data: data);
                       }),
                 // ############### PLOT 7 ###############
@@ -280,8 +272,6 @@ class _RealtimePageState extends State<RealtimePage> {
                   ValueListenableBuilder(
                       valueListenable: data7,
                       builder: (BuildContext context, List data, Widget child) {
-                        // This builder will only get called when the _counter
-                        // is updated.
                         return PlotData(yRange: yRange7, data: data);
                       }),
                 // ############### PLOT 8 ###############
@@ -291,8 +281,6 @@ class _RealtimePageState extends State<RealtimePage> {
                   ValueListenableBuilder(
                       valueListenable: data8,
                       builder: (BuildContext context, List data, Widget child) {
-                        // This builder will only get called when the _counter
-                        // is updated.
                         return PlotData(yRange: yRange8, data: data);
                       }),
                 // ############### PLOT 9 ###############
@@ -302,8 +290,6 @@ class _RealtimePageState extends State<RealtimePage> {
                   ValueListenableBuilder(
                       valueListenable: data9,
                       builder: (BuildContext context, List data, Widget child) {
-                        // This builder will only get called when the _counter
-                        // is updated.
                         return PlotData(yRange: yRange9, data: data);
                       }),
                 // ############### PLOT 10 ###############
@@ -313,14 +299,17 @@ class _RealtimePageState extends State<RealtimePage> {
                   ValueListenableBuilder(
                       valueListenable: data10,
                       builder: (BuildContext context, List data, Widget child) {
-                        // This builder will only get called when the _counter
-                        // is updated.
                         return PlotData(yRange: yRange10, data: data);
                       }),
               ],
             ),
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _stopAcquisition(),
+        label: Text('Stop'),
+        icon: Icon(Icons.stop),
       ),
     );
   }
