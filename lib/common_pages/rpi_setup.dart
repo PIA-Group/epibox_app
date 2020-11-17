@@ -3,7 +3,6 @@ import 'package:rPiInterface/utils/models.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
 
 class RPiPage extends StatefulWidget {
-
   ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
   MQTTClientWrapper mqttClientWrapper;
 
@@ -22,26 +21,31 @@ class RPiPage extends StatefulWidget {
   ValueNotifier<bool> sentMACNotifier;
   ValueNotifier<bool> sentConfigNotifier;
 
-  RPiPage(
-      {this.mqttClientWrapper,
-      this.connectionNotifier,
-      this.defaultMacAddress1Notifier,
-      this.defaultMacAddress2Notifier,
-      this.macAddress1Notifier,
-      this.macAddress2Notifier,
-      this.receivedMACNotifier,
-      this.driveListNotifier,
-      this.acquisitionNotifier,
-      this.hostnameNotifier,
-      this.sentMACNotifier,
-      this.sentConfigNotifier,});
+  ValueNotifier<double> batteryBit1Notifier;
+  ValueNotifier<double> batteryBit2Notifier;
+
+  RPiPage({
+    this.mqttClientWrapper,
+    this.connectionNotifier,
+    this.defaultMacAddress1Notifier,
+    this.defaultMacAddress2Notifier,
+    this.macAddress1Notifier,
+    this.macAddress2Notifier,
+    this.receivedMACNotifier,
+    this.driveListNotifier,
+    this.acquisitionNotifier,
+    this.hostnameNotifier,
+    this.sentMACNotifier,
+    this.sentConfigNotifier,
+    this.batteryBit1Notifier,
+    this.batteryBit2Notifier,
+  });
 
   @override
   _RPiPageState createState() => _RPiPageState();
 }
 
 class _RPiPageState extends State<RPiPage> {
-
   String message;
   final TextEditingController _controller = TextEditingController();
 
@@ -76,14 +80,18 @@ class _RPiPageState extends State<RPiPage> {
       widget.acquisitionNotifier.value = 'off';
 
       widget.driveListNotifier.value = ['Armazenamento interno'];
+
+      widget.batteryBit1Notifier.value = null;
+      widget.batteryBit2Notifier.value = null;
     });
   }
 
-
   Future<void> _setup() async {
     print(_controller.text.replaceAll(new RegExp(r"\s+"), ""));
-    setState(() => widget.hostnameNotifier.value = _controller.text.replaceAll(new RegExp(r"\s+"), ""));
-    await widget.mqttClientWrapper.prepareMqttClient(_controller.text.replaceAll(new RegExp(r"\s+"), ""));
+    setState(() => widget.hostnameNotifier.value =
+        _controller.text.replaceAll(new RegExp(r"\s+"), ""));
+    await widget.mqttClientWrapper
+        .prepareMqttClient(_controller.text.replaceAll(new RegExp(r"\s+"), ""));
     /* if (widget.connectionNotifier.value == MqttCurrentConnectionState.CONNECTED) {
       Navigator.pop(context);
     } */
@@ -193,20 +201,19 @@ class _RPiPageState extends State<RPiPage> {
                         Padding(
                           padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
                           child: TextField(
-                              style: TextStyle(color: Colors.grey[600]),
-                              controller: _controller,
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                labelText: 'Endereço',
-                              ),
-                              onChanged: null,
-                              ),
+                            style: TextStyle(color: Colors.grey[600]),
+                            controller: _controller,
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: 'Endereço',
+                            ),
+                            onChanged: null,
+                          ),
                         ),
                       ],
                     ),
                   ),
                 ),
-                
                 Padding(
                   padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 0.0),
                   child: Row(

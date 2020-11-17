@@ -1,20 +1,30 @@
-
 import 'package:flutter/material.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
 import 'package:rPiInterface/utils/plot_data.dart';
+import 'package:rPiInterface/utils/battery_indicator.dart';
 
 class RealtimePage extends StatefulWidget {
 
   ValueNotifier<List> dataNotifier;
   ValueNotifier<List> dataChannelsNotifier;
+
   MQTTClientWrapper mqttClientWrapper;
+
   ValueNotifier<String> hostnameNotifier;
+
+  ValueNotifier<String> acquisitionNotifier;
+
+  ValueNotifier<double> batteryBit1Notifier;
+  ValueNotifier<double> batteryBit2Notifier;
 
   RealtimePage({
     this.dataNotifier,
     this.dataChannelsNotifier,
     this.mqttClientWrapper,
     this.hostnameNotifier,
+    this.acquisitionNotifier,
+    this.batteryBit1Notifier,
+    this.batteryBit2Notifier,
   });
 
   @override
@@ -22,7 +32,6 @@ class RealtimePage extends StatefulWidget {
 }
 
 class _RealtimePageState extends State<RealtimePage> {
-
   List aux;
 
   ValueNotifier<List<double>> data1 = ValueNotifier([]);
@@ -48,9 +57,7 @@ class _RealtimePageState extends State<RealtimePage> {
   List<double> yRange10 = [0, 10];
 
   void _stopAcquisition() {
-    print(widget.hostnameNotifier);
     widget.mqttClientWrapper.publishMessage("['INTERRUPT']");
-    //_showSnackBar('Aquisição terminada e dados gravados');
   }
 
   bool _rangeUpdateNeeded(List data, List currentRange) {
@@ -99,7 +106,6 @@ class _RealtimePageState extends State<RealtimePage> {
               if (_rangeUpdateNeeded(aux, yRange1)) {
                 setState(() => yRange1 = _updateRange(aux, yRange1));
               }
-              print('yRange1: $yRange1');
             } else if (index == 1) {
               setState(() => data2.value.add(value));
               if (data2.value.length > canvasWidth) {
@@ -110,7 +116,7 @@ class _RealtimePageState extends State<RealtimePage> {
               if (_rangeUpdateNeeded(aux, yRange2)) {
                 setState(() => yRange2 = _updateRange(aux, yRange2));
               }
-              } else if (index == 2) {
+            } else if (index == 2) {
               setState(() => data3.value.add(value));
               if (data3.value.length > canvasWidth) {
                 data3.value.removeAt(0);
@@ -202,15 +208,105 @@ class _RealtimePageState extends State<RealtimePage> {
     return Scaffold(
       appBar: new AppBar(
         title: new Text('Visualização'),
+        actions: [Column(children: [
+          ValueListenableBuilder(
+            valueListenable: widget.batteryBit1Notifier,
+            builder: (BuildContext context, double battery, Widget child) {
+              return battery != null
+                  ? Row(children: [
+                      Text('MAC 1: ',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 13)),
+                      SizedBox(
+                        width: 50.0,
+                        height: 27.0,
+                        child: new Center(
+                          child: BatteryIndicator(
+                            style: BatteryIndicatorStyle.skeumorphism,
+                            batteryLevel: battery,
+                            showPercentNum: false,
+                            mainColor: Colors.black,
+                            height: 10,
+                            width: 20,
+
+                          ),
+                        ),
+                      ),
+                    ])
+                  : SizedBox.shrink();
+            },
+          ),
+          ValueListenableBuilder(
+            valueListenable: widget.batteryBit2Notifier,
+            builder: (BuildContext context, double battery, Widget child) {
+              return battery != null
+                  ? Row(children: [
+                      Text('MAC 2: ',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 13)),
+                      SizedBox(
+                        width: 50.0,
+                        height: 27.0,
+                        child: new Center(
+                          child: BatteryIndicator(
+                            style: BatteryIndicatorStyle.skeumorphism,
+                            batteryLevel: battery,
+                            showPercentNum: false,
+                            mainColor: Colors.black,
+                            height: 10,
+                            width: 20,
+                            //showPercentSlide: _showPercentSlide,
+                          ),
+                        ),
+                      ),
+                    ])
+                  : SizedBox.shrink();
+            },
+          ),
+        ]),],
       ),
       body: Container(
         child: SingleChildScrollView(
           child: SizedBox(
             height: MediaQuery.of(context).size.height,
             child: new Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
               mainAxisSize: MainAxisSize.max,
               children: [
+                ValueListenableBuilder(
+                    valueListenable: widget.acquisitionNotifier,
+                    builder:
+                        (BuildContext context, String state, Widget child) {
+                      return Container(
+                        height: 20,
+                        color: state == 'acquiring'
+                            ? Colors.green[50]
+                            : state == 'reconnecting'
+                                ? Colors.yellow[50]
+                                : Colors.red[50],
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: Container(
+                            child: Text(
+                              state == 'acquiring'
+                                  ? 'A adquirir dados'
+                                  : state == 'reconnecting'
+                                      ? 'A retomar aquisição ...'
+                                      : state == 'stopped'
+                                          ? 'Aquisição terminada e dados gravados'
+                                          : 'Aquisição desligada',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                //fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
                 // ############### PLOT 1 ###############
                 if (widget.dataChannelsNotifier.value.length > 0)
                   PlotDataTitle(channels: widget.dataChannelsNotifier.value[0]),

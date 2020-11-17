@@ -55,8 +55,6 @@ class _OscilloscopeState extends State<Oscilloscope> {
   @override
   void initState() {
     super.initState();
-    print('max: ${widget.yAxisMax}');
-    print('min: ${widget.yAxisMin}');
     
   }
 

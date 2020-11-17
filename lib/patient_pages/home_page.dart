@@ -8,12 +8,12 @@ import 'package:provider/provider.dart';
 import 'package:rPiInterface/common_pages/real_time.dart';
 import 'package:rPiInterface/patient_pages/devices_setup.dart';
 import 'package:rPiInterface/common_pages/rpi_setup.dart';
-import 'package:rPiInterface/common_pages/webview_page.dart';
 import 'package:rPiInterface/patient_pages/qr_page.dart';
 import 'package:rPiInterface/utils/authentication.dart';
 import 'package:rPiInterface/utils/models.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:rPiInterface/utils/battery_indicator.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -29,8 +29,10 @@ class _HomePageState extends State<HomePage> {
   ValueNotifier<String> macAddress1Notifier = ValueNotifier('Endereço MAC');
   ValueNotifier<String> macAddress2Notifier = ValueNotifier('Endereço MAC');
 
-  ValueNotifier<String> defaultMacAddress1Notifier = ValueNotifier('Endereço MAC');
-  ValueNotifier<String> defaultMacAddress2Notifier = ValueNotifier('Endereço MAC');
+  ValueNotifier<String> defaultMacAddress1Notifier =
+      ValueNotifier('Endereço MAC');
+  ValueNotifier<String> defaultMacAddress2Notifier =
+      ValueNotifier('Endereço MAC');
 
   ValueNotifier<List<String>> driveListNotifier =
       ValueNotifier(['Armazenamento interno']);
@@ -42,14 +44,17 @@ class _HomePageState extends State<HomePage> {
   ValueNotifier<bool> receivedMACNotifier = ValueNotifier(false);
   ValueNotifier<bool> sentMACNotifier = ValueNotifier(false);
 
+  ValueNotifier<double> batteryBit1Notifier = ValueNotifier(null);
+  ValueNotifier<double> batteryBit2Notifier = ValueNotifier(null);
+
   final Auth _auth = Auth();
   final firestoreInstance = Firestore.instance;
 
   String message;
 
   // dataNotifier: list of lists, each sublist corresponds to a channel acquired
-  ValueNotifier<List> dataNotifier = ValueNotifier([]); 
-  ValueNotifier<List> dataChannelsNotifier = ValueNotifier([]); 
+  ValueNotifier<List> dataNotifier = ValueNotifier([]);
+  ValueNotifier<List> dataChannelsNotifier = ValueNotifier([]);
 
   MqttCurrentConnectionState connectionState;
   MQTTClientWrapper mqttClientWrapper;
@@ -99,8 +104,9 @@ class _HomePageState extends State<HomePage> {
     _isMACAddress(message);
     _isDrivesList(message);
     _macReceived(message);
-    _isAcquisitionStarting(message);
+    _isAcquisitionState(message);
     _isData(message);
+    _isBatteryLevel(message);
   }
 
   void updatedConnection(MqttCurrentConnectionState newConnectionState) {
@@ -149,7 +155,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void _isAcquisitionStarting(String message) {
+  void _isAcquisitionState(String message) {
     if (message.contains('STARTING')) {
       setState(() => acquisitionNotifier.value = 'acquiring');
       print('ACQUISITION STARTING');
@@ -170,6 +176,24 @@ class _HomePageState extends State<HomePage> {
       List message2List = json.decode(message);
       setState(() => dataNotifier.value = message2List[1]);
       setState(() => dataChannelsNotifier.value = message2List[2]);
+    }
+  }
+
+  void _isBatteryLevel(String message) {
+    if (message.contains('BATTERY')) {
+      List message2List = json.decode(message);
+      for (var entry in message2List[1].entries) {
+        double _levelRatio = (entry.value - 520.66) /
+            (647.4 -
+                520.66); //max values alculated assuming 589 is 95% and 527 is 5%
+        double _level =
+            (_levelRatio > 1) ? 1 : (_levelRatio < 0) ? 0 : _levelRatio;
+        if (entry.key == macAddress1Notifier.value) {
+          setState(() => batteryBit1Notifier.value = _level);
+        } else if (entry.key == macAddress2Notifier.value) {
+          setState(() => batteryBit2Notifier.value = _level);
+        }
+      }
     }
   }
 
@@ -319,6 +343,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
+
     return Scaffold(
       key: _scaffoldKey,
       drawer: Drawer(
@@ -491,23 +517,75 @@ class _HomePageState extends State<HomePage> {
                     }));
                   },
                 ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                    width - 0.9 * width, 50, width - 0.9 * width, 50),
+                child: RaisedButton.icon(
+                  label: Text(
+                    'Sign out',
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                  icon: Icon(
+                    Icons.person,
+                    color: Colors.grey[600],
+                  ),
+                  onPressed: () async {
+                    await _auth.signOut();
+                  },
+                ),
               )
             ]),
       ),
       appBar: new AppBar(title: new Text('PreEpiSeizures'), actions: <Widget>[
-        FlatButton.icon(
-          label: Text(
-            'Sign out',
-            style: TextStyle(color: Colors.white),
+        Column(children: [
+          ValueListenableBuilder(
+            valueListenable: batteryBit1Notifier,
+            builder: (BuildContext context, double battery, Widget child) {
+              return battery != null
+                  ? Row(children: [
+                      Text('MAC 1: ',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 13)),
+                      SizedBox(
+                        width: 50.0,
+                        height: 27.0,
+                        child: new Center(
+                          child: BatteryIndicator(
+                            style: BatteryIndicatorStyle.skeumorphism,
+                            batteryLevel: battery,
+                          ),
+                        ),
+                      ),
+                    ])
+                  : SizedBox.shrink();
+            },
           ),
-          icon: Icon(
-            Icons.person,
-            color: Colors.white,
+          ValueListenableBuilder(
+            valueListenable: batteryBit2Notifier,
+            builder: (BuildContext context, double battery, Widget child) {
+              return battery != null
+                  ? Row(children: [
+                      Text('MAC 2: ',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 13)),
+                      SizedBox(
+                        width: 50.0,
+                        height: 27.0,
+                        child: new Center(
+                          child: BatteryIndicator(
+                            style: BatteryIndicatorStyle.skeumorphism,
+                            batteryLevel: battery,
+                          ),
+                        ),
+                      ),
+                    ])
+                  : SizedBox.shrink();
+            },
           ),
-          onPressed: () async {
-            await _auth.signOut();
-          },
-        )
+        ]),
       ]),
       body: ListView(children: <Widget>[
         ValueListenableBuilder(
@@ -585,17 +663,22 @@ class _HomePageState extends State<HomePage> {
                     return StreamProvider<User>.value(
                         value: Auth().user,
                         child: RPiPage(
-                            mqttClientWrapper: mqttClientWrapper,
-                            connectionNotifier: connectionNotifier,
-                            defaultMacAddress1Notifier: defaultMacAddress1Notifier,
-                            defaultMacAddress2Notifier: defaultMacAddress2Notifier,
-                            macAddress1Notifier: macAddress1Notifier,
-                            macAddress2Notifier: macAddress2Notifier,
-                            receivedMACNotifier: receivedMACNotifier,
-                            driveListNotifier: driveListNotifier,
-                            acquisitionNotifier: acquisitionNotifier,
-                            hostnameNotifier: hostnameNotifier,
-                            sentMACNotifier: sentMACNotifier));
+                          mqttClientWrapper: mqttClientWrapper,
+                          connectionNotifier: connectionNotifier,
+                          defaultMacAddress1Notifier:
+                              defaultMacAddress1Notifier,
+                          defaultMacAddress2Notifier:
+                              defaultMacAddress2Notifier,
+                          macAddress1Notifier: macAddress1Notifier,
+                          macAddress2Notifier: macAddress2Notifier,
+                          receivedMACNotifier: receivedMACNotifier,
+                          driveListNotifier: driveListNotifier,
+                          acquisitionNotifier: acquisitionNotifier,
+                          hostnameNotifier: hostnameNotifier,
+                          sentMACNotifier: sentMACNotifier,
+                          batteryBit1Notifier: batteryBit1Notifier,
+                          batteryBit2Notifier: batteryBit2Notifier,
+                        ));
                   }),
                 );
               },
@@ -624,8 +707,10 @@ class _HomePageState extends State<HomePage> {
                         value: Auth().user,
                         child: DevicesPage(
                             mqttClientWrapper: mqttClientWrapper,
-                            defaultMacAddress1Notifier: defaultMacAddress1Notifier,
-                            defaultMacAddress2Notifier: defaultMacAddress2Notifier,
+                            defaultMacAddress1Notifier:
+                                defaultMacAddress1Notifier,
+                            defaultMacAddress2Notifier:
+                                defaultMacAddress2Notifier,
                             macAddress1Notifier: macAddress1Notifier,
                             macAddress2Notifier: macAddress2Notifier,
                             connectionNotifier: connectionNotifier,
@@ -661,6 +746,9 @@ class _HomePageState extends State<HomePage> {
                       dataChannelsNotifier: dataChannelsNotifier,
                       mqttClientWrapper: mqttClientWrapper,
                       hostnameNotifier: hostnameNotifier,
+                      acquisitionNotifier: acquisitionNotifier,
+                      batteryBit1Notifier: batteryBit1Notifier,
+                      batteryBit2Notifier: batteryBit2Notifier,
                     );
                   }),
                 );
@@ -681,6 +769,9 @@ class _HomePageState extends State<HomePage> {
                       dataChannelsNotifier: dataChannelsNotifier,
                       mqttClientWrapper: mqttClientWrapper,
                       hostnameNotifier: hostnameNotifier,
+                      acquisitionNotifier: acquisitionNotifier,
+                      batteryBit1Notifier: batteryBit1Notifier,
+                      batteryBit2Notifier: batteryBit2Notifier,
                     );
                   }),
                 );
