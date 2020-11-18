@@ -50,6 +50,8 @@ class _HomeHPageState extends State<HomeHPage> {
   ValueNotifier<double> batteryBit1Notifier = ValueNotifier(null);
   ValueNotifier<double> batteryBit2Notifier = ValueNotifier(null);
 
+  ValueNotifier<List<String>> sensorsNotifier = ValueNotifier([]);
+
   final firestoreInstance = Firestore.instance;
 
   String message;
@@ -59,6 +61,7 @@ class _HomeHPageState extends State<HomeHPage> {
   // dataNotifier: list of lists, each sublist corresponds to a channel acquired
   ValueNotifier<List> dataNotifier = ValueNotifier([]);
   ValueNotifier<List> dataChannelsNotifier = ValueNotifier([]);
+  ValueNotifier<List> dataSensorsNotifier = ValueNotifier([]);
   //var _wifiSubscription;
 
   MqttCurrentConnectionState connectionState;
@@ -82,22 +85,6 @@ class _HomeHPageState extends State<HomeHPage> {
     acquisitionNotifier.value = 'off';
     setupHome();
     _nameController.text = " ";
-    /* dialogNotifier.addListener(() => dialogNotifier.value == true ? _showWifiDialog() : {});
-    dialogNotifier.value = true; */
-    /* acquisitionNotifier.addListener(() {
-      _showSnackBar(
-        acquisitionNotifier.value == 'acquiring'
-            ? 'A adquirir dados'
-            : acquisitionNotifier.value == 'reconnecting'
-                ? 'A retomar aquisição ...'
-                : acquisitionNotifier.value == 'stopped'
-                    ? 'Aquisição terminada e dados gravados'
-                    : 'Aquisição desligada',
-      );
-    }); */
-    /* _wifiSubscription = Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
-      print('Connectivity status' + result.toString());
-    }); */
   }
 
   @override
@@ -169,33 +156,33 @@ class _HomeHPageState extends State<HomeHPage> {
     }
   }
 
-  /* void _isHostname(String message) {
-    if (message.contains('HOSTNAME')) {
-      setState(() => hostnameNotifier.value = message.split("'")[3]);
-    }
-  } */
 
   void _isAcquisitionState(String message) {
     if (message.contains('STARTING')) {
-      setState(() => acquisitionNotifier.value = 'acquiring');
+      setState(() => acquisitionNotifier.value = 'starting');
       print('ACQUISITION STARTING');
+    } else if (message.contains('ACQUISITION ON')) {
+      setState(() => acquisitionNotifier.value = 'acquiring');
+      print('ACQUIRING');
+      } else if (message.contains('TRYING')) {
+      setState(() => acquisitionNotifier.value = 'trying');
+      print('TRYING TO CONNECT TO DEVICES');
     } else if (message.contains('RECONNECTING')) {
       setState(() => acquisitionNotifier.value = 'reconnecting');
       print('RECONNECTING ACQUISITION');
     } else if (message.contains('STOPPED')) {
       setState(() => acquisitionNotifier.value = 'stopped');
       print('ACQUISITION STOPPED AND SAVED');
-    } else if (message.contains('OFF')) {
-      setState(() => acquisitionNotifier.value = 'off');
-      print('ACQUISITION OFF');
     }
   }
 
   void _isData(String message) {
     if (message.contains('DATA')) {
+      setState(() => acquisitionNotifier.value = 'acquiring'); // if user leaves the app, this will enable the visualization nontheless
       List message2List = json.decode(message);
       setState(() => dataNotifier.value = message2List[1]);
       setState(() => dataChannelsNotifier.value = message2List[2]);
+      setState(() => dataSensorsNotifier.value = message2List[3]);
     }
   }
 
@@ -382,7 +369,6 @@ class _HomeHPageState extends State<HomeHPage> {
                           child: BatteryIndicator(
                             style: BatteryIndicatorStyle.skeumorphism,
                             batteryLevel: battery,
-                            //showPercentSlide: _showPercentSlide,
                           ),
                         ),
                       ),
@@ -424,17 +410,21 @@ class _HomeHPageState extends State<HomeHPage> {
                 height: 20,
                 color: state == 'acquiring'
                     ? Colors.green[50]
-                    : state == 'reconnecting'
+                    : (state == 'starting' || state == 'reconnecting' || state == 'trying')
                         ? Colors.yellow[50]
                         : Colors.red[50],
                 child: Align(
                   alignment: Alignment.center,
                   child: Container(
                     child: Text(
-                      state == 'acquiring'
+                      state == 'starting'
+                      ? 'A iniciar aquisição ...'
+                      : state == 'acquiring'
                           ? 'A adquirir dados'
                           : state == 'reconnecting'
                               ? 'A retomar aquisição ...'
+                              : state == 'trying'
+                              ? 'A reconectar aos dispositivos ...'
                               : state == 'stopped'
                                   ? 'Aquisição terminada e dados gravados'
                                   : 'Aquisição desligada',
@@ -480,6 +470,8 @@ class _HomeHPageState extends State<HomeHPage> {
                       sentConfigNotifier: sentConfigNotifier,
                       batteryBit1Notifier: batteryBit1Notifier,
                       batteryBit2Notifier: batteryBit2Notifier,
+                      isBit1Enabled: isBit1Enabled,
+                      isBit2Enabled: isBit2Enabled,
                     );
                   }),
                 );
@@ -513,7 +505,6 @@ class _HomeHPageState extends State<HomeHPage> {
                         macAddress1Notifier: macAddress1Notifier,
                         macAddress2Notifier: macAddress2Notifier,
                         connectionNotifier: connectionNotifier,
-                        acquisitionNotifier: acquisitionNotifier,
                         isBit1Enabled: isBit1Enabled,
                         isBit2Enabled: isBit2Enabled,
                         receivedMACNotifier: receivedMACNotifier,
@@ -576,16 +567,11 @@ class _HomeHPageState extends State<HomeHPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) {
-                    /* return WebviewPage(
-                      mqttClientWrapper: mqttClientWrapper,
-                      acquisitionNotifier: acquisitionNotifier,
-                      hostnameNotifier: hostnameNotifier,
-                    ); */
                     return RealtimePage(
                       dataNotifier: dataNotifier,
                       dataChannelsNotifier: dataChannelsNotifier,
+                      dataSensorsNotifier: dataSensorsNotifier,
                       mqttClientWrapper: mqttClientWrapper,
-                      hostnameNotifier: hostnameNotifier,
                       acquisitionNotifier: acquisitionNotifier,
                       batteryBit1Notifier: batteryBit1Notifier,
                       batteryBit2Notifier: batteryBit2Notifier,
@@ -607,8 +593,8 @@ class _HomeHPageState extends State<HomeHPage> {
                     return RealtimePage(
                       dataNotifier: dataNotifier,
                       dataChannelsNotifier: dataChannelsNotifier,
+                      dataSensorsNotifier: dataSensorsNotifier,
                       mqttClientWrapper: mqttClientWrapper,
-                      hostnameNotifier: hostnameNotifier,
                       acquisitionNotifier: acquisitionNotifier,
                       batteryBit1Notifier: batteryBit1Notifier,
                       batteryBit2Notifier: batteryBit2Notifier,

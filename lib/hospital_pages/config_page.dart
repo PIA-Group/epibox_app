@@ -23,7 +23,8 @@ class ConfigPage extends StatefulWidget {
       this.isBit2Enabled,
       this.macAddress1Notifier,
       this.macAddress2Notifier,
-      this.sentConfigNotifier});
+      this.sentConfigNotifier,
+      });
 
   @override
   _ConfigPageState createState() => _ConfigPageState();
@@ -36,6 +37,34 @@ class _ConfigPageState extends State<ConfigPage> {
   List<bool> _bit2Selections = List.generate(6, (_) => false);
 
   List<String> _channels2Send = [];
+  List<String> _sensors2Send = [];
+
+  List<DropdownMenuItem<String>> sensorItems =
+      ['-', 'ECG', 'EDA', 'EEG', 'EMG', 'ACC'].map((String value) {
+    return new DropdownMenuItem<String>(
+      value: value,
+      child: Center(
+        child: Text(
+          value,
+          style: TextStyle(color: Colors.black),
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }).toList();
+
+  final TextEditingController controllerSensorBit1A1 = TextEditingController();
+  final TextEditingController controllerSensorBit1A2 = TextEditingController();
+  final TextEditingController controllerSensorBit1A3 = TextEditingController();
+  final TextEditingController controllerSensorBit1A4 = TextEditingController();
+  final TextEditingController controllerSensorBit1A5 = TextEditingController();
+  final TextEditingController controllerSensorBit1A6 = TextEditingController();
+  final TextEditingController controllerSensorBit2A1 = TextEditingController();
+  final TextEditingController controllerSensorBit2A2 = TextEditingController();
+  final TextEditingController controllerSensorBit2A3 = TextEditingController();
+  final TextEditingController controllerSensorBit2A4 = TextEditingController();
+  final TextEditingController controllerSensorBit2A5 = TextEditingController();
+  final TextEditingController controllerSensorBit2A6 = TextEditingController();
 
   final TextEditingController _controllerFreq = TextEditingController();
 
@@ -44,12 +73,26 @@ class _ConfigPageState extends State<ConfigPage> {
     super.initState();
     _controllerFreq.text = '1000';
     _chosenDrive = widget.driveListNotifier.value[0];
+    controllerSensorBit1A1.text = '-';
+    controllerSensorBit1A2.text = '-';
+    controllerSensorBit1A3.text = '-';
+    controllerSensorBit1A4.text = '-';
+    controllerSensorBit1A5.text = '-';
+    controllerSensorBit1A6.text = '-';
+    controllerSensorBit2A1.text = '-';
+    controllerSensorBit2A2.text = '-';
+    controllerSensorBit2A3.text = '-';
+    controllerSensorBit2A4.text = '-';
+    controllerSensorBit2A5.text = '-';
+    controllerSensorBit2A6.text = '-';
   }
 
   Future<void> _setup() async {
-    print('mac1: ${widget.macAddress1Notifier.value}, mac2: ${widget.macAddress2Notifier.value}');
+    print(
+        'mac1: ${widget.macAddress1Notifier.value}, mac2: ${widget.macAddress2Notifier.value}');
     widget.mqttClientWrapper.publishMessage("['FOLDER', '$_chosenDrive']");
     widget.mqttClientWrapper.publishMessage("['FS', ${_controllerFreq.text}]");
+
     _bit1Selections.asMap().forEach((channel, value) {
       if (value) {
         _channels2Send.add(widget.macAddress1Notifier.value);
@@ -63,15 +106,50 @@ class _ConfigPageState extends State<ConfigPage> {
       }
     });
     widget.mqttClientWrapper.publishMessage("['CHANNELS', '$_channels2Send']");
+
+    List<String> sensors = [
+      controllerSensorBit1A1.text,
+      controllerSensorBit1A2.text,
+      controllerSensorBit1A3.text,
+      controllerSensorBit1A4.text,
+      controllerSensorBit1A5.text,
+      controllerSensorBit1A6.text
+    ];
+    _bit1Selections.asMap().forEach((channel, value) {
+      if (value) {
+        _sensors2Send.add(sensors[channel]);
+      }
+    });
+    sensors = [
+      controllerSensorBit2A1.text,
+      controllerSensorBit2A2.text,
+      controllerSensorBit2A3.text,
+      controllerSensorBit2A4.text,
+      controllerSensorBit2A5.text,
+      controllerSensorBit2A6.text
+    ];
+    _bit2Selections.asMap().forEach((channel, value) {
+      if (value) {
+        _sensors2Send.add(sensors[channel]);
+      }
+    });
+    widget.mqttClientWrapper.publishMessage("['SENSORS', '$_sensors2Send']");
+
     setState(() => _channels2Send = []);
+    setState(() => _sensors2Send = []);
+
     Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    final bodyWidth = MediaQuery.of(context).size.width -
+    final width = MediaQuery.of(context).size.width -
         MediaQuery.of(context).viewInsets.left -
         MediaQuery.of(context).viewInsets.right;
+
+    final height = MediaQuery.of(context).size.height -
+        MediaQuery.of(context).viewInsets.top -
+        MediaQuery.of(context).viewInsets.bottom;
 
     return Scaffold(
       appBar: AppBar(
@@ -82,13 +160,10 @@ class _ConfigPageState extends State<ConfigPage> {
           children: <Widget>[
             ValueListenableBuilder(
                 valueListenable: widget.sentConfigNotifier,
-                builder: (BuildContext context,
-                    bool state, Widget child) {
+                builder: (BuildContext context, bool state, Widget child) {
                   return Container(
                     height: 20,
-                    color: state
-                        ? Colors.green[50]
-                        : Colors.red[50],
+                    color: state ? Colors.green[50] : Colors.red[50],
                     child: Align(
                       alignment: Alignment.center,
                       child: Container(
@@ -107,7 +182,7 @@ class _ConfigPageState extends State<ConfigPage> {
                   );
                 }),
             Padding(
-              padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
+              padding: EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 0.0),
               child: Column(children: [
                 Padding(
                   padding: EdgeInsets.fromLTRB(20.0, 20.0, 0.0, 10.0),
@@ -126,8 +201,8 @@ class _ConfigPageState extends State<ConfigPage> {
                   ),
                 ),
                 Container(
-                  height: 100.0,
-                  width: 300.0,
+                  height: height * 0.1,
+                  width: width * 0.85,
                   color: Colors.transparent,
                   child: Container(
                     decoration: BoxDecoration(
@@ -143,7 +218,7 @@ class _ConfigPageState extends State<ConfigPage> {
                     child: ListView(
                       children: [
                         Padding(
-                          padding: EdgeInsets.fromLTRB(15.0, 20.0, 15.0, 0.0),
+                          padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 0.0),
                           child: DropdownButton(
                             value: _chosenDrive,
                             items: widget.driveListNotifier.value
@@ -167,7 +242,7 @@ class _ConfigPageState extends State<ConfigPage> {
               ]),
             ),
             Padding(
-              padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
+              padding: EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 0.0),
               child: Column(children: [
                 Padding(
                   padding: EdgeInsets.fromLTRB(20.0, 20.0, 0.0, 10.0),
@@ -186,8 +261,8 @@ class _ConfigPageState extends State<ConfigPage> {
                   ),
                 ),
                 Container(
-                  height: 200.0,
-                  width: 300.0,
+                  height: 320.0,
+                  width: width * 0.85,
                   color: Colors.transparent,
                   child: Container(
                     decoration: BoxDecoration(
@@ -203,7 +278,7 @@ class _ConfigPageState extends State<ConfigPage> {
                     child: ListView(
                       children: [
                         Padding(
-                          padding: EdgeInsets.fromLTRB(15.0, 20.0, 15.0, 0.0),
+                          padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 0.0),
                           child: Row(
                             children: [
                               Text(
@@ -229,19 +304,9 @@ class _ConfigPageState extends State<ConfigPage> {
                                         ),
                                       );
                                     }).toList(),
-                                    onChanged: (fs) =>
-                                        setState(() => _controllerFreq.text = fs),
+                                    onChanged: (fs) => setState(
+                                        () => _controllerFreq.text = fs),
                                   ),
-                                  /* TextField(
-                                    controller: _controllerFreq,
-                                      keyboardType: TextInputType.number,
-                                      style: TextStyle(
-                                          color: Colors.grey[600], height: 1.0),
-                                      decoration: InputDecoration(
-                                        isDense: true,
-                                        //border: OutlineInputBorder(),
-                                      ),
-                                      onChanged: null), */
                                 ),
                               ),
                             ],
@@ -325,6 +390,90 @@ class _ConfigPageState extends State<ConfigPage> {
                                     : null,
                               )
                             ]),
+                        Padding(
+                          padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 5.0),
+                          child: Text(
+                            'Sensores dispositivo 1:',
+                            style: TextStyle(
+                                fontSize: 16, color: Colors.grey[600]),
+                          ),
+                        ),
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              SensorContainer(
+                                  controller: controllerSensorBit1A1,
+                                  sensorItems: sensorItems,
+                                  position: 'cornerL',
+                                  isBitEnabled: widget.isBit1Enabled.value),
+                              SensorContainer(
+                                  controller: controllerSensorBit1A2,
+                                  sensorItems: sensorItems,
+                                  position: 'secondL',
+                                  isBitEnabled: widget.isBit1Enabled.value),
+                              SensorContainer(
+                                  controller: controllerSensorBit1A3,
+                                  sensorItems: sensorItems,
+                                  position: 'middle',
+                                  isBitEnabled: widget.isBit1Enabled.value),
+                              SensorContainer(
+                                  controller: controllerSensorBit1A4,
+                                  sensorItems: sensorItems,
+                                  position: 'middle',
+                                  isBitEnabled: widget.isBit1Enabled.value),
+                              SensorContainer(
+                                  controller: controllerSensorBit1A5,
+                                  sensorItems: sensorItems,
+                                  position: 'middle',
+                                  isBitEnabled: widget.isBit1Enabled.value),
+                              SensorContainer(
+                                  controller: controllerSensorBit1A6,
+                                  sensorItems: sensorItems,
+                                  position: 'cornerR',
+                                  isBitEnabled: widget.isBit1Enabled.value),
+                            ]),
+                        Padding(
+                          padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 5.0),
+                          child: Text(
+                            'Sensores dispositivo 2:',
+                            style: TextStyle(
+                                fontSize: 16, color: Colors.grey[600]),
+                          ),
+                        ),
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              SensorContainer(
+                                  controller: controllerSensorBit2A1,
+                                  sensorItems: sensorItems,
+                                  position: 'cornerL',
+                                  isBitEnabled: widget.isBit2Enabled.value),
+                              SensorContainer(
+                                  controller: controllerSensorBit2A2,
+                                  sensorItems: sensorItems,
+                                  position: 'secondL',
+                                  isBitEnabled: widget.isBit2Enabled.value),
+                              SensorContainer(
+                                  controller: controllerSensorBit2A3,
+                                  sensorItems: sensorItems,
+                                  position: 'middle',
+                                  isBitEnabled: widget.isBit2Enabled.value),
+                              SensorContainer(
+                                  controller: controllerSensorBit2A4,
+                                  sensorItems: sensorItems,
+                                  position: 'middle',
+                                  isBitEnabled: widget.isBit2Enabled.value),
+                              SensorContainer(
+                                  controller: controllerSensorBit2A5,
+                                  sensorItems: sensorItems,
+                                  position: 'middle',
+                                  isBitEnabled: widget.isBit2Enabled.value),
+                              SensorContainer(
+                                  controller: controllerSensorBit2A6,
+                                  sensorItems: sensorItems,
+                                  position: 'cornerR',
+                                  isBitEnabled: widget.isBit2Enabled.value),
+                            ]),
                       ],
                     ),
                   ),
@@ -332,7 +481,7 @@ class _ConfigPageState extends State<ConfigPage> {
               ]),
             ),
             Padding(
-              padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
+              padding: EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 0.0),
               child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -345,6 +494,78 @@ class _ConfigPageState extends State<ConfigPage> {
                   ]),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class SensorContainer extends StatefulWidget {
+  TextEditingController controller;
+  List<DropdownMenuItem<String>> sensorItems;
+  String position;
+  bool isBitEnabled;
+
+  SensorContainer(
+      {this.controller, this.sensorItems, this.position, this.isBitEnabled});
+
+  @override
+  _SensorContainerState createState() => _SensorContainerState();
+}
+
+class _SensorContainerState extends State<SensorContainer> {
+  @override
+  Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width -
+        MediaQuery.of(context).viewInsets.left -
+        MediaQuery.of(context).viewInsets.right;
+
+    Color borderColor = Colors.grey[350];
+
+    return Container(
+      width: (width * 0.85 - 2 * 30.0) / 6,
+      decoration: (widget.position == 'cornerL')
+          ? BoxDecoration(
+              borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(25),
+                  bottomLeft: Radius.circular(25)),
+              border: Border.all(color: borderColor),
+            )
+          : (widget.position == 'cornerR')
+              ? BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(25),
+                      bottomRight: Radius.circular(25)),
+                  border: Border.all(color: borderColor),
+                )
+              : (widget.position == 'secondL')
+                  ? BoxDecoration(
+                      border: Border(
+                      top: BorderSide(color: borderColor),
+                      bottom: BorderSide(color: borderColor),
+                    ))
+                  : BoxDecoration(
+                      border: Border(
+                          top: BorderSide(color: borderColor),
+                          bottom: BorderSide(color: borderColor),
+                          left: BorderSide(color: borderColor))),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton(
+          iconSize: 0.0,
+          value: widget.controller.text,
+          items: widget.sensorItems,
+          onChanged: widget.isBitEnabled
+              ? (sensor) => setState(() => widget.controller.text = sensor)
+              : null,
+          isDense: true,
+          isExpanded: true,
+          disabledHint: Center(
+            child: Text(
+              '-',
+              style: TextStyle(color: Colors.grey[400]),
+              textAlign: TextAlign.center,
+            ),
+          ),
         ),
       ),
     );

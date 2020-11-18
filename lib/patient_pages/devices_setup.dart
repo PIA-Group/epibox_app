@@ -20,8 +20,6 @@ class DevicesPage extends StatefulWidget {
   ValueNotifier<String> macAddress1Notifier;
   ValueNotifier<String> macAddress2Notifier;
 
-  ValueNotifier<String> acquisitionNotifier;
-
   ValueNotifier<bool> receivedMACNotifier;
   ValueNotifier<bool> sentMACNotifier;
 
@@ -35,7 +33,6 @@ class DevicesPage extends StatefulWidget {
       this.macAddress1Notifier,
       this.macAddress2Notifier,
       this.connectionNotifier,
-      this.acquisitionNotifier,
       this.receivedMACNotifier,
       this.sentMACNotifier});
 

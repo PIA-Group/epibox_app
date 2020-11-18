@@ -4,13 +4,10 @@ import 'package:rPiInterface/utils/plot_data.dart';
 import 'package:rPiInterface/utils/battery_indicator.dart';
 
 class RealtimePage extends StatefulWidget {
-
   ValueNotifier<List> dataNotifier;
   ValueNotifier<List> dataChannelsNotifier;
-
+  ValueNotifier<List> dataSensorsNotifier;
   MQTTClientWrapper mqttClientWrapper;
-
-  ValueNotifier<String> hostnameNotifier;
 
   ValueNotifier<String> acquisitionNotifier;
 
@@ -20,8 +17,8 @@ class RealtimePage extends StatefulWidget {
   RealtimePage({
     this.dataNotifier,
     this.dataChannelsNotifier,
+    this.dataSensorsNotifier,
     this.mqttClientWrapper,
-    this.hostnameNotifier,
     this.acquisitionNotifier,
     this.batteryBit1Notifier,
     this.batteryBit2Notifier,
@@ -208,64 +205,57 @@ class _RealtimePageState extends State<RealtimePage> {
     return Scaffold(
       appBar: new AppBar(
         title: new Text('Visualização'),
-        actions: [Column(children: [
-          ValueListenableBuilder(
-            valueListenable: widget.batteryBit1Notifier,
-            builder: (BuildContext context, double battery, Widget child) {
-              return battery != null
-                  ? Row(children: [
-                      Text('MAC 1: ',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 13)),
-                      SizedBox(
-                        width: 50.0,
-                        height: 27.0,
-                        child: new Center(
-                          child: BatteryIndicator(
-                            style: BatteryIndicatorStyle.skeumorphism,
-                            batteryLevel: battery,
-                            showPercentNum: false,
-                            mainColor: Colors.black,
-                            height: 10,
-                            width: 20,
-
+        actions: [
+          Column(children: [
+            ValueListenableBuilder(
+              valueListenable: widget.batteryBit1Notifier,
+              builder: (BuildContext context, double battery, Widget child) {
+                return battery != null
+                    ? Row(children: [
+                        Text('MAC 1: ',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 13)),
+                        SizedBox(
+                          width: 50.0,
+                          height: 27.0,
+                          child: new Center(
+                            child: BatteryIndicator(
+                              style: BatteryIndicatorStyle.skeumorphism,
+                              batteryLevel: battery,
+                            ),
                           ),
                         ),
-                      ),
-                    ])
-                  : SizedBox.shrink();
-            },
-          ),
-          ValueListenableBuilder(
-            valueListenable: widget.batteryBit2Notifier,
-            builder: (BuildContext context, double battery, Widget child) {
-              return battery != null
-                  ? Row(children: [
-                      Text('MAC 2: ',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 13)),
-                      SizedBox(
-                        width: 50.0,
-                        height: 27.0,
-                        child: new Center(
-                          child: BatteryIndicator(
-                            style: BatteryIndicatorStyle.skeumorphism,
-                            batteryLevel: battery,
-                            showPercentNum: false,
-                            mainColor: Colors.black,
-                            height: 10,
-                            width: 20,
-                            //showPercentSlide: _showPercentSlide,
+                      ])
+                    : SizedBox.shrink();
+              },
+            ),
+            ValueListenableBuilder(
+              valueListenable: widget.batteryBit2Notifier,
+              builder: (BuildContext context, double battery, Widget child) {
+                return battery != null
+                    ? Row(children: [
+                        Text('MAC 2: ',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 13)),
+                        SizedBox(
+                          width: 50.0,
+                          height: 27.0,
+                          child: new Center(
+                            child: BatteryIndicator(
+                              style: BatteryIndicatorStyle.skeumorphism,
+                              batteryLevel: battery,
+                              //showPercentSlide: _showPercentSlide,
+                            ),
                           ),
                         ),
-                      ),
-                    ])
-                  : SizedBox.shrink();
-            },
-          ),
-        ]),],
+                      ])
+                    : SizedBox.shrink();
+              },
+            ),
+          ]),
+        ],
       ),
       body: Container(
         child: SingleChildScrollView(
@@ -283,20 +273,26 @@ class _RealtimePageState extends State<RealtimePage> {
                         height: 20,
                         color: state == 'acquiring'
                             ? Colors.green[50]
-                            : state == 'reconnecting'
+                            : (state == 'starting' ||
+                                    state == 'reconnecting' ||
+                                    state == 'trying')
                                 ? Colors.yellow[50]
                                 : Colors.red[50],
                         child: Align(
                           alignment: Alignment.center,
                           child: Container(
                             child: Text(
-                              state == 'acquiring'
-                                  ? 'A adquirir dados'
-                                  : state == 'reconnecting'
-                                      ? 'A retomar aquisição ...'
-                                      : state == 'stopped'
-                                          ? 'Aquisição terminada e dados gravados'
-                                          : 'Aquisição desligada',
+                              state == 'starting'
+                                  ? 'A iniciar aquisição ...'
+                                  : state == 'acquiring'
+                                      ? 'A adquirir dados'
+                                      : state == 'reconnecting'
+                                          ? 'A retomar aquisição ...'
+                                          : state == 'trying'
+                                              ? 'A reconectar aos dispositivos ...'
+                                              : state == 'stopped'
+                                                  ? 'Aquisição terminada e dados gravados'
+                                                  : 'Aquisição desligada',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 //fontWeight: FontWeight.bold,
@@ -309,7 +305,7 @@ class _RealtimePageState extends State<RealtimePage> {
                     }),
                 // ############### PLOT 1 ###############
                 if (widget.dataChannelsNotifier.value.length > 0)
-                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[0]),
+                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[0], sensor: widget.dataSensorsNotifier.value[0]),
                 if (widget.dataChannelsNotifier.value.length > 0)
                   ValueListenableBuilder(
                       valueListenable: data1,
@@ -318,7 +314,7 @@ class _RealtimePageState extends State<RealtimePage> {
                       }),
                 // ############### PLOT 2 ###############
                 if (widget.dataChannelsNotifier.value.length > 1)
-                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[1]),
+                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[1], sensor: widget.dataSensorsNotifier.value[1]),
                 if (widget.dataChannelsNotifier.value.length > 1)
                   ValueListenableBuilder(
                       valueListenable: data2,
@@ -327,7 +323,7 @@ class _RealtimePageState extends State<RealtimePage> {
                       }),
                 // ############### PLOT 3 ###############
                 if (widget.dataChannelsNotifier.value.length > 2)
-                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[2]),
+                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[2], sensor: widget.dataSensorsNotifier.value[2]),
                 if (widget.dataChannelsNotifier.value.length > 2)
                   ValueListenableBuilder(
                       valueListenable: data3,
@@ -336,7 +332,7 @@ class _RealtimePageState extends State<RealtimePage> {
                       }),
                 // ############### PLOT 4 ###############
                 if (widget.dataChannelsNotifier.value.length > 3)
-                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[3]),
+                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[3], sensor: widget.dataSensorsNotifier.value[3]),
                 if (widget.dataChannelsNotifier.value.length > 3)
                   ValueListenableBuilder(
                       valueListenable: data4,
@@ -345,7 +341,7 @@ class _RealtimePageState extends State<RealtimePage> {
                       }),
                 // ############### PLOT 5 ###############
                 if (widget.dataChannelsNotifier.value.length > 4)
-                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[4]),
+                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[4], sensor: widget.dataSensorsNotifier.value[4]),
                 if (widget.dataChannelsNotifier.value.length > 4)
                   ValueListenableBuilder(
                       valueListenable: data5,
@@ -354,7 +350,7 @@ class _RealtimePageState extends State<RealtimePage> {
                       }),
                 // ############### PLOT 6 ###############
                 if (widget.dataChannelsNotifier.value.length > 5)
-                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[5]),
+                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[5], sensor: widget.dataSensorsNotifier.value[5]),
                 if (widget.dataChannelsNotifier.value.length > 5)
                   ValueListenableBuilder(
                       valueListenable: data6,
@@ -363,7 +359,7 @@ class _RealtimePageState extends State<RealtimePage> {
                       }),
                 // ############### PLOT 7 ###############
                 if (widget.dataChannelsNotifier.value.length > 6)
-                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[6]),
+                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[6], sensor: widget.dataSensorsNotifier.value[6]),
                 if (widget.dataChannelsNotifier.value.length > 6)
                   ValueListenableBuilder(
                       valueListenable: data7,
@@ -372,7 +368,7 @@ class _RealtimePageState extends State<RealtimePage> {
                       }),
                 // ############### PLOT 8 ###############
                 if (widget.dataChannelsNotifier.value.length > 7)
-                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[7]),
+                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[7], sensor: widget.dataSensorsNotifier.value[7]),
                 if (widget.dataChannelsNotifier.value.length > 7)
                   ValueListenableBuilder(
                       valueListenable: data8,
@@ -381,7 +377,7 @@ class _RealtimePageState extends State<RealtimePage> {
                       }),
                 // ############### PLOT 9 ###############
                 if (widget.dataChannelsNotifier.value.length > 8)
-                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[8]),
+                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[8], sensor: widget.dataSensorsNotifier.value[8]),
                 if (widget.dataChannelsNotifier.value.length > 8)
                   ValueListenableBuilder(
                       valueListenable: data9,
@@ -390,7 +386,7 @@ class _RealtimePageState extends State<RealtimePage> {
                       }),
                 // ############### PLOT 10 ###############
                 if (widget.dataChannelsNotifier.value.length > 9)
-                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[9]),
+                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[9], sensor: widget.dataSensorsNotifier.value[9]),
                 if (widget.dataChannelsNotifier.value.length > 9)
                   ValueListenableBuilder(
                       valueListenable: data10,

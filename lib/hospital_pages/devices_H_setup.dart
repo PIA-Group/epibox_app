@@ -21,7 +21,6 @@ class DevicesPage extends StatefulWidget {
   ValueNotifier<String> macAddress1Notifier;
   ValueNotifier<String> macAddress2Notifier;
 
-  ValueNotifier<String> acquisitionNotifier;
   ValueNotifier<String> patientNotifier;
 
   ValueNotifier<bool> isBit1Enabled;
@@ -37,7 +36,6 @@ class DevicesPage extends StatefulWidget {
       this.macAddress1Notifier,
       this.macAddress2Notifier,
       this.connectionNotifier,
-      this.acquisitionNotifier,
       this.patientNotifier,
       this.isBit1Enabled,
       this.isBit2Enabled,

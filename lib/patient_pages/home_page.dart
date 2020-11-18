@@ -44,6 +44,9 @@ class _HomePageState extends State<HomePage> {
   ValueNotifier<bool> receivedMACNotifier = ValueNotifier(false);
   ValueNotifier<bool> sentMACNotifier = ValueNotifier(false);
 
+  ValueNotifier<bool> isBit1Enabled = ValueNotifier(false); // not needed, only to not give an error in RPiPage
+  ValueNotifier<bool> isBit2Enabled = ValueNotifier(false);
+
   ValueNotifier<double> batteryBit1Notifier = ValueNotifier(null);
   ValueNotifier<double> batteryBit2Notifier = ValueNotifier(null);
 
@@ -55,6 +58,7 @@ class _HomePageState extends State<HomePage> {
   // dataNotifier: list of lists, each sublist corresponds to a channel acquired
   ValueNotifier<List> dataNotifier = ValueNotifier([]);
   ValueNotifier<List> dataChannelsNotifier = ValueNotifier([]);
+  ValueNotifier<List> dataSensorsNotifier = ValueNotifier([]);
 
   MqttCurrentConnectionState connectionState;
   MQTTClientWrapper mqttClientWrapper;
@@ -77,17 +81,6 @@ class _HomePageState extends State<HomePage> {
     acquisitionNotifier.value = 'off';
     setupHome();
     _nameController.text = " ";
-    /* acquisitionNotifier.addListener(() {
-      _showSnackBar(
-        acquisitionNotifier.value == 'acquiring'
-            ? 'A adquirir dados'
-            : acquisitionNotifier.value == 'reconnecting'
-                ? 'A retomar aquisição ...'
-                : acquisitionNotifier.value == 'stopped'
-                    ? 'Aquisição terminada e dados gravados'
-                    : 'Aquisição desligada',
-      );
-    }); */
   }
 
   @override
@@ -157,25 +150,30 @@ class _HomePageState extends State<HomePage> {
 
   void _isAcquisitionState(String message) {
     if (message.contains('STARTING')) {
-      setState(() => acquisitionNotifier.value = 'acquiring');
+      setState(() => acquisitionNotifier.value = 'starting');
       print('ACQUISITION STARTING');
+    } else if (message.contains('ON')) {
+      setState(() => acquisitionNotifier.value = 'acquiring');
+      print('ACQUIRING');
+      } else if (message.contains('TRYING')) {
+      setState(() => acquisitionNotifier.value = 'trying');
+      print('TRYING TO CONNECT TO DEVICES');
     } else if (message.contains('RECONNECTING')) {
       setState(() => acquisitionNotifier.value = 'reconnecting');
       print('RECONNECTING ACQUISITION');
     } else if (message.contains('STOPPED')) {
       setState(() => acquisitionNotifier.value = 'stopped');
       print('ACQUISITION STOPPED AND SAVED');
-    } else if (message.contains('OFF')) {
-      setState(() => acquisitionNotifier.value = 'off');
-      print('ACQUISITION OFF');
     }
   }
 
   void _isData(String message) {
     if (message.contains('DATA')) {
+      setState(() => acquisitionNotifier.value = 'acquiring'); // if user leaves the app, this will enable the visualization nontheless
       List message2List = json.decode(message);
       setState(() => dataNotifier.value = message2List[1]);
       setState(() => dataChannelsNotifier.value = message2List[2]);
+      setState(() => dataSensorsNotifier.value = message2List[3]);
     }
   }
 
@@ -619,17 +617,21 @@ class _HomePageState extends State<HomePage> {
                 height: 20,
                 color: state == 'acquiring'
                     ? Colors.green[50]
-                    : state == 'reconnecting'
+                    : (state == 'starting' || state == 'reconnecting' || state == 'trying')
                         ? Colors.yellow[50]
                         : Colors.red[50],
                 child: Align(
                   alignment: Alignment.center,
                   child: Container(
                     child: Text(
-                      state == 'acquiring'
+                      state == 'starting'
+                      ? 'A iniciar aquisição ...'
+                      : state == 'acquiring'
                           ? 'A adquirir dados'
                           : state == 'reconnecting'
                               ? 'A retomar aquisição ...'
+                              : state == 'trying'
+                              ? 'A reconectar aos dispositivos ...'
                               : state == 'stopped'
                                   ? 'Aquisição terminada e dados gravados'
                                   : 'Aquisição desligada',
@@ -678,6 +680,8 @@ class _HomePageState extends State<HomePage> {
                           sentMACNotifier: sentMACNotifier,
                           batteryBit1Notifier: batteryBit1Notifier,
                           batteryBit2Notifier: batteryBit2Notifier,
+                          isBit1Enabled: isBit1Enabled,
+                          isBit2Enabled: isBit2Enabled,
                         ));
                   }),
                 );
@@ -714,7 +718,6 @@ class _HomePageState extends State<HomePage> {
                             macAddress1Notifier: macAddress1Notifier,
                             macAddress2Notifier: macAddress2Notifier,
                             connectionNotifier: connectionNotifier,
-                            acquisitionNotifier: acquisitionNotifier,
                             receivedMACNotifier: receivedMACNotifier,
                             sentMACNotifier: sentMACNotifier));
                   }),
@@ -744,8 +747,8 @@ class _HomePageState extends State<HomePage> {
                     return RealtimePage(
                       dataNotifier: dataNotifier,
                       dataChannelsNotifier: dataChannelsNotifier,
+                      dataSensorsNotifier: dataSensorsNotifier,
                       mqttClientWrapper: mqttClientWrapper,
-                      hostnameNotifier: hostnameNotifier,
                       acquisitionNotifier: acquisitionNotifier,
                       batteryBit1Notifier: batteryBit1Notifier,
                       batteryBit2Notifier: batteryBit2Notifier,
@@ -767,8 +770,8 @@ class _HomePageState extends State<HomePage> {
                     return RealtimePage(
                       dataNotifier: dataNotifier,
                       dataChannelsNotifier: dataChannelsNotifier,
+                      dataSensorsNotifier: dataSensorsNotifier,
                       mqttClientWrapper: mqttClientWrapper,
-                      hostnameNotifier: hostnameNotifier,
                       acquisitionNotifier: acquisitionNotifier,
                       batteryBit1Notifier: batteryBit1Notifier,
                       batteryBit2Notifier: batteryBit2Notifier,

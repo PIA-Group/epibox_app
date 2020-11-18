@@ -24,6 +24,9 @@ class RPiPage extends StatefulWidget {
   ValueNotifier<double> batteryBit1Notifier;
   ValueNotifier<double> batteryBit2Notifier;
 
+  ValueNotifier<bool> isBit1Enabled;
+  ValueNotifier<bool> isBit2Enabled;
+
   RPiPage({
     this.mqttClientWrapper,
     this.connectionNotifier,
@@ -39,6 +42,8 @@ class RPiPage extends StatefulWidget {
     this.sentConfigNotifier,
     this.batteryBit1Notifier,
     this.batteryBit2Notifier,
+    this.isBit1Enabled,
+    this.isBit2Enabled,
   });
 
   @override
@@ -83,6 +88,9 @@ class _RPiPageState extends State<RPiPage> {
 
       widget.batteryBit1Notifier.value = null;
       widget.batteryBit2Notifier.value = null;
+
+      widget.isBit1Enabled.value = false;
+      widget.isBit1Enabled.value = false;
     });
   }
 

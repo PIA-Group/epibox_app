@@ -48,9 +48,11 @@ class _PlotDataState extends State<PlotData> {
 
 class PlotDataTitle extends StatefulWidget {
   List channels;
+  String sensor;
 
   PlotDataTitle({
     this.channels,
+    this.sensor,
   });
 
   @override
@@ -63,7 +65,7 @@ class _PlotDataTitleState extends State<PlotDataTitle> {
     return Padding(
       padding: EdgeInsets.only(top: 10.0),
       child: Text(
-        'MAC: ${widget.channels[0]} | Canal: A${widget.channels[1]}',
+        'MAC: ${widget.channels[0]} | Canal: A${widget.channels[1]} | ${widget.sensor}',
         style: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 16,
