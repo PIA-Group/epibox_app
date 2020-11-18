@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:rPiInterface/common_pages/real_time.dart';
 import 'package:rPiInterface/hospital_pages/config_page.dart';
@@ -62,13 +63,15 @@ class _HomeHPageState extends State<HomeHPage> {
   ValueNotifier<List> dataNotifier = ValueNotifier([]);
   ValueNotifier<List> dataChannelsNotifier = ValueNotifier([]);
   ValueNotifier<List> dataSensorsNotifier = ValueNotifier([]);
-  //var _wifiSubscription;
 
   MqttCurrentConnectionState connectionState;
   MQTTClientWrapper mqttClientWrapper;
   MqttClient client;
 
   final TextEditingController _nameController = TextEditingController();
+
+  FlutterLocalNotificationsPlugin batteryNotification =
+    FlutterLocalNotificationsPlugin();
 
   void setupHome() {
     mqttClientWrapper = MQTTClientWrapper(
@@ -82,9 +85,25 @@ class _HomeHPageState extends State<HomeHPage> {
   @override
   void initState() {
     super.initState();
+    var initializationSettingsAndroid =
+      AndroidInitializationSettings('seizure_icon');
+    var initializationSettingsIOs = IOSInitializationSettings();
+    var initSetttings = InitializationSettings(android: initializationSettingsAndroid, iOS: initializationSettingsIOs);
+    batteryNotification.initialize(initSetttings);
+
     acquisitionNotifier.value = 'off';
     setupHome();
     _nameController.text = " ";
+  }
+
+  showNotification(device) async {
+    var android = AndroidNotificationDetails(
+        'id', 'channel ', 'description',
+        priority: Priority.high, importance: Importance.max);
+    var iOS = IOSNotificationDetails();
+    var platform = new NotificationDetails(android: android, iOS: iOS);
+    await batteryNotification.show(
+        0, 'Bateria fraca', 'Trocar bateria do dispositivo $device', platform); 
   }
 
   @override
@@ -92,10 +111,10 @@ class _HomeHPageState extends State<HomeHPage> {
     super.dispose();
     _nameController.dispose();
   }
+  
 
   void gotNewMessage(String newMessage) {
     setState(() => message = newMessage);
-    //print('This is the new message: $message');
     _isMACAddress(message);
     _isDrivesList(message);
     _macReceived(message);
@@ -197,8 +216,10 @@ class _HomeHPageState extends State<HomeHPage> {
             (_levelRatio > 1) ? 1 : (_levelRatio < 0) ? 0 : _levelRatio;
         if (entry.key == macAddress1Notifier.value) {
           setState(() => batteryBit1Notifier.value = _level);
+          if (_level <= 0.1) {showNotification('1');}
         } else if (entry.key == macAddress2Notifier.value) {
           setState(() => batteryBit2Notifier.value = _level);
+          if (_level <= 0.1) {showNotification('2');}
         }
       }
     }
@@ -614,3 +635,5 @@ class _HomeHPageState extends State<HomeHPage> {
     );
   }
 }
+
+

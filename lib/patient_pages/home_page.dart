@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -66,6 +66,9 @@ class _HomePageState extends State<HomePage> {
 
   final TextEditingController _nameController = TextEditingController();
 
+  FlutterLocalNotificationsPlugin batteryNotification =
+    FlutterLocalNotificationsPlugin();
+
   void setupHome() {
     mqttClientWrapper = MQTTClientWrapper(
       client,
@@ -78,9 +81,26 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+
+    var initializationSettingsAndroid =
+      AndroidInitializationSettings('seizure_icon');
+    var initializationSettingsIOs = IOSInitializationSettings();
+    var initSetttings = InitializationSettings(android: initializationSettingsAndroid, iOS: initializationSettingsIOs);
+    batteryNotification.initialize(initSetttings);
+
     acquisitionNotifier.value = 'off';
     setupHome();
     _nameController.text = " ";
+  }
+
+  showNotification(device) async {
+    var android = AndroidNotificationDetails(
+        'id', 'channel ', 'description',
+        priority: Priority.high, importance: Importance.max);
+    var iOS = IOSNotificationDetails();
+    var platform = new NotificationDetails(android: android, iOS: iOS);
+    await batteryNotification.show(
+        0, 'Bateria fraca', 'Trocar bateria do dispositivo $device', platform); 
   }
 
   @override
@@ -188,8 +208,10 @@ class _HomePageState extends State<HomePage> {
             (_levelRatio > 1) ? 1 : (_levelRatio < 0) ? 0 : _levelRatio;
         if (entry.key == macAddress1Notifier.value) {
           setState(() => batteryBit1Notifier.value = _level);
+          if (_level <= 0.1) {showNotification('1');}
         } else if (entry.key == macAddress2Notifier.value) {
           setState(() => batteryBit2Notifier.value = _level);
+          if (_level <= 0.1) {showNotification('2');}
         }
       }
     }
