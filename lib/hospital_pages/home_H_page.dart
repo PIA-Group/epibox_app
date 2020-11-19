@@ -96,6 +96,8 @@ class _HomeHPageState extends State<HomeHPage> {
     _nameController.text = " ";
   }
 
+
+
   showNotification(device) async {
     var android = AndroidNotificationDetails(
         'id', 'channel ', 'description',
@@ -235,7 +237,6 @@ class _HomeHPageState extends State<HomeHPage> {
       print(e);
     }
   }
-
 
   Future<DocumentSnapshot> getUserName(uid) {
     return firestoreInstance.collection("users").document(uid).get();

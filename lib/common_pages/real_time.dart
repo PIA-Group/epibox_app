@@ -1,9 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:rPiInterface/common_pages/speed_annotation.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
 import 'package:rPiInterface/utils/plot_data.dart';
 import 'package:rPiInterface/utils/battery_indicator.dart';
 
 class RealtimePage extends StatefulWidget {
+  
   ValueNotifier<List> dataNotifier;
   ValueNotifier<List> dataChannelsNotifier;
   ValueNotifier<List> dataSensorsNotifier;
@@ -29,7 +33,9 @@ class RealtimePage extends StatefulWidget {
 }
 
 class _RealtimePageState extends State<RealtimePage> {
+
   List aux;
+  final firestoreInstance = Firestore.instance;
 
   ValueNotifier<List<double>> data1 = ValueNotifier([]);
   ValueNotifier<List<double>> data2 = ValueNotifier([]);
@@ -53,8 +59,29 @@ class _RealtimePageState extends State<RealtimePage> {
   List<double> yRange9 = [0, 10];
   List<double> yRange10 = [0, 10];
 
+  Future<List> getAnnotationTypes() async {
+    List annot;
+    await firestoreInstance.collection("annotations").document('types').get().then(
+      //(value) => print('annot: ${value.data}'));
+      (value) => setState(() => annot = value.data['types'].toList()));
+    print(annot);
+    return annot;
+  }
+
   void _stopAcquisition() {
     widget.mqttClientWrapper.publishMessage("['INTERRUPT']");
+  }
+
+  Future<void> _speedAnnotation() async {
+    List annotationTypesD = await getAnnotationTypes();
+    List<String> annotationTypes = List<String>.from(annotationTypesD);
+    print(annotationTypes);
+    Navigator.of(context).push(new MaterialPageRoute<Null>(
+      builder: (BuildContext context) {
+        return SpeedAnnotationDialog(annotationTypes: annotationTypes);
+      },
+    fullscreenDialog: true
+  ));
   }
 
   bool _rangeUpdateNeeded(List data, List currentRange) {
@@ -202,6 +229,9 @@ class _RealtimePageState extends State<RealtimePage> {
 
   @override
   Widget build(BuildContext context) {
+
+    double screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       appBar: new AppBar(
         title: new Text('Visualização'),
@@ -305,7 +335,9 @@ class _RealtimePageState extends State<RealtimePage> {
                     }),
                 // ############### PLOT 1 ###############
                 if (widget.dataChannelsNotifier.value.length > 0)
-                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[0], sensor: widget.dataSensorsNotifier.value[0]),
+                  PlotDataTitle(
+                      channels: widget.dataChannelsNotifier.value[0],
+                      sensor: widget.dataSensorsNotifier.value[0]),
                 if (widget.dataChannelsNotifier.value.length > 0)
                   ValueListenableBuilder(
                       valueListenable: data1,
@@ -314,7 +346,9 @@ class _RealtimePageState extends State<RealtimePage> {
                       }),
                 // ############### PLOT 2 ###############
                 if (widget.dataChannelsNotifier.value.length > 1)
-                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[1], sensor: widget.dataSensorsNotifier.value[1]),
+                  PlotDataTitle(
+                      channels: widget.dataChannelsNotifier.value[1],
+                      sensor: widget.dataSensorsNotifier.value[1]),
                 if (widget.dataChannelsNotifier.value.length > 1)
                   ValueListenableBuilder(
                       valueListenable: data2,
@@ -323,7 +357,9 @@ class _RealtimePageState extends State<RealtimePage> {
                       }),
                 // ############### PLOT 3 ###############
                 if (widget.dataChannelsNotifier.value.length > 2)
-                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[2], sensor: widget.dataSensorsNotifier.value[2]),
+                  PlotDataTitle(
+                      channels: widget.dataChannelsNotifier.value[2],
+                      sensor: widget.dataSensorsNotifier.value[2]),
                 if (widget.dataChannelsNotifier.value.length > 2)
                   ValueListenableBuilder(
                       valueListenable: data3,
@@ -332,7 +368,9 @@ class _RealtimePageState extends State<RealtimePage> {
                       }),
                 // ############### PLOT 4 ###############
                 if (widget.dataChannelsNotifier.value.length > 3)
-                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[3], sensor: widget.dataSensorsNotifier.value[3]),
+                  PlotDataTitle(
+                      channels: widget.dataChannelsNotifier.value[3],
+                      sensor: widget.dataSensorsNotifier.value[3]),
                 if (widget.dataChannelsNotifier.value.length > 3)
                   ValueListenableBuilder(
                       valueListenable: data4,
@@ -341,7 +379,9 @@ class _RealtimePageState extends State<RealtimePage> {
                       }),
                 // ############### PLOT 5 ###############
                 if (widget.dataChannelsNotifier.value.length > 4)
-                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[4], sensor: widget.dataSensorsNotifier.value[4]),
+                  PlotDataTitle(
+                      channels: widget.dataChannelsNotifier.value[4],
+                      sensor: widget.dataSensorsNotifier.value[4]),
                 if (widget.dataChannelsNotifier.value.length > 4)
                   ValueListenableBuilder(
                       valueListenable: data5,
@@ -350,7 +390,9 @@ class _RealtimePageState extends State<RealtimePage> {
                       }),
                 // ############### PLOT 6 ###############
                 if (widget.dataChannelsNotifier.value.length > 5)
-                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[5], sensor: widget.dataSensorsNotifier.value[5]),
+                  PlotDataTitle(
+                      channels: widget.dataChannelsNotifier.value[5],
+                      sensor: widget.dataSensorsNotifier.value[5]),
                 if (widget.dataChannelsNotifier.value.length > 5)
                   ValueListenableBuilder(
                       valueListenable: data6,
@@ -359,7 +401,9 @@ class _RealtimePageState extends State<RealtimePage> {
                       }),
                 // ############### PLOT 7 ###############
                 if (widget.dataChannelsNotifier.value.length > 6)
-                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[6], sensor: widget.dataSensorsNotifier.value[6]),
+                  PlotDataTitle(
+                      channels: widget.dataChannelsNotifier.value[6],
+                      sensor: widget.dataSensorsNotifier.value[6]),
                 if (widget.dataChannelsNotifier.value.length > 6)
                   ValueListenableBuilder(
                       valueListenable: data7,
@@ -368,7 +412,9 @@ class _RealtimePageState extends State<RealtimePage> {
                       }),
                 // ############### PLOT 8 ###############
                 if (widget.dataChannelsNotifier.value.length > 7)
-                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[7], sensor: widget.dataSensorsNotifier.value[7]),
+                  PlotDataTitle(
+                      channels: widget.dataChannelsNotifier.value[7],
+                      sensor: widget.dataSensorsNotifier.value[7]),
                 if (widget.dataChannelsNotifier.value.length > 7)
                   ValueListenableBuilder(
                       valueListenable: data8,
@@ -377,7 +423,9 @@ class _RealtimePageState extends State<RealtimePage> {
                       }),
                 // ############### PLOT 9 ###############
                 if (widget.dataChannelsNotifier.value.length > 8)
-                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[8], sensor: widget.dataSensorsNotifier.value[8]),
+                  PlotDataTitle(
+                      channels: widget.dataChannelsNotifier.value[8],
+                      sensor: widget.dataSensorsNotifier.value[8]),
                 if (widget.dataChannelsNotifier.value.length > 8)
                   ValueListenableBuilder(
                       valueListenable: data9,
@@ -386,7 +434,9 @@ class _RealtimePageState extends State<RealtimePage> {
                       }),
                 // ############### PLOT 10 ###############
                 if (widget.dataChannelsNotifier.value.length > 9)
-                  PlotDataTitle(channels: widget.dataChannelsNotifier.value[9], sensor: widget.dataSensorsNotifier.value[9]),
+                  PlotDataTitle(
+                      channels: widget.dataChannelsNotifier.value[9],
+                      sensor: widget.dataSensorsNotifier.value[9]),
                 if (widget.dataChannelsNotifier.value.length > 9)
                   ValueListenableBuilder(
                       valueListenable: data10,
@@ -398,11 +448,25 @@ class _RealtimePageState extends State<RealtimePage> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _stopAcquisition(),
-        label: Text('Stop'),
-        icon: Icon(Icons.stop),
-      ),
+      floatingActionButton: Stack(children: [
+        Align(
+          alignment: Alignment(-0.8, 1.0),
+          child: FloatingActionButton(
+            mini: true,
+            heroTag: null,
+            onPressed: () => _speedAnnotation(),
+            child: Icon(MdiIcons.lightningBolt),
+          ),
+        ),
+        Align(
+          alignment: Alignment.bottomRight,
+          child: FloatingActionButton.extended(
+            onPressed: () => _stopAcquisition(),
+            label: Text('Stop'),
+            icon: Icon(Icons.stop),
+          ),
+        ),
+      ]),
     );
   }
 }
