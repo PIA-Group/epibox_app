@@ -100,10 +100,9 @@ class _RPiPageState extends State<RPiPage> {
         _controller.text.replaceAll(new RegExp(r"\s+"), ""));
     await widget.mqttClientWrapper
         .prepareMqttClient(_controller.text.replaceAll(new RegExp(r"\s+"), ""));
-    /* if (widget.connectionNotifier.value == MqttCurrentConnectionState.CONNECTED) {
-      Navigator.pop(context);
-    } */
-    //if (widget.receivedMACNotifier.value) {Navigator.pop(context);}
+    widget.mqttClientWrapper.publishMessage("['Send MAC Addresses']");
+    widget.mqttClientWrapper.publishMessage("['Send config']");  
+    widget.mqttClientWrapper.publishMessage("['Send drives']");  
   }
 
   @override

@@ -45,13 +45,13 @@ class _HomeHPageState extends State<HomeHPage> {
   ValueNotifier<bool> sentMACNotifier = ValueNotifier(false);
   ValueNotifier<bool> sentConfigNotifier = ValueNotifier(false);
 
+  ValueNotifier<List> configDefaultNotifier = ValueNotifier([]);
+
   ValueNotifier<bool> isBit1Enabled = ValueNotifier(false);
   ValueNotifier<bool> isBit2Enabled = ValueNotifier(false);
 
   ValueNotifier<double> batteryBit1Notifier = ValueNotifier(null);
   ValueNotifier<double> batteryBit2Notifier = ValueNotifier(null);
-
-  ValueNotifier<List<String>> sensorsNotifier = ValueNotifier([]);
 
   final firestoreInstance = Firestore.instance;
 
@@ -119,6 +119,7 @@ class _HomeHPageState extends State<HomeHPage> {
     setState(() => message = newMessage);
     _isMACAddress(message);
     _isDrivesList(message);
+    _isDefaultConfig(message);
     _macReceived(message);
     _configReceived(message);
     _isAcquisitionState(message);
@@ -136,7 +137,7 @@ class _HomeHPageState extends State<HomeHPage> {
   }
 
   void _isMACAddress(String message) {
-    if (message.contains('DEFAULT')) {
+    if (message.contains('DEFAULT MAC')) {
       try {
         final List<String> listMAC = message.split(",");
         setState(() {
@@ -157,11 +158,19 @@ class _HomeHPageState extends State<HomeHPage> {
         listDrives.removeAt(0);
         listDrives = listDrives.map((drive) => drive.split("'")[1]).toList();
         setState(
-            () => driveListNotifier.value = listDrives); // CONFIRMAR ISTO!!!
+            () => driveListNotifier.value = listDrives); 
         mqttClientWrapper.publishMessage("['GO TO DEVICES']");
       } catch (e) {
         print(e);
       }
+    }
+  }
+
+  void _isDefaultConfig(String message) {
+    if (message.contains('DEFAULT CONFIG')) {
+      List message2List = json.decode(message);
+      print(message2List[1]);
+      setState(() => configDefaultNotifier.value = message2List[1]); 
     }
   }
 
@@ -564,6 +573,7 @@ class _HomeHPageState extends State<HomeHPage> {
                       macAddress1Notifier: macAddress1Notifier,
                       macAddress2Notifier: macAddress2Notifier,
                       sentConfigNotifier: sentConfigNotifier,
+                      configDefault: configDefaultNotifier,
                     );
                   }),
                 );
@@ -597,6 +607,7 @@ class _HomeHPageState extends State<HomeHPage> {
                       acquisitionNotifier: acquisitionNotifier,
                       batteryBit1Notifier: batteryBit1Notifier,
                       batteryBit2Notifier: batteryBit2Notifier,
+                      patientNotifier: widget.patientNotifier,
                     );
                   }),
                 );
@@ -620,6 +631,7 @@ class _HomeHPageState extends State<HomeHPage> {
                       acquisitionNotifier: acquisitionNotifier,
                       batteryBit1Notifier: batteryBit1Notifier,
                       batteryBit2Notifier: batteryBit2Notifier,
+                      patientNotifier: widget.patientNotifier,
                     );
                   }),
                 );

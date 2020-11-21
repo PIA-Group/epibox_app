@@ -7,7 +7,6 @@ import 'package:rPiInterface/utils/plot_data.dart';
 import 'package:rPiInterface/utils/battery_indicator.dart';
 
 class RealtimePage extends StatefulWidget {
-  
   ValueNotifier<List> dataNotifier;
   ValueNotifier<List> dataChannelsNotifier;
   ValueNotifier<List> dataSensorsNotifier;
@@ -18,6 +17,8 @@ class RealtimePage extends StatefulWidget {
   ValueNotifier<double> batteryBit1Notifier;
   ValueNotifier<double> batteryBit2Notifier;
 
+  ValueNotifier<String> patientNotifier;
+
   RealtimePage({
     this.dataNotifier,
     this.dataChannelsNotifier,
@@ -26,6 +27,7 @@ class RealtimePage extends StatefulWidget {
     this.acquisitionNotifier,
     this.batteryBit1Notifier,
     this.batteryBit2Notifier,
+    this.patientNotifier,
   });
 
   @override
@@ -33,9 +35,11 @@ class RealtimePage extends StatefulWidget {
 }
 
 class _RealtimePageState extends State<RealtimePage> {
-
+  final GlobalKey<ScaffoldState> _scaffoldRealTime = new GlobalKey<ScaffoldState>();
   List aux;
   final firestoreInstance = Firestore.instance;
+
+  ValueNotifier<bool> newAnnotation = ValueNotifier(false);
 
   ValueNotifier<List<double>> data1 = ValueNotifier([]);
   ValueNotifier<List<double>> data2 = ValueNotifier([]);
@@ -61,9 +65,13 @@ class _RealtimePageState extends State<RealtimePage> {
 
   Future<List> getAnnotationTypes() async {
     List annot;
-    await firestoreInstance.collection("annotations").document('types').get().then(
-      //(value) => print('annot: ${value.data}'));
-      (value) => setState(() => annot = value.data['types'].toList()));
+    await firestoreInstance
+        .collection("annotations")
+        .document('types')
+        .get()
+        .then(
+            //(value) => print('annot: ${value.data}'));
+            (value) => setState(() => annot = value.data['types'].toList()));
     print(annot);
     return annot;
   }
@@ -77,11 +85,14 @@ class _RealtimePageState extends State<RealtimePage> {
     List<String> annotationTypes = List<String>.from(annotationTypesD);
     print(annotationTypes);
     Navigator.of(context).push(new MaterialPageRoute<Null>(
-      builder: (BuildContext context) {
-        return SpeedAnnotationDialog(annotationTypes: annotationTypes);
-      },
-    fullscreenDialog: true
-  ));
+        builder: (BuildContext context) {
+          return SpeedAnnotationDialog(
+            annotationTypes: annotationTypes,
+            patientNotifier: widget.patientNotifier,
+            newAnnotation: newAnnotation,
+          );
+        },
+        fullscreenDialog: true));
   }
 
   bool _rangeUpdateNeeded(List data, List currentRange) {
@@ -112,9 +123,28 @@ class _RealtimePageState extends State<RealtimePage> {
     return [min, max];
   }
 
+  void _showSnackBar(String _message) {
+    try {
+      _scaffoldRealTime.currentState.showSnackBar(new SnackBar(
+        content: new Text(_message),
+        backgroundColor: Colors.blue,
+      ));
+    } catch (e) {
+      print(e);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    newAnnotation.addListener(() async {
+      if (newAnnotation.value) {
+        Future<Null>.delayed(Duration.zero, () {
+          _showSnackBar('Anotação gravada!');
+          setState(() => newAnnotation.value = false);
+        });
+      }
+    });
     widget.dataNotifier.addListener(() {
       if (this.mounted) {
         double canvasWidth = MediaQuery.of(context).size.width;
@@ -229,10 +259,10 @@ class _RealtimePageState extends State<RealtimePage> {
 
   @override
   Widget build(BuildContext context) {
-
     double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      key: _scaffoldRealTime,
       appBar: new AppBar(
         title: new Text('Visualização'),
         actions: [

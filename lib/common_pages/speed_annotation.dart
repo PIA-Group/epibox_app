@@ -1,12 +1,15 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class SpeedAnnotationDialog extends StatefulWidget {
   List<String> annotationTypes;
+  ValueNotifier<String> patientNotifier;
+  ValueNotifier<bool> newAnnotation;
 
   SpeedAnnotationDialog({
     this.annotationTypes,
+    this.patientNotifier,
+    this.newAnnotation,
   });
 
   @override
@@ -18,22 +21,79 @@ class _SpeedAnnotationDialogState extends State<SpeedAnnotationDialog> {
   final firestoreInstance = Firestore.instance;
   double _currentSliderValue = 0.0;
 
+  bool _isChecked = false;
+
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
 
-  void _saveAnnotation() {
-    
-    if (!widget.annotationTypes.contains(_controller.text)) {
-      widget.annotationTypes.add(_controller.text);
-      print(widget.annotationTypes);
-      firestoreInstance.collection("annotations")
-      .document('types')
-      .setData({'types': widget.annotationTypes}, merge: true);
+  Future<void> _saveAnnotation() async {
+    if (_controller.text.trim() != '') {
+      var timeStamp = DateTime.now();
+      print(timeStamp);
+      timeStamp = timeStamp
+          .subtract(Duration(seconds: (_currentSliderValue * 60).toInt()));
+      print(timeStamp);
+      String today = '${timeStamp.year}-${timeStamp.month}-${timeStamp.day}';
+
+      try {
+        if (!widget.annotationTypes.contains(_controller.text)) {
+          widget.annotationTypes.add(_controller.text);
+          print(widget.annotationTypes);
+          firestoreInstance
+              .collection("annotations")
+              .document('types')
+              .setData({'types': widget.annotationTypes}, merge: true);
+        }
+      } catch (e) {
+        print(e);
+      }
+
+      Map previousAnnot;
+      try {
+        await firestoreInstance
+            .collection('users')
+            .document(widget.patientNotifier.value)
+            .collection('annotations')
+            .document(today)
+            .get()
+            .then((value) => setState(() => previousAnnot = value.data[today]));
+      } catch (e) {
+        setState(() => previousAnnot = {});
+      }
+
+      try {
+        if (!_isChecked) {
+          previousAnnot[_controller.text]
+              .add('${timeStamp.hour}:${timeStamp.minute}:${timeStamp.second}');
+        } else {
+          previousAnnot[_controller.text]
+              .add('null');
+        }
+      } catch (e) {
+        if (!_isChecked) {
+        previousAnnot[_controller.text] = [
+          '${timeStamp.hour}:${timeStamp.minute}:${timeStamp.second}'
+        ];
+        } else {previousAnnot[_controller.text] = ['null'];}
+      }
+
+      try {
+        firestoreInstance
+            .collection('users')
+            .document(widget.patientNotifier.value)
+            .collection('annotations')
+            .document(today)
+            .setData({today: previousAnnot}, merge: true);
+        setState(() => widget.newAnnotation.value = true);
+      } catch (e) {
+        print(e);
+      }
+
+      Navigator.pop(context);
     }
-    Navigator.pop(context);
   }
 
   @override
@@ -156,17 +216,17 @@ class _SpeedAnnotationDialogState extends State<SpeedAnnotationDialog> {
                 width: width * 0.85,
                 color: Colors.transparent,
                 child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.rectangle,
-                      borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                      boxShadow: [
-                        BoxShadow(
-                            color: Colors.grey[200],
-                            offset: new Offset(5.0, 5.0))
-                      ],
-                    ),
-                    child: Slider(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.rectangle,
+                    borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.grey[200], offset: new Offset(5.0, 5.0))
+                    ],
+                  ),
+                  child: Column(children: [
+                    Slider(
                       value: _currentSliderValue,
                       min: 0.0,
                       max: 5.0,
@@ -177,7 +237,25 @@ class _SpeedAnnotationDialogState extends State<SpeedAnnotationDialog> {
                           _currentSliderValue = value;
                         });
                       },
-                    )),
+                    ),
+                    Expanded(
+                      child: CheckboxListTile(
+                        value: _isChecked,
+                        onChanged: (bool val) {
+                          setState(() => _currentSliderValue = 0.0);
+                          setState(() => _isChecked = val);
+                        },
+                        title: Text(
+                          '(?) Não sei quando ocorreu',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ]),
+                ),
               ),
             ]),
           )
