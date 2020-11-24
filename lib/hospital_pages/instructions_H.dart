@@ -30,7 +30,6 @@ class _InstructionsHPageState extends State<InstructionsHPage> {
           Padding(
             padding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
             child: Container(
-              //height: 250.0,
               width: 0.95 * bodyWidth,
               color: Colors.transparent,
               child: Container(
@@ -58,6 +57,14 @@ class _InstructionsHPageState extends State<InstructionsHPage> {
                       padding: EdgeInsets.only(top: 20.0),
                       child: Text(
                           'O(s) dispositivo(s) de aquisição se encontram ligados (luz branca a piscar devagar).',
+                          textAlign: TextAlign.justify,
+                          style:
+                              TextStyle(fontSize: 16, color: Colors.grey[600])),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(top: 20.0),
+                      child: Text(
+                          'O(s) dispositivo(s) de aquisição se encontram bem posicionados no paciente.',
                           textAlign: TextAlign.justify,
                           style:
                               TextStyle(fontSize: 16, color: Colors.grey[600])),

@@ -500,7 +500,7 @@ class _RealtimePageState extends State<RealtimePage> {
           alignment: Alignment.bottomRight,
           child: FloatingActionButton.extended(
             onPressed: () => _stopAcquisition(),
-            label: Text('Stop'),
+            label: Text('Parar'),
             icon: Icon(Icons.stop),
           ),
         ),

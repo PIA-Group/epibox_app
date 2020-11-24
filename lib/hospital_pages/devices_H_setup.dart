@@ -2,10 +2,9 @@ import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:rPiInterface/utils/masked_text.dart';
 import 'package:rPiInterface/utils/models.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
-
-
 
 // programar button "Usar default" e "Usar novo" para enviar MACAddress para RPi e voltar à HomePage
 // programar button "Definir novo default" para enviar MACAddress para RPi e mudar "defaultBIT"
@@ -47,7 +46,6 @@ class DevicesPage extends StatefulWidget {
 }
 
 class _DevicesPageState extends State<DevicesPage> {
-
   final TextEditingController _controller1 = TextEditingController();
   final TextEditingController _controller2 = TextEditingController();
 
@@ -77,305 +75,185 @@ class _DevicesPageState extends State<DevicesPage> {
 
   @override
   Widget build(BuildContext context) {
-
     final bodyWidth = MediaQuery.of(context).size.width -
-        MediaQuery.of(context).viewInsets.left - MediaQuery.of(context).viewInsets.right;
+        MediaQuery.of(context).viewInsets.left -
+        MediaQuery.of(context).viewInsets.right;
 
     return Scaffold(
-      appBar: new AppBar(title: new Text('BITalino(s)'),),
+      appBar: new AppBar(
+        title: new Text('BITalino(s)'),
+      ),
       body: Center(
-        child: ListView(
-          children: <Widget>[
-            ValueListenableBuilder(
-                valueListenable: widget.sentMACNotifier,
-                builder: (BuildContext context,
-                    bool state, Widget child) {
-                  return Container(
-                    height: 20,
-                    color: state
-                        ? Colors.green[50]
-                        : Colors.red[50],
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Container(
-                        child: Text(
-                          state
-                              ? 'Enviado'
-                              : 'Selecione "Usar default" ou "Usar novo" para proceder',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            //fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }),                
-            Padding(
-              padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
-              child: Column(children: [
-                Padding(
-                  padding: EdgeInsets.fromLTRB(20.0, 0.0, 0.0, 10.0),
+        child: ListView(children: <Widget>[
+          ValueListenableBuilder(
+              valueListenable: widget.sentMACNotifier,
+              builder: (BuildContext context, bool state, Widget child) {
+                return Container(
+                  height: 20,
+                  color: state ? Colors.green[50] : Colors.red[50],
                   child: Align(
-                    alignment: Alignment.centerLeft,
+                    alignment: Alignment.center,
                     child: Container(
                       child: Text(
-                        'Dispositivos default',
-                        textAlign: TextAlign.left,
+                        state
+                            ? 'Enviado'
+                            : 'Selecione dispositivos para proceder',
+                        textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          //fontWeight: FontWeight.bold,
+                          fontSize: 13,
                         ),
                       ),
                     ),
                   ),
-                ),
-                Container(
-                  height: 150.0,
-                  width: 300.0,
-                  color: Colors.transparent,
+                );
+              }),
+          Padding(
+            padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
+            child: Column(children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(20.0, 0.0, 0.0, 20.0),
+                child: Align(
+                  alignment: Alignment.centerLeft,
                   child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.rectangle,
-                      borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                      boxShadow: [
-                        BoxShadow(
-                            color: Colors.grey[200],
-                            offset: new Offset(5.0, 5.0))
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
-                          child: Container(
-                            height: 60.0,
-                            width: 290.0,
-                            decoration: BoxDecoration(
-                              color: Colors.transparent,
-                              shape: BoxShape.rectangle,
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(4.0)),
-                              border: new Border.all(
-                                  color: Colors.grey,
-                                  width: 1.0,
-                                  style: BorderStyle.solid),
-                            ),
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Padding(
-                                padding:
-                                    EdgeInsets.fromLTRB(11.0, 0.0, 0.0, 0.0),
-                                child: ValueListenableBuilder(
-                                    valueListenable: widget.defaultMacAddress1Notifier,
-                                    builder: (BuildContext context,
-                                        String macAddress1, Widget child) {
-                                      return Text(
-                                        macAddress1,
-                                        textAlign: TextAlign.left,
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          color: Colors.grey[600],
-                                        ),
-                                      );
-                                    }),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
-                          child: Container(
-                            height: 60.0,
-                            width: 290.0,
-                            decoration: BoxDecoration(
-                              color: Colors.transparent,
-                              shape: BoxShape.rectangle,
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(4.0)),
-                              border: new Border.all(
-                                  color: Colors.grey,
-                                  width: 1.0,
-                                  style: BorderStyle.solid),
-                            ),
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Padding(
-                                padding:
-                                    EdgeInsets.fromLTRB(11.0, 0.0, 0.0, 0.0),
-                                child: ValueListenableBuilder(
-                                    valueListenable: widget.defaultMacAddress2Notifier,
-                                    builder: (BuildContext context,
-                                        String macAddress2, Widget child) {
-                                      return Text(
-                                        macAddress2,
-                                        textAlign: TextAlign.left,
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          color: Colors.grey[600],
-                                        ),
-                                      );
-                                    }),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 0.0),
-                  child: RaisedButton(
-                    onPressed: () {
-                      setState(() => widget.macAddress1Notifier.value = widget.defaultMacAddress1Notifier.value);
-                      setState(() => widget.macAddress2Notifier.value = widget.defaultMacAddress2Notifier.value);
-                      widget.mqttClientWrapper.publishMessage(
-                        "['USE',{'MAC1':'${widget.defaultMacAddress1Notifier.value}','MAC2':'${widget.defaultMacAddress2Notifier.value}'}]");
-                      widget.mqttClientWrapper.publishMessage("['ID', '${widget.patientNotifier.value}']");
-                      if (widget.defaultMacAddress1Notifier.value != ' ') {
-                        print('mac1: ${widget.defaultMacAddress1Notifier.value}');
-                        setState(() => widget.isBit1Enabled.value = true);
-                      }
-                      if (widget.defaultMacAddress2Notifier.value != ' ') {
-                        print('mac2: ${widget.defaultMacAddress2Notifier.value}');
-                        setState(() => widget.isBit2Enabled.value = true);
-                      }
-                      if (widget.sentMACNotifier.value) {
-                        Navigator.pop(context);
-                      }
-                    },
-                    child: new Text("Usar default"),
-                  ),
-                ),
-              ]),
-            ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
-              child: Column(children: [
-                Padding(
-                  padding: EdgeInsets.fromLTRB(20.0, 0.0, 0.0, 10.0),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Container(
-                      child: Text(
-                        'Escolher novo(s) dispositivo(s)',
-                        textAlign: TextAlign.left,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                    child: Text(
+                      'Selecionar dispositivo(s) de aquisição',
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
                       ),
                     ),
                   ),
                 ),
-                Container(
-                  height: 150.0,
-                  width: 0.95 * bodyWidth,
-                  color: Colors.transparent,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.rectangle,
-                      borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                      boxShadow: [
-                        BoxShadow(
-                            color: Colors.grey[200],
-                            offset: new Offset(5.0, 5.0))
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
-                          child: Row(children: [
-                            Expanded(
-                              child: TextField(
-                                  style: TextStyle(color: Colors.grey[600]),
-                                  controller: _controller1,
-                                  decoration: InputDecoration(
-                                    border: OutlineInputBorder(),
-                                    labelText: 'Endereço MAC',
-                                  ),
-                                  onChanged: null),
+              ),
+              Container(
+                height: 150.0,
+                width: 0.95 * bodyWidth,
+                color: Colors.transparent,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.rectangle,
+                    borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.grey[200], offset: new Offset(5.0, 5.0))
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
+                        child: Row(children: [
+                          Expanded(
+                            child: MaskedTextField(
+                              maskedTextFieldController: _controller1,
+                              mask: 'xx:xx:xx:xx:xx:xx',
+                              maxLength: 17,
+                              inputDecoration: InputDecoration(
+                                border: OutlineInputBorder(),
+                                counterText: "",
+                                labelText: "Endereço MAC",
+                              ),
+                              
                             ),
-                            IconButton(
-                                icon: Icon(
-                                  MdiIcons.qrcode,
-                                ),
-                                onPressed: () => scan(_controller1))
-                          ]),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
-                          child: Row(children: [
-                            Expanded(
-                              child: TextField(
+                          ),
+                          IconButton(
+                              icon: Icon(
+                                MdiIcons.qrcode,
+                              ),
+                              onPressed: () => scan(_controller1))
+                        ]),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
+                        child: Row(children: [
+                          Expanded(
+                            child: MaskedTextField(
+                              maskedTextFieldController: _controller2,
+                              mask: 'xx:xx:xx:xx:xx:xx',
+                              maxLength: 17,
+                              inputDecoration: InputDecoration(
+                                border: OutlineInputBorder(),
+                                counterText: "",
+                                labelText: "Endereço MAC",
+                              ),
+                              
+                            ),
+                            /* child: TextField(
                                   style: TextStyle(color: Colors.grey[600]),
                                   controller: _controller2,
                                   decoration: InputDecoration(
                                     border: OutlineInputBorder(),
                                     labelText: 'Endereço MAC',
                                   ),
-                                  onChanged: null),
-                            ),
-                            IconButton(
-                                icon: Icon(
-                                  MdiIcons.qrcode,
-                                ),
-                                onPressed: () => scan(_controller2))
-                          ]),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 0.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      RaisedButton(
-                        onPressed: () {
-                          setState(() => widget.macAddress1Notifier.value = _controller1.text.replaceAll(new RegExp(r"\s+"), ""));
-                          setState(() => widget.macAddress2Notifier.value = _controller2.text.replaceAll(new RegExp(r"\s+"), ""));
-                          widget.mqttClientWrapper.publishMessage(
-                              "['USE',{'MAC1':'${widget.macAddress1Notifier.value}','MAC2':'${widget.macAddress2Notifier.value}'}]");
-                          widget.mqttClientWrapper.publishMessage("['ID', '${widget.patientNotifier.value}']");
-                          if (widget.macAddress1Notifier.value != ' ' && widget.macAddress1Notifier.value != '') {
-                            setState(() => widget.isBit1Enabled.value = true);
-                          }
-                          if (widget.macAddress2Notifier.value != ' ' && widget.macAddress2Notifier.value != '') {
-                            setState(() => widget.isBit2Enabled.value = true);
-                          }
-                          if (widget.sentMACNotifier.value) {
-                            Navigator.pop(context);
-                          }
-                        },
-                        child: new Text("Usar novo"),
-                      ),
-                      RaisedButton(
-                        onPressed: () {
-                          setState(() => widget.macAddress1Notifier.value = _controller1.text.replaceAll(new RegExp(r"\s+"), ""));
-                          setState(() => widget.macAddress2Notifier.value = _controller2.text.replaceAll(new RegExp(r"\s+"), ""));
-                          _setNewDefault1();
-                          _setNewDefault2();
-                          widget.mqttClientWrapper.publishMessage(
-                              "['NEW',{'MAC1':'${widget.macAddress1Notifier.value}','MAC2':'${widget.macAddress2Notifier.value}'}]");
-                        },
-                        child: new Text("Definir novo default"),
+                                  onChanged: null), */
+                          ),
+                          IconButton(
+                              icon: Icon(
+                                MdiIcons.qrcode,
+                              ),
+                              onPressed: () => scan(_controller2))
+                        ]),
                       ),
                     ],
                   ),
                 ),
-              ]),
-            ),
-          ],
-        ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    RaisedButton(
+                      onPressed: () {
+                        setState(() => widget.macAddress1Notifier.value =
+                            _controller1.text
+                                .replaceAll(new RegExp(r"\s+"), ""));
+                        setState(() => widget.macAddress2Notifier.value =
+                            _controller2.text
+                                .replaceAll(new RegExp(r"\s+"), ""));
+                        widget.mqttClientWrapper.publishMessage(
+                            "['USE',{'MAC1':'${widget.macAddress1Notifier.value}','MAC2':'${widget.macAddress2Notifier.value}'}]");
+                        widget.mqttClientWrapper.publishMessage(
+                            "['ID', '${widget.patientNotifier.value}']");
+                        if (widget.macAddress1Notifier.value != ' ' &&
+                            widget.macAddress1Notifier.value != '') {
+                          setState(() => widget.isBit1Enabled.value = true);
+                        }
+                        if (widget.macAddress2Notifier.value != ' ' &&
+                            widget.macAddress2Notifier.value != '') {
+                          setState(() => widget.isBit2Enabled.value = true);
+                        }
+                        if (widget.sentMACNotifier.value) {
+                          Navigator.pop(context);
+                        }
+                      },
+                      child: new Text("Selecionar"),
+                    ),
+                    RaisedButton(
+                      onPressed: () {
+                        setState(() => widget.macAddress1Notifier.value =
+                            _controller1.text
+                                .replaceAll(new RegExp(r"\s+"), ""));
+                        setState(() => widget.macAddress2Notifier.value =
+                            _controller2.text
+                                .replaceAll(new RegExp(r"\s+"), ""));
+                        _setNewDefault1();
+                        _setNewDefault2();
+                        widget.mqttClientWrapper.publishMessage(
+                            "['NEW',{'MAC1':'${widget.macAddress1Notifier.value}','MAC2':'${widget.macAddress2Notifier.value}'}]");
+                      },
+                      child: new Text("Definir novo default"),
+                    ),
+                  ],
+                ),
+              ),
+            ]),
+          ),
+        ]),
       ),
     );
   }
@@ -389,5 +267,4 @@ class _DevicesPageState extends State<DevicesPage> {
       print(e);
     }
   }
-  
 }
