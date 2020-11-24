@@ -19,7 +19,7 @@
     <application
         android:name="io.flutter.app.FlutterApplication"
         android:label="PreEpiSeizures"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/seizure_icon"
         android:usesCleartextTraffic="true">
         <receiver android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
             <intent-filter>
