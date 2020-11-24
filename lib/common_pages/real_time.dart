@@ -1,10 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:rPiInterface/common_pages/speed_annotation.dart';
+import 'package:rPiInterface/hospital_pages/speed_annotation.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
 import 'package:rPiInterface/utils/plot_data.dart';
 import 'package:rPiInterface/utils/battery_indicator.dart';
+import 'package:stats/stats.dart';
 
 class RealtimePage extends StatefulWidget {
   ValueNotifier<List> dataNotifier;
@@ -97,10 +98,13 @@ class _RealtimePageState extends State<RealtimePage> {
 
   bool _rangeUpdateNeeded(List data, List currentRange) {
     bool update = false;
-    if (data.first < currentRange[0] || currentRange[0] < data.first - 5) {
+    List<double> dataL =  List<double>.from(data);
+    final stats = Stats.fromData(dataL).toJson();
+    final std = stats['standardDeviation'];
+    if (data.first < currentRange[0] || currentRange[0] < data.first - 3*std) {
       update = true;
     }
-    if (data.last > currentRange[1] || currentRange[1] > data.last + 5) {
+    if (data.last > currentRange[1] || currentRange[1] > data.last + 3*std) {
       update = true;
     }
     return update;
@@ -110,13 +114,17 @@ class _RealtimePageState extends State<RealtimePage> {
     double min;
     double max;
 
-    if (data.first < currentRange[0] || currentRange[0] < data.first - 5) {
-      min = (data.first - 5).floor().toDouble();
+    List<double> dataL =  List<double>.from(data);
+    final stats = Stats.fromData(dataL).toJson();
+    final std = stats['standardDeviation'];
+
+    if (data.first < currentRange[0] || currentRange[0] < data.first - 3*std) {
+      min = (data.first - 3*std).floor().toDouble();
     } else {
       min = currentRange[0];
     }
-    if (data.last > currentRange[1] || currentRange[1] > data.last + 5) {
-      max = (data.last + 5).ceil().toDouble();
+    if (data.last > currentRange[1] || currentRange[1] > data.last + 3*std) {
+      max = (data.last + 3*std).ceil().toDouble();
     } else {
       max = currentRange[1];
     }

@@ -37,14 +37,15 @@ class _HomePageState extends State<HomePage> {
   ValueNotifier<List<String>> driveListNotifier =
       ValueNotifier(['Armazenamento interno']);
 
-  ValueNotifier<String> hostnameNotifier = ValueNotifier('192.168.1.8');
+  ValueNotifier<String> hostnameNotifier = ValueNotifier('192.168.0.10');
 
   ValueNotifier<String> acquisitionNotifier = ValueNotifier('off');
 
   ValueNotifier<bool> receivedMACNotifier = ValueNotifier(false);
   ValueNotifier<bool> sentMACNotifier = ValueNotifier(false);
 
-  ValueNotifier<bool> isBit1Enabled = ValueNotifier(false); // not needed, only to not give an error in RPiPage
+  ValueNotifier<bool> isBit1Enabled =
+      ValueNotifier(false); // not needed, only to not give an error in RPiPage
   ValueNotifier<bool> isBit2Enabled = ValueNotifier(false);
 
   ValueNotifier<double> batteryBit1Notifier = ValueNotifier(null);
@@ -67,7 +68,7 @@ class _HomePageState extends State<HomePage> {
   final TextEditingController _nameController = TextEditingController();
 
   FlutterLocalNotificationsPlugin batteryNotification =
-    FlutterLocalNotificationsPlugin();
+      FlutterLocalNotificationsPlugin();
 
   void setupHome() {
     mqttClientWrapper = MQTTClientWrapper(
@@ -83,9 +84,10 @@ class _HomePageState extends State<HomePage> {
     super.initState();
 
     var initializationSettingsAndroid =
-      AndroidInitializationSettings('seizure_icon');
+        AndroidInitializationSettings('seizure_icon');
     var initializationSettingsIOs = IOSInitializationSettings();
-    var initSetttings = InitializationSettings(android: initializationSettingsAndroid, iOS: initializationSettingsIOs);
+    var initSetttings = InitializationSettings(
+        android: initializationSettingsAndroid, iOS: initializationSettingsIOs);
     batteryNotification.initialize(initSetttings);
 
     acquisitionNotifier.value = 'off';
@@ -94,13 +96,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   showNotification(device) async {
-    var android = AndroidNotificationDetails(
-        'id', 'channel ', 'description',
+    var android = AndroidNotificationDetails('id', 'channel ', 'description',
         priority: Priority.high, importance: Importance.max);
     var iOS = IOSNotificationDetails();
     var platform = new NotificationDetails(android: android, iOS: iOS);
     await batteryNotification.show(
-        0, 'Bateria fraca', 'Trocar bateria do dispositivo $device', platform); 
+        0, 'Bateria fraca', 'Trocar bateria do dispositivo $device', platform);
   }
 
   @override
@@ -175,7 +176,7 @@ class _HomePageState extends State<HomePage> {
     } else if (message.contains('ON')) {
       setState(() => acquisitionNotifier.value = 'acquiring');
       print('ACQUIRING');
-      } else if (message.contains('TRYING')) {
+    } else if (message.contains('TRYING')) {
       setState(() => acquisitionNotifier.value = 'trying');
       print('TRYING TO CONNECT TO DEVICES');
     } else if (message.contains('RECONNECTING')) {
@@ -189,7 +190,8 @@ class _HomePageState extends State<HomePage> {
 
   void _isData(String message) {
     if (message.contains('DATA')) {
-      setState(() => acquisitionNotifier.value = 'acquiring'); // if user leaves the app, this will enable the visualization nontheless
+      setState(() => acquisitionNotifier.value =
+          'acquiring'); // if user leaves the app, this will enable the visualization nontheless
       List message2List = json.decode(message);
       setState(() => dataNotifier.value = message2List[1]);
       setState(() => dataChannelsNotifier.value = message2List[2]);
@@ -208,10 +210,14 @@ class _HomePageState extends State<HomePage> {
             (_levelRatio > 1) ? 1 : (_levelRatio < 0) ? 0 : _levelRatio;
         if (entry.key == macAddress1Notifier.value) {
           setState(() => batteryBit1Notifier.value = _level);
-          if (_level <= 0.1) {showNotification('1');}
+          if (_level <= 0.1) {
+            showNotification('1');
+          }
         } else if (entry.key == macAddress2Notifier.value) {
           setState(() => batteryBit2Notifier.value = _level);
-          if (_level <= 0.1) {showNotification('2');}
+          if (_level <= 0.1) {
+            showNotification('2');
+          }
         }
       }
     }
@@ -609,19 +615,25 @@ class _HomePageState extends State<HomePage> {
       ]),
       body: ListView(children: <Widget>[
         ValueListenableBuilder(
-            valueListenable: receivedMACNotifier,
-            builder: (BuildContext context, bool state, Widget child) {
+            valueListenable: connectionNotifier,
+            builder: (BuildContext context, MqttCurrentConnectionState state,
+                Widget child) {
               return Container(
                 height: 20,
-                color: state ? Colors.green[50] : Colors.red[50],
+                color: state == MqttCurrentConnectionState.CONNECTED
+                    ? Colors.green[50]
+                    : state == MqttCurrentConnectionState.CONNECTING
+                        ? Colors.yellow[50]
+                        : Colors.red[50],
                 child: Align(
                   alignment: Alignment.center,
                   child: Container(
                     child: Text(
-                      state
-                          // && _conn == MqttCurrentConnectionState.CONNECTED)
-                          ? 'Conectado ao RPi'
-                          : 'Disconectado do RPi',
+                      state == MqttCurrentConnectionState.CONNECTED
+                          ? 'Conectado ao servidor'
+                          : state == MqttCurrentConnectionState.CONNECTING
+                              ? 'A conectar...'
+                              : 'Disconectado do servidor',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         //fontWeight: FontWeight.bold,
@@ -639,7 +651,9 @@ class _HomePageState extends State<HomePage> {
                 height: 20,
                 color: state == 'acquiring'
                     ? Colors.green[50]
-                    : (state == 'starting' || state == 'reconnecting' || state == 'trying')
+                    : (state == 'starting' ||
+                            state == 'reconnecting' ||
+                            state == 'trying')
                         ? Colors.yellow[50]
                         : Colors.red[50],
                 child: Align(
@@ -647,16 +661,16 @@ class _HomePageState extends State<HomePage> {
                   child: Container(
                     child: Text(
                       state == 'starting'
-                      ? 'A iniciar aquisição ...'
-                      : state == 'acquiring'
-                          ? 'A adquirir dados'
-                          : state == 'reconnecting'
-                              ? 'A retomar aquisição ...'
-                              : state == 'trying'
-                              ? 'A reconectar aos dispositivos ...'
-                              : state == 'stopped'
-                                  ? 'Aquisição terminada e dados gravados'
-                                  : 'Aquisição desligada',
+                          ? 'A iniciar aquisição ...'
+                          : state == 'acquiring'
+                              ? 'A adquirir dados'
+                              : state == 'reconnecting'
+                                  ? 'A retomar aquisição ...'
+                                  : state == 'trying'
+                                      ? 'A reconectar aos dispositivos ...'
+                                      : state == 'stopped'
+                                          ? 'Aquisição terminada e dados gravados'
+                                          : 'Aquisição desligada',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         //fontWeight: FontWeight.bold,

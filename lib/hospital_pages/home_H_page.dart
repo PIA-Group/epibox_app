@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:app_settings/app_settings.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:mqtt_client/mqtt_client.dart';
@@ -8,9 +10,11 @@ import 'package:rPiInterface/common_pages/real_time.dart';
 import 'package:rPiInterface/hospital_pages/config_page.dart';
 import 'package:rPiInterface/common_pages/rpi_setup.dart';
 import 'package:rPiInterface/hospital_pages/devices_H_setup.dart';
+import 'package:rPiInterface/hospital_pages/instructions_H.dart';
 import 'package:rPiInterface/utils/battery_indicator.dart';
 import 'package:rPiInterface/utils/models.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
+import 'package:wifi_configuration/wifi_configuration.dart';
 
 class HomeHPage extends StatefulWidget {
   ValueNotifier<String> patientNotifier;
@@ -37,7 +41,7 @@ class _HomeHPageState extends State<HomeHPage> {
   ValueNotifier<List<String>> driveListNotifier =
       ValueNotifier(['Armazenamento interno']);
 
-  ValueNotifier<String> hostnameNotifier = ValueNotifier('192.168.2.107');
+  ValueNotifier<String> hostnameNotifier = ValueNotifier('192.168.0.10');
 
   ValueNotifier<String> acquisitionNotifier = ValueNotifier('off');
 
@@ -52,6 +56,8 @@ class _HomeHPageState extends State<HomeHPage> {
 
   ValueNotifier<double> batteryBit1Notifier = ValueNotifier(null);
   ValueNotifier<double> batteryBit2Notifier = ValueNotifier(null);
+
+  ValueNotifier<bool> isPreEpiWifiNotifier = ValueNotifier(null);
 
   final firestoreInstance = Firestore.instance;
 
@@ -71,7 +77,10 @@ class _HomeHPageState extends State<HomeHPage> {
   final TextEditingController _nameController = TextEditingController();
 
   FlutterLocalNotificationsPlugin batteryNotification =
-    FlutterLocalNotificationsPlugin();
+      FlutterLocalNotificationsPlugin();
+
+  StreamSubscription<ConnectivityResult> subscription;
+  bool initiatedWifi = false;
 
   void setupHome() {
     mqttClientWrapper = MQTTClientWrapper(
@@ -85,10 +94,19 @@ class _HomeHPageState extends State<HomeHPage> {
   @override
   void initState() {
     super.initState();
+
+    subscription = Connectivity()
+        .onConnectivityChanged
+        .listen((ConnectivityResult result) {
+      isPreEpiWifi();
+    });
+    initWifi();
+
     var initializationSettingsAndroid =
-      AndroidInitializationSettings('seizure_icon');
+        AndroidInitializationSettings('seizure_icon');
     var initializationSettingsIOs = IOSInitializationSettings();
-    var initSetttings = InitializationSettings(android: initializationSettingsAndroid, iOS: initializationSettingsIOs);
+    var initSetttings = InitializationSettings(
+        android: initializationSettingsAndroid, iOS: initializationSettingsIOs);
     batteryNotification.initialize(initSetttings);
 
     acquisitionNotifier.value = 'off';
@@ -96,24 +114,95 @@ class _HomeHPageState extends State<HomeHPage> {
     _nameController.text = " ";
   }
 
+  void initWifi() async {
+    var wifiName = await (Connectivity().getWifiName());
+    print(wifiName);
+    if (wifiName == 'PreEpiSeizures') {
+      setState(() => isPreEpiWifiNotifier.value = true);
+      setState(() => initiatedWifi = true);
+    } else {
+      setState(() => isPreEpiWifiNotifier.value = false);
+      _wifiDialog();
+    }
+  }
 
+  void isPreEpiWifi() async {
+    var wifiName = await (Connectivity().getWifiName());
+    print(wifiName);
+    if (wifiName == 'PreEpiSeizures') {
+      setState(() => isPreEpiWifiNotifier.value = true);
+    } else {
+      setState(() => isPreEpiWifiNotifier.value = false);
+      if (initiatedWifi) {
+        _showSnackBar(
+            'Conexão perdida com a rede "PreEpiseizures". Reconectar!');
+      }
+    }
+  }
+
+  Future<void> _wifiDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'Wifi disconectado',
+            textAlign: TextAlign.start,
+          ),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(
+                  'Não está conectado à rede "PreEpiSeizures". Por favor conectar com a password "preepiseizures"',
+                  textAlign: TextAlign.start,
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            RaisedButton(
+              child: Text("WIFI"),
+              onPressed: () {
+                AppSettings.openWIFISettings();
+                Navigator.of(context).pop();
+              },
+            ),
+            /* FlatButton(
+            child: Text('Entendi!'),
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
+            },
+          ), */
+          ],
+        );
+      },
+    );
+  }
+
+  void getWifiState() async {
+    WifiConnectionStatus connectionStatus =
+        await WifiConfiguration.connectToWifi(
+            "PreEpiSeizures", "preepiseizures", "com.example.rPiInterface");
+    print("is Connected : $connectionStatus");
+  }
 
   showNotification(device) async {
-    var android = AndroidNotificationDetails(
-        'id', 'channel ', 'description',
+    var android = AndroidNotificationDetails('id', 'channel ', 'description',
         priority: Priority.high, importance: Importance.max);
     var iOS = IOSNotificationDetails();
     var platform = new NotificationDetails(android: android, iOS: iOS);
     await batteryNotification.show(
-        0, 'Bateria fraca', 'Trocar bateria do dispositivo $device', platform); 
+        0, 'Bateria fraca', 'Trocar bateria do dispositivo $device', platform);
   }
 
   @override
   void dispose() {
     super.dispose();
     _nameController.dispose();
+    subscription.cancel();
   }
-  
 
   void gotNewMessage(String newMessage) {
     setState(() => message = newMessage);
@@ -157,8 +246,7 @@ class _HomeHPageState extends State<HomeHPage> {
         List<String> listDrives = message.split(",");
         listDrives.removeAt(0);
         listDrives = listDrives.map((drive) => drive.split("'")[1]).toList();
-        setState(
-            () => driveListNotifier.value = listDrives); 
+        setState(() => driveListNotifier.value = listDrives);
         mqttClientWrapper.publishMessage("['GO TO DEVICES']");
       } catch (e) {
         print(e);
@@ -170,7 +258,7 @@ class _HomeHPageState extends State<HomeHPage> {
     if (message.contains('DEFAULT CONFIG')) {
       List message2List = json.decode(message);
       print(message2List[1]);
-      setState(() => configDefaultNotifier.value = message2List[1]); 
+      setState(() => configDefaultNotifier.value = message2List[1]);
     }
   }
 
@@ -186,7 +274,6 @@ class _HomeHPageState extends State<HomeHPage> {
     }
   }
 
-
   void _isAcquisitionState(String message) {
     if (message.contains('STARTING')) {
       setState(() => acquisitionNotifier.value = 'starting');
@@ -194,7 +281,7 @@ class _HomeHPageState extends State<HomeHPage> {
     } else if (message.contains('ACQUISITION ON')) {
       setState(() => acquisitionNotifier.value = 'acquiring');
       print('ACQUIRING');
-      } else if (message.contains('TRYING')) {
+    } else if (message.contains('TRYING')) {
       setState(() => acquisitionNotifier.value = 'trying');
       print('TRYING TO CONNECT TO DEVICES');
     } else if (message.contains('RECONNECTING')) {
@@ -208,7 +295,8 @@ class _HomeHPageState extends State<HomeHPage> {
 
   void _isData(String message) {
     if (message.contains('DATA')) {
-      setState(() => acquisitionNotifier.value = 'acquiring'); // if user leaves the app, this will enable the visualization nontheless
+      setState(() => acquisitionNotifier.value =
+          'acquiring'); // if user leaves the app, this will enable the visualization nontheless
       List message2List = json.decode(message);
       setState(() => dataNotifier.value = message2List[1]);
       setState(() => dataChannelsNotifier.value = message2List[2]);
@@ -227,10 +315,14 @@ class _HomeHPageState extends State<HomeHPage> {
             (_levelRatio > 1) ? 1 : (_levelRatio < 0) ? 0 : _levelRatio;
         if (entry.key == macAddress1Notifier.value) {
           setState(() => batteryBit1Notifier.value = _level);
-          if (_level <= 0.1) {showNotification('1');}
+          if (_level <= 0.1) {
+            showNotification('1');
+          }
         } else if (entry.key == macAddress2Notifier.value) {
           setState(() => batteryBit2Notifier.value = _level);
-          if (_level <= 0.1) {showNotification('2');}
+          if (_level <= 0.1) {
+            showNotification('2');
+          }
         }
       }
     }
@@ -376,7 +468,6 @@ class _HomeHPageState extends State<HomeHPage> {
                           child: BatteryIndicator(
                             style: BatteryIndicatorStyle.skeumorphism,
                             batteryLevel: battery,
-
                           ),
                         ),
                       ),
@@ -411,19 +502,25 @@ class _HomeHPageState extends State<HomeHPage> {
       ]),
       body: ListView(children: <Widget>[
         ValueListenableBuilder(
-            valueListenable: receivedMACNotifier,
-            builder: (BuildContext context, bool state, Widget child) {
+            valueListenable: connectionNotifier,
+            builder: (BuildContext context, MqttCurrentConnectionState state,
+                Widget child) {
               return Container(
                 height: 20,
-                color: state ? Colors.green[50] : Colors.red[50],
+                color: state == MqttCurrentConnectionState.CONNECTED
+                    ? Colors.green[50]
+                    : state == MqttCurrentConnectionState.CONNECTING
+                        ? Colors.yellow[50]
+                        : Colors.red[50],
                 child: Align(
                   alignment: Alignment.center,
                   child: Container(
                     child: Text(
-                      state
-                          // && _conn == MqttCurrentConnectionState.CONNECTED)
-                          ? 'Conectado ao RPi'
-                          : 'Disconectado do RPi',
+                      state == MqttCurrentConnectionState.CONNECTED
+                          ? 'Conectado ao servidor'
+                          : state == MqttCurrentConnectionState.CONNECTING
+                              ? 'A conectar...'
+                              : 'Disconectado do servidor',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         //fontWeight: FontWeight.bold,
@@ -441,7 +538,9 @@ class _HomeHPageState extends State<HomeHPage> {
                 height: 20,
                 color: state == 'acquiring'
                     ? Colors.green[50]
-                    : (state == 'starting' || state == 'reconnecting' || state == 'trying')
+                    : (state == 'starting' ||
+                            state == 'reconnecting' ||
+                            state == 'trying')
                         ? Colors.yellow[50]
                         : Colors.red[50],
                 child: Align(
@@ -449,16 +548,16 @@ class _HomeHPageState extends State<HomeHPage> {
                   child: Container(
                     child: Text(
                       state == 'starting'
-                      ? 'A iniciar aquisição ...'
-                      : state == 'acquiring'
-                          ? 'A adquirir dados'
-                          : state == 'reconnecting'
-                              ? 'A retomar aquisição ...'
-                              : state == 'trying'
-                              ? 'A reconectar aos dispositivos ...'
-                              : state == 'stopped'
-                                  ? 'Aquisição terminada e dados gravados'
-                                  : 'Aquisição desligada',
+                          ? 'A iniciar aquisição ...'
+                          : state == 'acquiring'
+                              ? 'A adquirir dados'
+                              : state == 'reconnecting'
+                                  ? 'A retomar aquisição ...'
+                                  : state == 'trying'
+                                      ? 'A reconectar aos dispositivos ...'
+                                      : state == 'stopped'
+                                          ? 'Aquisição terminada e dados gravados'
+                                          : 'Aquisição desligada',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         //fontWeight: FontWeight.bold,
@@ -616,37 +715,55 @@ class _HomeHPageState extends State<HomeHPage> {
           ),
         ),
       ]),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: sentMACNotifier.value
-            ? () async {
-                mqttClientWrapper.publishMessage("['START']");
+      floatingActionButton: Stack(children: [
+        Align(
+          alignment: Alignment(1.0, 0.8),
+          child: FloatingActionButton(
+              mini: true,
+              heroTag: null,
+              child: Icon(Icons.list),
+              onPressed: () async {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) {
-                    return RealtimePage(
-                      dataNotifier: dataNotifier,
-                      dataChannelsNotifier: dataChannelsNotifier,
-                      dataSensorsNotifier: dataSensorsNotifier,
-                      mqttClientWrapper: mqttClientWrapper,
-                      acquisitionNotifier: acquisitionNotifier,
-                      batteryBit1Notifier: batteryBit1Notifier,
-                      batteryBit2Notifier: batteryBit2Notifier,
-                      patientNotifier: widget.patientNotifier,
-                    );
+                    return InstructionsHPage();
                   }),
                 );
-              }
-            : () => {
-                  connectionState != MqttCurrentConnectionState.CONNECTED
-                      ? _showSnackBar('Erro: disconectado do RPi')
-                      : _showSnackBar(
-                          'Erro: dispositivo(s) ainda não selecionado(s)'),
-                },
-        label: Text('Start'),
-        icon: Icon(Icons.play_circle_outline),
-      ),
+              }),
+        ),
+        Align(
+          alignment: Alignment.bottomRight,
+          child: FloatingActionButton.extended(
+            onPressed: sentMACNotifier.value
+                ? () async {
+                    mqttClientWrapper.publishMessage("['START']");
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) {
+                        return RealtimePage(
+                          dataNotifier: dataNotifier,
+                          dataChannelsNotifier: dataChannelsNotifier,
+                          dataSensorsNotifier: dataSensorsNotifier,
+                          mqttClientWrapper: mqttClientWrapper,
+                          acquisitionNotifier: acquisitionNotifier,
+                          batteryBit1Notifier: batteryBit1Notifier,
+                          batteryBit2Notifier: batteryBit2Notifier,
+                          patientNotifier: widget.patientNotifier,
+                        );
+                      }),
+                    );
+                  }
+                : () => {
+                      connectionState != MqttCurrentConnectionState.CONNECTED
+                          ? _showSnackBar('Erro: disconectado do RPi')
+                          : _showSnackBar(
+                              'Erro: dispositivo(s) ainda não selecionado(s)'),
+                    },
+            label: Text('Iniciar'),
+            icon: Icon(Icons.play_circle_outline),
+          ),
+        ),
+      ]),
     );
   }
 }
-
-

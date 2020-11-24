@@ -52,21 +52,6 @@ class RPiPage extends StatefulWidget {
 
 class _RPiPageState extends State<RPiPage> {
   String message;
-  final TextEditingController _controller = TextEditingController();
-
-  @override
-  void dispose() {
-    // Clean up the controller when the widget is removed from the
-    // widget tree.
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _controller.text = widget.hostnameNotifier.value;
-  }
 
   Future<void> _restart() async {
     widget.mqttClientWrapper.publishMessage("['RESTART']");
@@ -95,14 +80,11 @@ class _RPiPageState extends State<RPiPage> {
   }
 
   Future<void> _setup() async {
-    print(_controller.text.replaceAll(new RegExp(r"\s+"), ""));
-    setState(() => widget.hostnameNotifier.value =
-        _controller.text.replaceAll(new RegExp(r"\s+"), ""));
     await widget.mqttClientWrapper
-        .prepareMqttClient(_controller.text.replaceAll(new RegExp(r"\s+"), ""));
+        .prepareMqttClient(widget.hostnameNotifier.value);
     widget.mqttClientWrapper.publishMessage("['Send MAC Addresses']");
-    widget.mqttClientWrapper.publishMessage("['Send config']");  
-    widget.mqttClientWrapper.publishMessage("['Send drives']");  
+    widget.mqttClientWrapper.publishMessage("['Send config']");
+    widget.mqttClientWrapper.publishMessage("['Send drives']");
   }
 
   @override
@@ -156,8 +138,8 @@ class _RPiPageState extends State<RPiPage> {
                         child: Text(
                           state
                               // && _conn == MqttCurrentConnectionState.CONNECTED)
-                              ? 'Conectado ao RPi'
-                              : 'Disconectado do RPi',
+                              ? 'Processo iniciado'
+                              : 'Processo não iniciado',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             //fontWeight: FontWeight.bold,
@@ -172,57 +154,58 @@ class _RPiPageState extends State<RPiPage> {
               padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
               child: Column(children: [
                 Padding(
-                  padding: EdgeInsets.fromLTRB(20.0, 0.0, 0.0, 10.0),
+                  padding: EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 0.0),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Container(
-                      child: Text(
-                        'Endereço Servidor',
-                        textAlign: TextAlign.left,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Container(
-                  height: 150.0,
-                  width: 300.0,
-                  color: Colors.transparent,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.rectangle,
-                      borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                      boxShadow: [
-                        BoxShadow(
-                            color: Colors.grey[200],
-                            offset: new Offset(5.0, 5.0))
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
-                          child: TextField(
-                            style: TextStyle(color: Colors.grey[600]),
-                            controller: _controller,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              labelText: 'Endereço',
-                            ),
-                            onChanged: null,
-                          ),
-                        ),
-                      ],
+                      child: RichText(
+                          textAlign: TextAlign.justify,
+                          text: TextSpan(children: [
+                        TextSpan(
+                            text:
+                                'Para conectar ao servidor e iniciar processo, clicar em ',
+                            style: TextStyle(
+                                fontSize: 16, color: Colors.grey[600])),
+                        TextSpan(
+                            text: '"Conectar"',
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey[600])),
+                        TextSpan(
+                            text:
+                                '. Isto irá colocar em marcha os procedimentos necessários para iniciar a aquisição de dados! ',
+                            style: TextStyle(
+                                fontSize: 16, color: Colors.grey[600])),
+                      ])),
                     ),
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 0.0),
+                  padding: EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0.0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      child: RichText(
+                          textAlign: TextAlign.justify,
+                          text: TextSpan(children: [
+                        TextSpan(
+                            text:
+                                'Caso queira fazer uma nova aquisição ou caso seja necessário reininciar o processo, clicar em ',
+                            style: TextStyle(
+                                fontSize: 16, color: Colors.grey[600])),
+                        TextSpan(
+                            text: '"Reininciar" ',
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey[600])),
+                      ])),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
@@ -239,6 +222,46 @@ class _RPiPageState extends State<RPiPage> {
                         child: new Text("Reininciar"),
                       ),
                     ],
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 10.0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      child: RichText(
+                        textAlign: TextAlign.justify,
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                                text: 'Caso esteja ',
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.grey[600])),
+                            TextSpan(
+                                text: 'conectado ao servidor ',
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey[600])),
+                            TextSpan(
+                                text: 'mas o processo ',
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.grey[600])),
+                            TextSpan(
+                                text: 'não ',
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey[600])),
+                            TextSpan(
+                                text:
+                                    'tenha sido iniciado, reinincie e tente conectar novamente. Em último caso, desligue e volte a ligar o dispositivo.',
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.grey[600])),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ]),
