@@ -1,6 +1,7 @@
 // package from https://pub.dev/packages/masked_text/install
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class MaskedTextField extends StatefulWidget {
   final TextEditingController maskedTextFieldController;
@@ -39,7 +40,9 @@ class _MaskedTextFieldState extends State<MaskedTextField> {
       keyboardType: widget.keyboardType,
       decoration: widget.inputDecoration,
       focusNode: widget.focusNode,
+      inputFormatters: [FilteringTextInputFormatter.deny(RegExp('[ ]'))],
       onChanged: (String text) {
+
         // its deleting text
         if (text.length < lastTextSize) {
           if (widget.mask[text.length] != widget.escapeCharacter) {
@@ -86,9 +89,13 @@ class _MaskedTextFieldState extends State<MaskedTextField> {
     var result = "";
 
     for (int i = 0; i < text.length - 1; i++) {
-      result += text[i];
+      print(text);
+      if (text[i] != ' ') {
+        result += text[i];
+      } else {
+        return result;
+      }
     }
-
     result += widget.mask[text.length - 1];
     result += text[text.length - 1];
 

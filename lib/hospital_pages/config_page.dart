@@ -1,4 +1,4 @@
-import 'dart:convert';
+//import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:rPiInterface/utils/models.dart';
@@ -43,7 +43,7 @@ class _ConfigPageState extends State<ConfigPage> {
 
 
   List<DropdownMenuItem<String>> sensorItems =
-      ['-', 'ECG', 'EDA', 'EEG', 'EMG', 'ACC'].map((String value) {
+      ['-', 'ECG', 'EEG', 'PPG', 'PZT', 'ACC', 'SpO2', 'EDA', 'EMG', 'EOG'].map((String value) {
     return new DropdownMenuItem<String>(
       value: value,
       child: Center(
@@ -215,6 +215,36 @@ class _ConfigPageState extends State<ConfigPage> {
         child: ListView(
           children: <Widget>[
             ValueListenableBuilder(
+            valueListenable: widget.connectionNotifier,
+            builder: (BuildContext context, MqttCurrentConnectionState state,
+                Widget child) {
+              return Container(
+                height: 20,
+                color: state == MqttCurrentConnectionState.CONNECTED
+                    ? Colors.green[50]
+                    : state == MqttCurrentConnectionState.CONNECTING
+                        ? Colors.yellow[50]
+                        : Colors.red[50],
+                child: Align(
+                  alignment: Alignment.center,
+                  child: Container(
+                    child: Text(
+                      state == MqttCurrentConnectionState.CONNECTED
+                          ? 'Conectado ao servidor'
+                          : state == MqttCurrentConnectionState.CONNECTING
+                              ? 'A conectar...'
+                              : 'Disconectado do servidor',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        //fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+            ValueListenableBuilder(
                 valueListenable: widget.sentConfigNotifier,
                 builder: (BuildContext context, bool state, Widget child) {
                   return Container(
@@ -238,10 +268,10 @@ class _ConfigPageState extends State<ConfigPage> {
                   );
                 }),
             Padding(
-              padding: EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 0.0),
+              padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
               child: Column(children: [
                 Padding(
-                  padding: EdgeInsets.fromLTRB(20.0, 20.0, 0.0, 10.0),
+                  padding: EdgeInsets.fromLTRB(20.0, 0.0, 0.0, 10.0),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Container(
@@ -298,10 +328,10 @@ class _ConfigPageState extends State<ConfigPage> {
               ]),
             ),
             Padding(
-              padding: EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 0.0),
+              padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
               child: Column(children: [
                 Padding(
-                  padding: EdgeInsets.fromLTRB(20.0, 20.0, 0.0, 10.0),
+                  padding: EdgeInsets.fromLTRB(20.0, 0.0, 0.0, 10.0),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Container(

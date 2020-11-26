@@ -82,6 +82,9 @@ class _RPiPageState extends State<RPiPage> {
   Future<void> _setup() async {
     await widget.mqttClientWrapper
         .prepareMqttClient(widget.hostnameNotifier.value);
+    var timeStamp = DateTime.now();
+    String time = "${timeStamp.year}-${timeStamp.month}-${timeStamp.day} ${timeStamp.hour}:${timeStamp.minute}:${timeStamp.second}";
+    widget.mqttClientWrapper.publishMessage("['TIME', '$time']");
     widget.mqttClientWrapper.publishMessage("['Send MAC Addresses']");
     widget.mqttClientWrapper.publishMessage("['Send config']");
     widget.mqttClientWrapper.publishMessage("['Send drives']");

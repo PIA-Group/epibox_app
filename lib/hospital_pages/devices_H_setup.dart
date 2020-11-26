@@ -86,6 +86,36 @@ class _DevicesPageState extends State<DevicesPage> {
       body: Center(
         child: ListView(children: <Widget>[
           ValueListenableBuilder(
+            valueListenable: widget.connectionNotifier,
+            builder: (BuildContext context, MqttCurrentConnectionState state,
+                Widget child) {
+              return Container(
+                height: 20,
+                color: state == MqttCurrentConnectionState.CONNECTED
+                    ? Colors.green[50]
+                    : state == MqttCurrentConnectionState.CONNECTING
+                        ? Colors.yellow[50]
+                        : Colors.red[50],
+                child: Align(
+                  alignment: Alignment.center,
+                  child: Container(
+                    child: Text(
+                      state == MqttCurrentConnectionState.CONNECTED
+                          ? 'Conectado ao servidor'
+                          : state == MqttCurrentConnectionState.CONNECTING
+                              ? 'A conectar...'
+                              : 'Disconectado do servidor',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        //fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ValueListenableBuilder(
               valueListenable: widget.sentMACNotifier,
               builder: (BuildContext context, bool state, Widget child) {
                 return Container(
@@ -216,7 +246,7 @@ class _DevicesPageState extends State<DevicesPage> {
                             _controller2.text
                                 .replaceAll(new RegExp(r"\s+"), ""));
                         widget.mqttClientWrapper.publishMessage(
-                            "['USE',{'MAC1':'${widget.macAddress1Notifier.value}','MAC2':'${widget.macAddress2Notifier.value}'}]");
+                            "['USE MAC',{'MAC1':'${widget.macAddress1Notifier.value}','MAC2':'${widget.macAddress2Notifier.value}'}]");
                         widget.mqttClientWrapper.publishMessage(
                             "['ID', '${widget.patientNotifier.value}']");
                         if (widget.macAddress1Notifier.value != ' ' &&
@@ -244,7 +274,7 @@ class _DevicesPageState extends State<DevicesPage> {
                         _setNewDefault1();
                         _setNewDefault2();
                         widget.mqttClientWrapper.publishMessage(
-                            "['NEW',{'MAC1':'${widget.macAddress1Notifier.value}','MAC2':'${widget.macAddress2Notifier.value}'}]");
+                            "['NEW MAC',{'MAC1':'${widget.macAddress1Notifier.value}','MAC2':'${widget.macAddress2Notifier.value}'}]");
                       },
                       child: new Text("Definir novo default"),
                     ),

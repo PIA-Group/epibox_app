@@ -1,15 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:rPiInterface/utils/mqtt_wrapper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SpeedAnnotationDialog extends StatefulWidget {
+  ValueNotifier<List> annotationTypesD;
   List<String> annotationTypes;
   ValueNotifier<String> patientNotifier;
   ValueNotifier<bool> newAnnotation;
+  MQTTClientWrapper mqttClientWrapper;
 
   SpeedAnnotationDialog({
+    this.annotationTypesD,
     this.annotationTypes,
     this.patientNotifier,
     this.newAnnotation,
+    this.mqttClientWrapper,
   });
 
   @override
@@ -36,61 +42,31 @@ class _SpeedAnnotationDialogState extends State<SpeedAnnotationDialog> {
       timeStamp = timeStamp
           .subtract(Duration(seconds: (_currentSliderValue * 60).toInt()));
       print(timeStamp);
-      String today = '${timeStamp.year}-${timeStamp.month}-${timeStamp.day}';
 
       try {
+        setState(() => _controller.text = _controller.text.trim());
         if (!widget.annotationTypes.contains(_controller.text)) {
+          setState(() => widget.annotationTypesD.value.add(_controller.text));
           widget.annotationTypes.add(_controller.text);
           print(widget.annotationTypes);
-          firestoreInstance
-              .collection("annotations")
-              .document('types')
-              .setData({'types': widget.annotationTypes}, merge: true);
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setStringList('annotationTypes', widget.annotationTypes);
+          
         }
       } catch (e) {
         print(e);
       }
 
-      Map previousAnnot;
-      try {
-        await firestoreInstance
-            .collection('users')
-            .document(widget.patientNotifier.value)
-            .collection('annotations')
-            .document(today)
-            .get()
-            .then((value) => setState(() => previousAnnot = value.data[today]));
-      } catch (e) {
-        setState(() => previousAnnot = {});
+      List annot;
+      String annotText = _controller.text.replaceAll('ç', 'c');
+      annotText = annotText.replaceAll(' ', '_');
+      if (!_isChecked) {
+        annot = ['"$annotText"', '"${timeStamp.hour}:${timeStamp.minute}:${timeStamp.second}"'];
+      } else {
+        annot = ['"$annotText"', '"null"'];
       }
 
-      try {
-        if (!_isChecked) {
-          previousAnnot[_controller.text]
-              .add('${timeStamp.hour}:${timeStamp.minute}:${timeStamp.second}');
-        } else {
-          previousAnnot[_controller.text]
-              .add('null');
-        }
-      } catch (e) {
-        if (!_isChecked) {
-        previousAnnot[_controller.text] = [
-          '${timeStamp.hour}:${timeStamp.minute}:${timeStamp.second}'
-        ];
-        } else {previousAnnot[_controller.text] = ['null'];}
-      }
-
-      try {
-        firestoreInstance
-            .collection('users')
-            .document(widget.patientNotifier.value)
-            .collection('annotations')
-            .document(today)
-            .setData({today: previousAnnot}, merge: true);
-        setState(() => widget.newAnnotation.value = true);
-      } catch (e) {
-        print(e);
-      }
+      widget.mqttClientWrapper.publishMessage("['ANNOTATION', $annot]");
 
       Navigator.pop(context);
     }
@@ -102,9 +78,9 @@ class _SpeedAnnotationDialogState extends State<SpeedAnnotationDialog> {
         MediaQuery.of(context).viewInsets.left -
         MediaQuery.of(context).viewInsets.right;
 
-    final height = MediaQuery.of(context).size.height -
+    /* final height = MediaQuery.of(context).size.height -
         MediaQuery.of(context).viewInsets.top -
-        MediaQuery.of(context).viewInsets.bottom;
+        MediaQuery.of(context).viewInsets.bottom; */
 
     return Scaffold(
       appBar: AppBar(

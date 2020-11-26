@@ -10,11 +10,13 @@ import 'package:rPiInterface/common_pages/real_time.dart';
 import 'package:rPiInterface/hospital_pages/config_page.dart';
 import 'package:rPiInterface/common_pages/rpi_setup.dart';
 import 'package:rPiInterface/hospital_pages/devices_H_setup.dart';
+import 'package:rPiInterface/hospital_pages/configurations.dart';
 import 'package:rPiInterface/hospital_pages/instructions_H.dart';
 import 'package:rPiInterface/utils/battery_indicator.dart';
 import 'package:rPiInterface/utils/models.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
-import 'package:wifi_configuration/wifi_configuration.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+//import 'package:wifi_configuration/wifi_configuration.dart';
 
 class HomeHPage extends StatefulWidget {
   ValueNotifier<String> patientNotifier;
@@ -79,8 +81,7 @@ class _HomeHPageState extends State<HomeHPage> {
   FlutterLocalNotificationsPlugin batteryNotification =
       FlutterLocalNotificationsPlugin();
 
-  StreamSubscription<ConnectivityResult> subscription;
-  bool initiatedWifi = false;
+  ValueNotifier<List> annotationTypesD = ValueNotifier([]);
 
   void setupHome() {
     mqttClientWrapper = MQTTClientWrapper(
@@ -95,13 +96,6 @@ class _HomeHPageState extends State<HomeHPage> {
   void initState() {
     super.initState();
 
-    subscription = Connectivity()
-        .onConnectivityChanged
-        .listen((ConnectivityResult result) {
-      isPreEpiWifi();
-    });
-    initWifi();
-
     var initializationSettingsAndroid =
         AndroidInitializationSettings('seizure_icon');
     var initializationSettingsIOs = IOSInitializationSettings();
@@ -112,83 +106,93 @@ class _HomeHPageState extends State<HomeHPage> {
     acquisitionNotifier.value = 'off';
     setupHome();
     _nameController.text = " ";
+
+    /* subscription = Connectivity()
+        .onConnectivityChanged
+        .listen((ConnectivityResult result) {
+      if (initiatedWifi && this.mounted)
+        _showSnackBar('Conexão à rede alterada.');
+    }); */
+    _initWifi();
+
+    getAnnotationTypes();
   }
 
-  void initWifi() async {
-    var wifiName = await (Connectivity().getWifiName());
-    print(wifiName);
-    if (wifiName == 'PreEpiSeizures') {
-      setState(() => isPreEpiWifiNotifier.value = true);
-      setState(() => initiatedWifi = true);
-    } else {
-      setState(() => isPreEpiWifiNotifier.value = false);
-      _wifiDialog();
-    }
-  }
-
-  void isPreEpiWifi() async {
-    var wifiName = await (Connectivity().getWifiName());
-    print(wifiName);
-    if (wifiName == 'PreEpiSeizures') {
-      setState(() => isPreEpiWifiNotifier.value = true);
-    } else {
-      setState(() => isPreEpiWifiNotifier.value = false);
-      if (initiatedWifi) {
-        _showSnackBar(
-            'Conexão perdida com a rede "PreEpiseizures". Reconectar!');
-      }
-    }
+  void _initWifi() async {
+    _wifiDialog();
   }
 
   Future<void> _wifiDialog() async {
+    await Future.delayed(Duration.zero);
     return showDialog<void>(
       context: context,
-      barrierDismissible: false, // user must tap button!
+      barrierDismissible: true,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(
-            'Wifi disconectado',
+            'Conexão wifi',
             textAlign: TextAlign.start,
           ),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text(
-                  'Não está conectado à rede "PreEpiSeizures". Por favor conectar com a password "preepiseizures"',
-                  textAlign: TextAlign.start,
+                Padding(
+                  padding: EdgeInsets.only(right: 15.0, left: 15.0),
+                  child: Text(
+                    'Verifique se se encontra conectado à rede "PreEpiSeizures". Caso contrário, por favor conectar com a password "preepiseizures"',
+                    textAlign: TextAlign.justify,
+                  ),
                 ),
+                ButtonBar(
+                    alignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      RaisedButton(
+                        child: Text("Está conectado!"),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                      RaisedButton(
+                        child: Text("WIFI"),
+                        onPressed: () {
+                          AppSettings.openWIFISettings();
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ]),
               ],
             ),
           ),
-          actions: <Widget>[
-            RaisedButton(
-              child: Text("WIFI"),
-              onPressed: () {
-                AppSettings.openWIFISettings();
-                Navigator.of(context).pop();
-              },
-            ),
-            /* FlatButton(
-            child: Text('Entendi!'),
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
-            },
-          ), */
-          ],
         );
       },
     );
   }
 
-  void getWifiState() async {
-    WifiConnectionStatus connectionStatus =
-        await WifiConfiguration.connectToWifi(
-            "PreEpiSeizures", "preepiseizures", "com.example.rPiInterface");
-    print("is Connected : $connectionStatus");
+  void getAnnotationTypes() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    print(prefs);
+    List annot;
+    try {
+      print(prefs.getStringList('annotationTypes'));
+      annot = prefs.getStringList('annotationTypes').toList();
+      setState(() => annotationTypesD.value = annot);
+      print('ANNOT: ${annotationTypesD.value}');
+    } catch (e) {
+      print(e);
+    }
+    /* List annot;
+    await firestoreInstance
+        .collection("annotations")
+        .document('types')
+        .get()
+        .then(
+            //(value) => print('annot: ${value.data}'));
+            (value) => setState(() => annot = value.data['types'].toList()));
+    setState(() => annotationTypesD.value = annot); */
   }
 
   showNotification(device) async {
+    print('BATERIA BAIXA: DEVICE $device');
     var android = AndroidNotificationDetails('id', 'channel ', 'description',
         priority: Priority.high, importance: Importance.max);
     var iOS = IOSNotificationDetails();
@@ -201,7 +205,7 @@ class _HomeHPageState extends State<HomeHPage> {
   void dispose() {
     super.dispose();
     _nameController.dispose();
-    subscription.cancel();
+    //subscription.cancel();
   }
 
   void gotNewMessage(String newMessage) {
@@ -307,14 +311,19 @@ class _HomeHPageState extends State<HomeHPage> {
   void _isBatteryLevel(String message) {
     if (message.contains('BATTERY')) {
       List message2List = json.decode(message);
+      print('BATTERY: ${message2List[1]}');
       for (var entry in message2List[1].entries) {
         double _levelRatio = (entry.value - 520.66) /
             (647.4 -
-                520.66); //max values alculated assuming 589 is 95% and 527 is 5%
-        double _level =
-            (_levelRatio > 1) ? 1 : (_levelRatio < 0) ? 0 : _levelRatio;
+                520.66); //max values calculated assuming 589 is 95% and 527 is 5%
+        double _level = (_levelRatio > 1)
+            ? 1
+            : (_levelRatio < 0)
+                ? 0
+                : _levelRatio;
         if (entry.key == macAddress1Notifier.value) {
           setState(() => batteryBit1Notifier.value = _level);
+          
           if (_level <= 0.1) {
             showNotification('1');
           }
@@ -331,6 +340,7 @@ class _HomeHPageState extends State<HomeHPage> {
   void _showSnackBar(String _message) {
     try {
       _scaffoldKey.currentState.showSnackBar(new SnackBar(
+        duration: Duration(seconds: 3),
         content: new Text(_message),
         backgroundColor: Colors.blue,
       ));
@@ -445,6 +455,30 @@ class _HomeHPageState extends State<HomeHPage> {
                       widget.patientNotifier.value = null;
                       Navigator.pop(context);
                     });
+                  },
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                    width - 0.9 * width, 0.0, width - 0.9 * width, 0.0),
+                child: RaisedButton.icon(
+                  label: Text(
+                    'Configurações',
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                  icon: Icon(
+                    Icons.settings,
+                    color: Colors.grey[600],
+                  ),
+                  onPressed: () {
+                    print(annotationTypesD.value);
+                    Navigator.of(context).push(new MaterialPageRoute<Null>(
+                        builder: (BuildContext context) {
+                          return ConfigurationsDialog(
+                            annotationTypesD: annotationTypesD,
+                          );
+                        },
+                        fullscreenDialog: true));
                   },
                 ),
               )
@@ -622,7 +656,7 @@ class _HomeHPageState extends State<HomeHPage> {
                 ),
               ),
               title: Text('Selecionar dispositivos'),
-              //enabled: receivedMACNotifier.value == true,
+              enabled: receivedMACNotifier.value == true,
               onTap: () async {
                 Navigator.push(
                   context,
@@ -658,7 +692,7 @@ class _HomeHPageState extends State<HomeHPage> {
                 ),
               ),
               title: Text('Configurações'),
-              //enabled: receivedMACNotifier.value == true,
+              enabled: receivedMACNotifier.value == true,
               onTap: () async {
                 Navigator.push(
                   context,
@@ -693,7 +727,7 @@ class _HomeHPageState extends State<HomeHPage> {
                 ),
               ),
               title: Text('Iniciar visualização'),
-              //enabled: acquisitionNotifier.value == 'acquiring',
+              enabled: acquisitionNotifier.value == 'acquiring',
               onTap: () async {
                 Navigator.push(
                   context,
@@ -707,6 +741,8 @@ class _HomeHPageState extends State<HomeHPage> {
                       batteryBit1Notifier: batteryBit1Notifier,
                       batteryBit2Notifier: batteryBit2Notifier,
                       patientNotifier: widget.patientNotifier,
+                      annotationTypesD: annotationTypesD,
+                      connectionNotifier: connectionNotifier,
                     );
                   }),
                 );
@@ -737,6 +773,7 @@ class _HomeHPageState extends State<HomeHPage> {
             onPressed: sentMACNotifier.value
                 ? () async {
                     mqttClientWrapper.publishMessage("['START']");
+                    print(annotationTypesD);
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) {
@@ -749,6 +786,8 @@ class _HomeHPageState extends State<HomeHPage> {
                           batteryBit1Notifier: batteryBit1Notifier,
                           batteryBit2Notifier: batteryBit2Notifier,
                           patientNotifier: widget.patientNotifier,
+                          annotationTypesD: annotationTypesD,
+                          connectionNotifier: connectionNotifier,
                         );
                       }),
                     );

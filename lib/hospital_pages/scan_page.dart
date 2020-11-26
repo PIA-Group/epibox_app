@@ -42,7 +42,7 @@ class _ScanPageState extends State<ScanPage> {
                   //onPressed: () => scan(widget.patientNotifier),
                   onPressed: () {
                     setState(() => widget.patientNotifier.value =
-                        'AN3rFiHJO8cKcHEYjGeiKhwMgxu1');
+                        'kDvaj6fuMgfDbv3XGCQVFunsIhY2');
                     print(widget.patientNotifier.value);
                   },
                   icon: Icon(

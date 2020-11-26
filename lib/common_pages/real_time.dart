@@ -2,10 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:rPiInterface/hospital_pages/speed_annotation.dart';
+import 'package:rPiInterface/utils/models.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
 import 'package:rPiInterface/utils/plot_data.dart';
 import 'package:rPiInterface/utils/battery_indicator.dart';
-import 'package:stats/stats.dart';
 
 class RealtimePage extends StatefulWidget {
   ValueNotifier<List> dataNotifier;
@@ -20,6 +20,10 @@ class RealtimePage extends StatefulWidget {
 
   ValueNotifier<String> patientNotifier;
 
+  ValueNotifier<List> annotationTypesD;
+
+  ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
+
   RealtimePage({
     this.dataNotifier,
     this.dataChannelsNotifier,
@@ -29,6 +33,8 @@ class RealtimePage extends StatefulWidget {
     this.batteryBit1Notifier,
     this.batteryBit2Notifier,
     this.patientNotifier,
+    this.annotationTypesD,
+    this.connectionNotifier,
   });
 
   @override
@@ -36,7 +42,8 @@ class RealtimePage extends StatefulWidget {
 }
 
 class _RealtimePageState extends State<RealtimePage> {
-  final GlobalKey<ScaffoldState> _scaffoldRealTime = new GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> _scaffoldRealTime =
+      new GlobalKey<ScaffoldState>();
   List aux;
   final firestoreInstance = Firestore.instance;
 
@@ -64,7 +71,7 @@ class _RealtimePageState extends State<RealtimePage> {
   List<double> yRange9 = [0, 10];
   List<double> yRange10 = [0, 10];
 
-  Future<List> getAnnotationTypes() async {
+  /* Future<List> getAnnotationTypes() async {
     List annot;
     await firestoreInstance
         .collection("annotations")
@@ -75,36 +82,56 @@ class _RealtimePageState extends State<RealtimePage> {
             (value) => setState(() => annot = value.data['types'].toList()));
     print(annot);
     return annot;
-  }
+  } */
 
   void _stopAcquisition() {
     widget.mqttClientWrapper.publishMessage("['INTERRUPT']");
   }
 
   Future<void> _speedAnnotation() async {
-    List annotationTypesD = await getAnnotationTypes();
-    List<String> annotationTypes = List<String>.from(annotationTypesD);
+    //List annotationTypesD = await getAnnotationTypes();
+    List<String> annotationTypes = List<String>.from(widget.annotationTypesD.value);
     print(annotationTypes);
     Navigator.of(context).push(new MaterialPageRoute<Null>(
         builder: (BuildContext context) {
           return SpeedAnnotationDialog(
+            annotationTypesD: widget.annotationTypesD,
             annotationTypes: annotationTypes,
             patientNotifier: widget.patientNotifier,
             newAnnotation: newAnnotation,
+            mqttClientWrapper: widget.mqttClientWrapper,
           );
         },
         fullscreenDialog: true));
   }
 
+  /* Future<void> _speedAnnotation() async {
+    List annotationTypesD = await getAnnotationTypes();
+    List<String> annotationTypes = List<String>.from(annotationTypesD);
+    print(annotationTypes);
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) {
+        return SpeedAnnotationDialog(
+          annotationTypes: annotationTypes,
+          patientNotifier: widget.patientNotifier,
+          newAnnotation: newAnnotation,
+        );
+      }),
+    );
+  } */
+
   bool _rangeUpdateNeeded(List data, List currentRange) {
     bool update = false;
-    List<double> dataL =  List<double>.from(data);
-    final stats = Stats.fromData(dataL).toJson();
-    final std = stats['standardDeviation'];
-    if (data.first < currentRange[0] || currentRange[0] < data.first - 3*std) {
+    //List<double> dataL =  List<double>.from(data);
+    //final stats = Stats.fromData(dataL).toJson();
+    //final std = stats['standardDeviation'];
+    int std = 5;
+    if (data.first < currentRange[0] ||
+        currentRange[0] < data.first - 3 * std) {
       update = true;
     }
-    if (data.last > currentRange[1] || currentRange[1] > data.last + 3*std) {
+    if (data.last > currentRange[1] || currentRange[1] > data.last + 3 * std) {
       update = true;
     }
     return update;
@@ -114,17 +141,18 @@ class _RealtimePageState extends State<RealtimePage> {
     double min;
     double max;
 
-    List<double> dataL =  List<double>.from(data);
-    final stats = Stats.fromData(dataL).toJson();
-    final std = stats['standardDeviation'];
+    //List<double> dataL =  List<double>.from(data);
+    //final stats = Stats.fromData(dataL).toJson();
+    //final std = stats['standardDeviation'];
+    int std = 5;
 
-    if (data.first < currentRange[0] || currentRange[0] < data.first - 3*std) {
-      min = (data.first - 3*std).floor().toDouble();
+    if (data.first < currentRange[0] || currentRange[0] < data.first - std) {
+      min = (data.first - std).floor().toDouble();
     } else {
       min = currentRange[0];
     }
-    if (data.last > currentRange[1] || currentRange[1] > data.last + 3*std) {
-      max = (data.last + 3*std).ceil().toDouble();
+    if (data.last > currentRange[1] || currentRange[1] > data.last + std) {
+      max = (data.last + std).ceil().toDouble();
     } else {
       max = currentRange[1];
     }
@@ -145,6 +173,8 @@ class _RealtimePageState extends State<RealtimePage> {
   @override
   void initState() {
     super.initState();
+    widget.acquisitionNotifier.addListener(() {
+      if (widget.acquisitionNotifier.value == 'stopped') Navigator.pop(context);});
     newAnnotation.addListener(() async {
       if (newAnnotation.value) {
         Future<Null>.delayed(Duration.zero, () {
@@ -267,7 +297,7 @@ class _RealtimePageState extends State<RealtimePage> {
 
   @override
   Widget build(BuildContext context) {
-    double screenHeight = MediaQuery.of(context).size.height;
+    //double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
       key: _scaffoldRealTime,
@@ -333,6 +363,36 @@ class _RealtimePageState extends State<RealtimePage> {
               mainAxisAlignment: MainAxisAlignment.start,
               mainAxisSize: MainAxisSize.max,
               children: [
+                ValueListenableBuilder(
+            valueListenable: widget.connectionNotifier,
+            builder: (BuildContext context, MqttCurrentConnectionState state,
+                Widget child) {
+              return Container(
+                height: 20,
+                color: state == MqttCurrentConnectionState.CONNECTED
+                    ? Colors.green[50]
+                    : state == MqttCurrentConnectionState.CONNECTING
+                        ? Colors.yellow[50]
+                        : Colors.red[50],
+                child: Align(
+                  alignment: Alignment.center,
+                  child: Container(
+                    child: Text(
+                      state == MqttCurrentConnectionState.CONNECTED
+                          ? 'Conectado ao servidor'
+                          : state == MqttCurrentConnectionState.CONNECTING
+                              ? 'A conectar...'
+                              : 'Disconectado do servidor',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        //fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
                 ValueListenableBuilder(
                     valueListenable: widget.acquisitionNotifier,
                     builder:

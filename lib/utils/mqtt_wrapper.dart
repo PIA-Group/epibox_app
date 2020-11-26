@@ -52,7 +52,7 @@ class MQTTClientWrapper {
   Future<void> diconnectClient() async {
     try {
       print('MQTTClientWrapper::Mosquitto client disconnecting....');
-      await client.disconnect();
+      client.disconnect();
       print('DISCONNECTION DONE');
     } on Exception catch (e) {
       print('MQTTClientWrapper::client exception - $e');
@@ -75,7 +75,7 @@ class MQTTClientWrapper {
   Future<void> _subscribeToTopic(String topicName) async {
 
     print('MQTTClientWrapper::Subscribing to the $topicName topic');
-    await client.subscribe(topicName, MqttQos.exactlyOnce);
+    client.subscribe(topicName, MqttQos.exactlyOnce);
     print('SUBSCRIPTION DONE TO TOPIC $topicName');
 
     /* await publishMessage("['Send MAC Addresses']");
