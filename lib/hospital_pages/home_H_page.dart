@@ -293,6 +293,7 @@ class _HomeHPageState extends State<HomeHPage> {
       print('RECONNECTING ACQUISITION');
     } else if (message.contains('STOPPED')) {
       setState(() => acquisitionNotifier.value = 'stopped');
+      _restart();
       print('ACQUISITION STOPPED AND SAVED');
     }
   }
@@ -335,6 +336,32 @@ class _HomeHPageState extends State<HomeHPage> {
         }
       }
     }
+  }
+
+   Future<void> _restart() async {
+    mqttClientWrapper.publishMessage("['RESTART']");
+    await mqttClientWrapper.diconnectClient();
+    setState(() {
+      defaultMacAddress1Notifier.value = 'Endereço MAC';
+      defaultMacAddress2Notifier.value = 'Endereço MAC';
+
+      macAddress1Notifier.value = 'Endereço MAC';
+      macAddress2Notifier.value = 'Endereço MAC';
+
+      receivedMACNotifier.value = false;
+      sentMACNotifier.value = false;
+      sentConfigNotifier.value = false;
+
+      acquisitionNotifier.value = 'off';
+
+      driveListNotifier.value = ['Armazenamento interno'];
+
+      batteryBit1Notifier.value = null;
+      batteryBit2Notifier.value = null;
+
+      isBit1Enabled.value = false;
+      isBit1Enabled.value = false;
+    });
   }
 
   void _showSnackBar(String _message) {
