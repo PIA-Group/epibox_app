@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:app_settings/app_settings.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:mqtt_client/mqtt_client.dart';
@@ -16,7 +15,6 @@ import 'package:rPiInterface/utils/battery_indicator.dart';
 import 'package:rPiInterface/utils/models.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-//import 'package:wifi_configuration/wifi_configuration.dart';
 
 class HomeHPage extends StatefulWidget {
   ValueNotifier<String> patientNotifier;
@@ -114,12 +112,47 @@ class _HomeHPageState extends State<HomeHPage> {
         _showSnackBar('Conexão à rede alterada.');
     }); */
     _initWifi();
-
     getAnnotationTypes();
+    _verifyProfile(widget.patientNotifier.value);
   }
 
   void _initWifi() async {
     _wifiDialog();
+  }
+
+  void _setAvatar(uid, _avatar) async {
+    firestoreInstance
+        .collection("hospitalUsers")
+        .document(uid)
+        .setData({"avatar": _avatar}, merge: true).then((_) {});
+  }
+
+  void _submitHospitalProfile(uid, username) async {
+    firestoreInstance
+        .collection("hospitalUsers")
+        .document(uid)
+        .setData({"userName": username}, merge: true).then((_) {
+      print("New profile submitted!!");
+    });
+    _setAvatar(uid, "images/owl.jpg");
+  }
+
+  void _verifyProfile(patientId) async {
+    // verify if profile exists in firebase (if no internet connection - skip)
+    try {
+      await firestoreInstance
+          .collection("users")
+          .document(patientId)
+          .get()
+          .then((snap) {
+        print(snap.exists);
+        if (!snap.exists) {
+          _submitHospitalProfile(patientId, 'Não definido');
+        }
+      });
+    } catch (e) {
+      print(e);
+    }
   }
 
   Future<void> _wifiDialog() async {
@@ -324,7 +357,7 @@ class _HomeHPageState extends State<HomeHPage> {
                 : _levelRatio;
         if (entry.key == macAddress1Notifier.value) {
           setState(() => batteryBit1Notifier.value = _level);
-          
+
           if (_level <= 0.1) {
             showNotification('1');
           }
@@ -338,7 +371,7 @@ class _HomeHPageState extends State<HomeHPage> {
     }
   }
 
-   Future<void> _restart() async {
+  Future<void> _restart() async {
     mqttClientWrapper.publishMessage("['RESTART']");
     await mqttClientWrapper.diconnectClient();
     setState(() {
@@ -376,12 +409,63 @@ class _HomeHPageState extends State<HomeHPage> {
     }
   }
 
+  void _submitNewName(String username) async {
+    try {
+      await firestoreInstance
+          .collection("users")
+          .document(widget.patientNotifier.value)
+          .get()
+          .then((snap) {
+        print(snap.exists);
+        if (!snap.exists) {
+          firestoreInstance
+              .collection("hospitalUsers")
+              .document(widget.patientNotifier.value)
+              .setData({"userName": username}, merge: true);
+        } else {
+          firestoreInstance
+              .collection("users")
+              .document(widget.patientNotifier.value)
+              .setData({"userName": username}, merge: true);
+        }
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
   Future<DocumentSnapshot> getUserName(uid) {
-    return firestoreInstance.collection("users").document(uid).get();
+    Future<DocumentSnapshot> instance;
+    instance =
+        firestoreInstance.collection("users").document(uid).get().then((snap) {
+      print(snap.exists);
+      if (snap.exists) {
+        return firestoreInstance.collection("users").document(uid).get();
+      } else {
+        return firestoreInstance
+            .collection("hospitalUsers")
+            .document(uid)
+            .get();
+      }
+    });
+    return instance;
   }
 
   Future<DocumentSnapshot> _getAvatar(uid) async {
-    return firestoreInstance.collection("users").document(uid).get();
+    Future<DocumentSnapshot> instance;
+    instance =
+        firestoreInstance.collection("users").document(uid).get().then((snap) {
+      print(snap.exists);
+      if (snap.exists) {
+        return firestoreInstance.collection("users").document(uid).get();
+      } else {
+        return firestoreInstance
+            .collection("hospitalUsers")
+            .document(uid)
+            .get();
+      }
+    });
+    return instance;
   }
 
   @override
@@ -466,6 +550,51 @@ class _HomeHPageState extends State<HomeHPage> {
                 ),
               ),
               Padding(
+                padding: EdgeInsets.fromLTRB(10.0, 20.0, 10.0, 0.0),
+                child: Container(
+                  height: 130.0,
+                  width: 200.0,
+                  color: Colors.transparent,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.rectangle,
+                      borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                      boxShadow: [
+                        BoxShadow(
+                            color: Colors.grey[200],
+                            offset: new Offset(5.0, 5.0))
+                      ],
+                    ),
+                    child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
+                            child: TextField(
+                              decoration: InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  labelText: "Novo nome",
+                                  isDense: true),
+                              controller: _nameController,
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
+                            child: RaisedButton(
+                              onPressed: () {
+                                _submitNewName(_nameController.text.trim());
+                                setState(() => _nameController.text = " ");
+                                Navigator.pop(context);
+                              },
+                              child: new Text("Submeter"),
+                            ),
+                          ),
+                        ]),
+                  ),
+                ),
+              ),
+              Padding(
                 padding: EdgeInsets.fromLTRB(
                     width - 0.9 * width, 50.0, width - 0.9 * width, 50.0),
                 child: RaisedButton.icon(
@@ -511,7 +640,7 @@ class _HomeHPageState extends State<HomeHPage> {
               )
             ]),
       ),
-      appBar: new AppBar(title: new Text('PreEpiSeizures'), actions: <Widget>[
+      appBar: new AppBar(title: new Text('EpiBox'), actions: <Widget>[
         Column(children: [
           ValueListenableBuilder(
             valueListenable: batteryBit1Notifier,

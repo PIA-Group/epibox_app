@@ -125,7 +125,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return _loading ? LoadingIcon() : Scaffold(
       appBar: new AppBar(
-        title: new Text('PreEpiSeizures'),
+        title: new Text('EpiBox'),
       ),
       body: Container(
         padding: EdgeInsets.all(16.0),

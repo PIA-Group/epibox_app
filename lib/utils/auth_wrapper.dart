@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rPiInterface/patient_pages/home_page.dart';
+import 'package:rPiInterface/patient_pages/home_page_0.dart';
 import 'package:rPiInterface/patient_pages/non_auth_page.dart';
 import 'package:rPiInterface/utils/authentication.dart';
 
@@ -14,7 +15,7 @@ class AuthWrapper extends StatelessWidget {
     print(user == null ? null : user.uid);
     return user == null
         ? NonAuth()
-        : HomePage();
+        : HomePage0();
 
           
   }

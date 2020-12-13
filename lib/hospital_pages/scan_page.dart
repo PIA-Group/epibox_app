@@ -15,55 +15,127 @@ class ScanPage extends StatefulWidget {
 }
 
 class _ScanPageState extends State<ScanPage> {
+  final TextEditingController _idController = TextEditingController();
   String barcode = "";
 
   @override
   initState() {
     super.initState();
+    var timeStamp = DateTime.now();
+    _idController.text = '${timeStamp.day}${timeStamp.month}${timeStamp.year}_Nome';
   }
+
+  @override
+  void dispose() {
+    _idController.dispose();
+    super.dispose();
+  }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: new AppBar(
-        title: new Text('Scanner de código QR'),
+        title: new Text('EpiBox'),
       ),
       body: new Center(
-        child: new Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: new ListView(
           children: <Widget>[
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: EdgeInsets.only(top: 70.0),
+              child: Align(
+                alignment: Alignment.center,
+                child: Container(
+                  child: RichText(
+                      textAlign: TextAlign.justify,
+                      text: TextSpan(children: [
+                        TextSpan(
+                            text: 'Bem vindo ao  ',
+                            style: TextStyle(
+                                fontSize: 16, color: Colors.grey[600])),
+                        TextSpan(
+                            text: 'EpiBox',
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontStyle: FontStyle.italic,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey[600])),
+                        TextSpan(
+                            text: '!',
+                            style: TextStyle(
+                                fontSize: 16, color: Colors.grey[600])),
+                      ])),
+                ),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0.0),
+              child: Align(
+                alignment: Alignment.center,
+                child: Container(
+                    child: Text(
+                        'Para começar as aquisições, faça scan do ID do paciente ou introduza-o manualmente.',
+                        style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                        textAlign: TextAlign.center)),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(20.0, 30.0, 20.0, 0.0),
               child: RaisedButton.icon(
                   color: Colors.blue,
                   textColor: Colors.white,
                   splashColor: Colors.blueGrey,
-                  //onPressed: () => scan(widget.patientNotifier),
-                  onPressed: () {
-                    setState(() => widget.patientNotifier.value =
-                        'kDvaj6fuMgfDbv3XGCQVFunsIhY2');
-                    print(widget.patientNotifier.value);
-                  },
+                  onPressed: () => scan(widget.patientNotifier),
                   icon: Icon(
                     MdiIcons.qrcode,
                   ),
                   label: const Text('INICIAR SCAN')),
             ),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Text(
-                barcode,
-                textAlign: TextAlign.center,
+              padding: EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 0.0),
+              child: Align(
+                alignment: Alignment.center,
+                child: Container(
+                    child: Text(
+                        barcode,
+                        style: TextStyle(fontSize: 16, color: Colors.red[200]),
+                        textAlign: TextAlign.center)),
               ),
             ),
+            Padding(
+                padding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: TextField(
+                          style: TextStyle(color: Colors.grey[600]),
+                          controller: _idController,
+                          decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: 'ID do paciente',
+                              isDense: true,
+                              contentPadding: EdgeInsets.all(10)),
+                          onChanged: null),
+                    ),
+                    IconButton(
+                        icon: Icon(
+                          Icons.check_circle,
+                          color: Colors.blue,
+                          size: 30,
+                        ),
+                        onPressed: () => setState(() =>
+                            widget.patientNotifier.value = _idController.text.trim()))
+                  ],
+                )),
+            
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-          mini: true,
-          heroTag: null,
-          child: Icon(Icons.list),
+      floatingActionButton: FloatingActionButton.extended(
+          //mini: true,
+          label: Text('Instruções'),
+          icon: Icon(Icons.list),
           onPressed: () async {
             Navigator.push(
               context,

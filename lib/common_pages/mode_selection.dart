@@ -6,7 +6,7 @@ class ModeSelectionPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: new AppBar(title: new Text('PreEpiSeizures')),
+      appBar: new AppBar(title: new Text('EpiBox')),
       body: Container(
         alignment: Alignment.center,
         child: Column(
