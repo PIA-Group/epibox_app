@@ -215,6 +215,7 @@ class _HomeHPageState extends State<HomeHPage> {
     }
   }
 
+
   showNotification(device) async {
     print('BATERIA BAIXA: DEVICE $device');
     var android = AndroidNotificationDetails('id', 'channel ', 'description',
@@ -408,63 +409,41 @@ class _HomeHPageState extends State<HomeHPage> {
     }
   }
 
-  void _submitNewName(String username) async {
-    try {
-      await firestoreInstance
-          .collection("users")
-          .document(widget.patientNotifier.value)
-          .get()
-          .then((snap) {
-        print(snap.exists);
-        if (!snap.exists) {
-          firestoreInstance
-              .collection("hospitalUsers")
-              .document(widget.patientNotifier.value)
-              .setData({"userName": username}, merge: true);
-        } else {
-          firestoreInstance
-              .collection("users")
-              .document(widget.patientNotifier.value)
-              .setData({"userName": username}, merge: true);
-        }
-      });
+  void _submitNewName(String uid, username) async {
+    try{
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      List<String> user = (prefs.getStringList(uid) ?? []);
+      setState(() => prefs.setStringList(uid, [username, user[1]]));
     } catch (e) {
       print(e);
     }
   }
 
-  Future<DocumentSnapshot> getUserName(uid) {
-    Future<DocumentSnapshot> instance;
-    instance =
-        firestoreInstance.collection("users").document(uid).get().then((snap) {
-      print(snap.exists);
-      if (snap.exists) {
-        return firestoreInstance.collection("users").document(uid).get();
-      } else {
-        return firestoreInstance
-            .collection("hospitalUsers")
-            .document(uid)
-            .get();
-      }
-    });
-    return instance;
+
+  Future<String> getUserName(uid) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try{
+      List<String> user = (prefs.getStringList(uid) ?? []);
+      print('UserName: ${user[0]}');
+      return user[0];
+    } catch (e) {
+      print(e);
+      setState(() => prefs.setStringList(uid, ['Não definido', 'images/owl.jpg']));
+      return 'Não definido'; 
+    }
   }
 
-  Future<DocumentSnapshot> _getAvatar(uid) async {
-    Future<DocumentSnapshot> instance;
-    instance =
-        firestoreInstance.collection("users").document(uid).get().then((snap) {
-      print(snap.exists);
-      if (snap.exists) {
-        return firestoreInstance.collection("users").document(uid).get();
-      } else {
-        return firestoreInstance
-            .collection("hospitalUsers")
-            .document(uid)
-            .get();
-      }
-    });
-    return instance;
+  Future<String> _getAvatar(uid) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try{
+      List<String> user = (prefs.getStringList(uid) ?? []);
+      print('avatar: ${user[1]}');
+      return user[1];
+    } catch (e) {
+      print(e);
+      setState(() => prefs.setStringList(uid, ['Não definido', 'images/owl.jpg']));
+      return 'images/owl.jpg'; 
+    }
   }
 
   @override
@@ -493,7 +472,7 @@ class _HomeHPageState extends State<HomeHPage> {
                             return CircleAvatar(
                                 radius: 40.0,
                                 backgroundImage:
-                                    AssetImage(snapshot.data["avatar"]));
+                                    AssetImage(snapshot.data));
                           } else {
                             return CircularProgressIndicator();
                           }
@@ -532,7 +511,7 @@ class _HomeHPageState extends State<HomeHPage> {
                               if (snapshot.connectionState ==
                                   ConnectionState.done) {
                                 return Text(
-                                  '${snapshot.data["userName"]}',
+                                  '${snapshot.data}',
                                   style: TextStyle(
                                     color: Colors.grey[600],
                                     fontWeight: FontWeight.bold,
@@ -582,7 +561,7 @@ class _HomeHPageState extends State<HomeHPage> {
                             padding: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
                             child: RaisedButton(
                               onPressed: () {
-                                _submitNewName(_nameController.text.trim());
+                                _submitNewName(widget.patientNotifier.value, _nameController.text.trim());
                                 setState(() => _nameController.text = " ");
                                 Navigator.pop(context);
                               },
