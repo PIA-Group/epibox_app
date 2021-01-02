@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:rPiInterface/common_pages/mode_selection.dart';
 import 'package:rPiInterface/utils/authentication.dart';
 import 'package:provider/provider.dart';
+import 'package:rPiInterface/utils/id_wrapper.dart';
 
 void main() => runApp(new InterfaceRPi());
 
@@ -16,7 +16,7 @@ class InterfaceRPi extends StatelessWidget {
       child: MaterialApp(
           title: 'EpiBox',
           debugShowCheckedModeBanner: false,
-          home: ModeSelectionPage(),
+          home: IDWrapper(),
         ),
     );
   }

@@ -69,7 +69,10 @@ class _ConfigPageState extends State<ConfigPage> {
     }
 
     try {
-      _getDefaultSensors(widget.configDefault.value[3]);
+      for (int i=0; i<controllerSensors.length; i++) {
+        controllerSensors[i].text = '-';
+      }
+      _getDefaultSensors(widget.configDefault.value[2]);
     } catch (e) {
       print(e);
       for (int i=0; i<controllerSensors.length; i++) {
@@ -96,23 +99,31 @@ class _ConfigPageState extends State<ConfigPage> {
   }
 
   void _getDefaultChannels(List channels) { //List<List<String>>
-    channels.asMap().forEach((i, pair) {
-      if (pair[0] == widget.macAddress1Notifier.value) {
-        _bit1Selections[int.parse(pair[1])-1] = true;
+    channels.asMap().forEach((i, triplet) {
+      if (triplet[0] == widget.macAddress1Notifier.value) {
+        _bit1Selections[int.parse(triplet[1])-1] = true;
       }
-      if (pair[0] == widget.macAddress2Notifier.value) {
-        _bit2Selections[int.parse(pair[1])-1] = true;
+      if (triplet[0] == widget.macAddress2Notifier.value) {
+        _bit2Selections[int.parse(triplet[1])-1] = true;
       }
     });
   }
 
-  void _getDefaultSensors(List sensors) { //List<String>
-    sensors.asMap().forEach((i, sensor) {
+  void _getDefaultSensors(List channels) { //List<String>
+    /* sensors.asMap().forEach((i, sensor) {
       controllerSensors[i].text = sensor;
+    }); */
+    channels.asMap().forEach((i, triplet) {
+      if (triplet[0] == widget.macAddress1Notifier.value) {
+        controllerSensors[int.parse(triplet[1])-1].text = triplet[2];
+      }
+      if (triplet[0] == widget.macAddress2Notifier.value) {
+        controllerSensors[int.parse(triplet[1])+5].text = triplet[2];
+      }
     });
   }
 
-  List<String> _getSensors2Send() {
+  /* List<String> _getSensors2Send() {
     List<String> _sensors2Send = [];
 
     List<String> sensors = [
@@ -145,18 +156,18 @@ class _ConfigPageState extends State<ConfigPage> {
     });
     print('sensors: $_sensors2Send');
     return _sensors2Send;
-  }
+  } */
 
   List<List<String>> _getChannels2Send() {
     List<List<String>> _channels2Send = [];
     _bit1Selections.asMap().forEach((channel, value) {
       if (value) {
-        _channels2Send.add(["'${widget.macAddress1Notifier.value}'", "'${(channel + 1).toString()}'"]);
+        _channels2Send.add(["'${widget.macAddress1Notifier.value}'", "'${(channel + 1).toString()}'", "'${controllerSensors[channel].text}'"]);
       }
     });
     _bit2Selections.asMap().forEach((channel, value) {
       if (value) {
-        _channels2Send.add(["'${widget.macAddress2Notifier.value}'", "'${(channel + 1).toString()}'"]);
+        _channels2Send.add(["'${widget.macAddress2Notifier.value}'", "'${(channel + 1).toString()}'", "'${controllerSensors[channel+5].text}'"]);
       }
     });
     print('chn: $_channels2Send');
@@ -165,7 +176,8 @@ class _ConfigPageState extends State<ConfigPage> {
 
   void _newDefault() {
     List<List<String>> _channels2Send = _getChannels2Send();
-    List<String> _sensors2Send = [
+    
+    /* List<String> _sensors2Send = [
       "'${controllerSensors[0].text}'",
       "'${controllerSensors[1].text}'",
       "'${controllerSensors[2].text}'",
@@ -178,9 +190,10 @@ class _ConfigPageState extends State<ConfigPage> {
       "'${controllerSensors[9].text}'",
       "'${controllerSensors[10].text}'",
       "'${controllerSensors[11].text}'",
-    ];
+    ]; */
+
     //print("['NEW CONFIG DEFAULT', ['$_chosenDrive', ${_controllerFreq.text}, $_channels2Send, $_sensors2Send]]");
-    widget.mqttClientWrapper.publishMessage("['NEW CONFIG DEFAULT', ['$_chosenDrive', ${_controllerFreq.text}, $_channels2Send, $_sensors2Send]]");
+    widget.mqttClientWrapper.publishMessage("['NEW CONFIG DEFAULT', ['$_chosenDrive', ${_controllerFreq.text}, $_channels2Send]]");
   }
 
   Future<void> _setup() async {
@@ -191,8 +204,8 @@ class _ConfigPageState extends State<ConfigPage> {
     List<List<String>> _channels2Send = _getChannels2Send();
     widget.mqttClientWrapper.publishMessage("['CHANNELS', $_channels2Send]");
 
-    List<String> _sensors2Send = _getSensors2Send();
-    widget.mqttClientWrapper.publishMessage("['SENSORS', $_sensors2Send]");
+    //List<String> _sensors2Send = _getSensors2Send();
+    //widget.mqttClientWrapper.publishMessage("['SENSORS', $_sensors2Send]");
 
     Navigator.pop(context);
   }

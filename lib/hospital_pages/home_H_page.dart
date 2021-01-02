@@ -213,15 +213,6 @@ class _HomeHPageState extends State<HomeHPage> {
     } catch (e) {
       print(e);
     }
-    /* List annot;
-    await firestoreInstance
-        .collection("annotations")
-        .document('types')
-        .get()
-        .then(
-            //(value) => print('annot: ${value.data}'));
-            (value) => setState(() => annot = value.data['types'].toList()));
-    setState(() => annotationTypesD.value = annot); */
   }
 
   showNotification(device) async {
@@ -251,6 +242,7 @@ class _HomeHPageState extends State<HomeHPage> {
     _isAcquisitionState(message);
     _isData(message);
     _isBatteryLevel(message);
+    _isTimeout(message);
   }
 
   void updatedConnection(MqttCurrentConnectionState newConnectionState) {
@@ -370,6 +362,13 @@ class _HomeHPageState extends State<HomeHPage> {
       }
     }
   }
+
+  void _isTimeout(String message) {
+    if (message.contains('TIMEOUT')) {
+      print(message);
+    }
+  }
+
 
   Future<void> _restart() async {
     mqttClientWrapper.publishMessage("['RESTART']");
@@ -812,7 +811,7 @@ class _HomeHPageState extends State<HomeHPage> {
                 ),
               ),
               title: Text('Selecionar dispositivos'),
-              enabled: receivedMACNotifier.value == true,
+              //enabled: receivedMACNotifier.value == true,
               onTap: () async {
                 Navigator.push(
                   context,
@@ -848,7 +847,7 @@ class _HomeHPageState extends State<HomeHPage> {
                 ),
               ),
               title: Text('Configurações'),
-              enabled: receivedMACNotifier.value == true,
+              //enabled: receivedMACNotifier.value == true,
               onTap: () async {
                 Navigator.push(
                   context,
