@@ -18,7 +18,8 @@ class PlotData extends StatefulWidget {
 class _PlotDataState extends State<PlotData> {
   @override
   Widget build(BuildContext context) {
-    return Expanded(
+    return Container(
+      height: double.infinity,
       child: Padding(
         padding: EdgeInsets.only(bottom: 20.0),
         child: Row(children: [
@@ -33,7 +34,6 @@ class _PlotDataState extends State<PlotData> {
             ),
           ),
           Expanded(
-            flex: 1,
             child: Oscilloscope(
               yAxisMax: widget.yRange[1],
               yAxisMin: widget.yRange[0],

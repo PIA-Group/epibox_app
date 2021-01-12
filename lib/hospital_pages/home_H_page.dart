@@ -57,7 +57,7 @@ class _HomeHPageState extends State<HomeHPage> {
   ValueNotifier<double> batteryBit1Notifier = ValueNotifier(null);
   ValueNotifier<double> batteryBit2Notifier = ValueNotifier(null);
 
-  ValueNotifier<bool> isPreEpiWifiNotifier = ValueNotifier(null);
+  ValueNotifier<String> timedOut = ValueNotifier(null);
 
   final firestoreInstance = Firestore.instance;
 
@@ -111,49 +111,10 @@ class _HomeHPageState extends State<HomeHPage> {
       if (initiatedWifi && this.mounted)
         _showSnackBar('Conexão à rede alterada.');
     }); */
-    _initWifi();
-    getAnnotationTypes();
-    _verifyProfile(widget.patientNotifier.value);
-  }
-
-  void _initWifi() async {
     _wifiDialog();
+    getAnnotationTypes();
   }
 
-  void _setAvatar(uid, _avatar) async {
-    firestoreInstance
-        .collection("hospitalUsers")
-        .document(uid)
-        .setData({"avatar": _avatar}, merge: true).then((_) {});
-  }
-
-  void _submitHospitalProfile(uid, username) async {
-    firestoreInstance
-        .collection("hospitalUsers")
-        .document(uid)
-        .setData({"userName": username}, merge: true).then((_) {
-      print("New profile submitted!!");
-    });
-    _setAvatar(uid, "images/owl.jpg");
-  }
-
-  void _verifyProfile(patientId) async {
-    // verify if profile exists in firebase (if no internet connection - skip)
-    try {
-      await firestoreInstance
-          .collection("users")
-          .document(patientId)
-          .get()
-          .then((snap) {
-        print(snap.exists);
-        if (!snap.exists) {
-          _submitHospitalProfile(patientId, 'Não definido');
-        }
-      });
-    } catch (e) {
-      print(e);
-    }
-  }
 
   Future<void> _wifiDialog() async {
     await Future.delayed(Duration.zero);
@@ -200,6 +161,7 @@ class _HomeHPageState extends State<HomeHPage> {
       },
     );
   }
+
 
   void getAnnotationTypes() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -326,6 +288,7 @@ class _HomeHPageState extends State<HomeHPage> {
 
   void _isData(String message) {
     if (message.contains('DATA')) {
+      if (timedOut.value != null) {setState(() => timedOut.value = null);}
       setState(() => acquisitionNotifier.value =
           'acquiring'); // if user leaves the app, this will enable the visualization nontheless
       List message2List = json.decode(message);
@@ -366,7 +329,8 @@ class _HomeHPageState extends State<HomeHPage> {
 
   void _isTimeout(String message) {
     if (message.contains('TIMEOUT')) {
-      print(message);
+      List message2List = json.decode(message);
+      setState(() => timedOut.value = message2List[1]);
     }
   }
 
@@ -877,6 +841,7 @@ class _HomeHPageState extends State<HomeHPage> {
                       patientNotifier: widget.patientNotifier,
                       annotationTypesD: annotationTypesD,
                       connectionNotifier: connectionNotifier,
+                      timedOut: timedOut,
                     );
                   }),
                 );
@@ -922,6 +887,7 @@ class _HomeHPageState extends State<HomeHPage> {
                           patientNotifier: widget.patientNotifier,
                           annotationTypesD: annotationTypesD,
                           connectionNotifier: connectionNotifier,
+                          timedOut: timedOut,
                         );
                       }),
                     );

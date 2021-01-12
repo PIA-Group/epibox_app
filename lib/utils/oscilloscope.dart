@@ -62,7 +62,7 @@ class _OscilloscopeState extends State<Oscilloscope> {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.fromLTRB(4.0, 0.0, widget.padding, 0.0),
-      width: double.infinity,
+      width: MediaQuery.of(context).size.width,
       height: double.infinity,
       color: widget.backgroundColor,
       child: ClipRect(

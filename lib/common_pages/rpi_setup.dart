@@ -53,9 +53,11 @@ class RPiPage extends StatefulWidget {
 class _RPiPageState extends State<RPiPage> {
   String message;
 
-  Future<void> _restart() async {
-    widget.mqttClientWrapper.publishMessage("['RESTART']");
-    await widget.mqttClientWrapper.diconnectClient();
+  Future<void> _restart(String method) async {
+    if (method == 'all') {
+      widget.mqttClientWrapper.publishMessage("['RESTART']");
+      await widget.mqttClientWrapper.diconnectClient();
+    }
     setState(() {
       widget.defaultMacAddress1Notifier.value = 'Endereço MAC';
       widget.defaultMacAddress2Notifier.value = 'Endereço MAC';
@@ -80,6 +82,7 @@ class _RPiPageState extends State<RPiPage> {
   }
 
   Future<void> _setup() async {
+    _restart('');
     await widget.mqttClientWrapper
         .prepareMqttClient(widget.hostnameNotifier.value);
     var timeStamp = DateTime.now();
@@ -220,7 +223,7 @@ class _RPiPageState extends State<RPiPage> {
                       ),
                       RaisedButton(
                         onPressed: () {
-                          _restart();
+                          _restart('all');
                         },
                         child: new Text("Reininciar"),
                       ),

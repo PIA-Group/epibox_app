@@ -22,7 +22,7 @@ class _ScanPageState extends State<ScanPage> {
   initState() {
     super.initState();
     var timeStamp = DateTime.now();
-    _idController.text = '${timeStamp.day}${timeStamp.month}${timeStamp.year}_Nome';
+    _idController.text = '${timeStamp.day}_${timeStamp.month}_${timeStamp.year}';
   }
 
   @override

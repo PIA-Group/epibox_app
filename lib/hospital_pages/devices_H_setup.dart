@@ -257,9 +257,9 @@ class _DevicesPageState extends State<DevicesPage> {
                             widget.macAddress2Notifier.value != '') {
                           setState(() => widget.isBit2Enabled.value = true);
                         }
-                        if (widget.sentMACNotifier.value) {
-                          Navigator.pop(context);
-                        }
+                        
+                        Navigator.pop(context);
+                        
                       },
                       child: new Text("Selecionar"),
                     ),
