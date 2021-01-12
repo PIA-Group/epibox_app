@@ -49,7 +49,7 @@ class _RealtimePageState extends State<RealtimePage> {
       new GlobalKey<ScaffoldState>();
   List aux;
   final firestoreInstance = Firestore.instance;
-  
+
   final plotHeight = 120.0;
 
   ValueNotifier<bool> newAnnotation = ValueNotifier(false);
@@ -67,7 +67,8 @@ class _RealtimePageState extends State<RealtimePage> {
 
   List<List<double>> rangesList = List.filled(12, [0, 10, 1]);
   bool _rangeInitiated;
-
+  bool _isTimedOutOpen = false;
+  var f;
   /* Future<List> getAnnotationTypes() async {
     List annot;
     await firestoreInstance
@@ -183,10 +184,27 @@ class _RealtimePageState extends State<RealtimePage> {
 
   Future<void> _timedOutDialog(device) async {
     await Future.delayed(Duration.zero);
+    if (!_isTimedOutOpen) {
+      f = () {
+          print('I LISTENED');
+          setState(() => _isTimedOutOpen = false);
+          widget.dataNotifier.removeListener(f);
+          Navigator.of(context, rootNavigator: true).pop();
+      };
+      widget.dataNotifier.addListener(f);
+    }
+    /* else {
+      widget.dataNotifier.removeListener(() {
+        print('NOT LISTENING ANYMORE');
+      });
+    } */
+    _isTimedOutOpen = true;
     return showDialog<void>(
       context: context,
       barrierDismissible: true,
       builder: (BuildContext context) {
+        //if _isTimedOutOpen
+        //widget.dataNotifier.addListener(() {print('I LISTENED');});
         return AlertDialog(
           title: Text(
             'Dificuldade em conectar',
@@ -198,7 +216,7 @@ class _RealtimePageState extends State<RealtimePage> {
                 Padding(
                   padding: EdgeInsets.only(right: 15.0, left: 15.0),
                   child: Text(
-                    'Está a ser difícil de conectar ao dispositivo de aquisição {$device}. Por favor desligue-o e volte a ligar.',
+                    'Está a ser difícil de conectar ao dispositivo de aquisição $device. Por favor desligue-o e volte a ligar.',
                     textAlign: TextAlign.justify,
                   ),
                 ),
@@ -208,7 +226,8 @@ class _RealtimePageState extends State<RealtimePage> {
                       RaisedButton(
                         child: Text("OK"),
                         onPressed: () {
-                          Navigator.of(context).pop();
+                          Navigator.of(context, rootNavigator: true).pop();
+                          setState(() => _isTimedOutOpen = false);
                         },
                       ),
                     ]),
@@ -538,9 +557,9 @@ class _RealtimePageState extends State<RealtimePage> {
                 valueListenable: data1,
                 builder: (BuildContext context, List data, Widget child) {
                   return SizedBox(
-                    height: plotHeight,
-                    child: PlotData(
-                      yRange: rangesList[0].sublist(0, 2), data: data));
+                      height: plotHeight,
+                      child: PlotData(
+                          yRange: rangesList[0].sublist(0, 2), data: data));
                 }),
           // ############### PLOT 2 ###############
           if (widget.dataChannelsNotifier.value.length > 1)
@@ -552,9 +571,9 @@ class _RealtimePageState extends State<RealtimePage> {
                 valueListenable: data2,
                 builder: (BuildContext context, List data, Widget child) {
                   return SizedBox(
-                    height: plotHeight,
-                    child: PlotData(
-                      yRange: rangesList[1].sublist(0, 2), data: data));
+                      height: plotHeight,
+                      child: PlotData(
+                          yRange: rangesList[1].sublist(0, 2), data: data));
                 }),
           // ############### PLOT 3 ###############
           if (widget.dataChannelsNotifier.value.length > 2)
@@ -566,9 +585,9 @@ class _RealtimePageState extends State<RealtimePage> {
                 valueListenable: data3,
                 builder: (BuildContext context, List data, Widget child) {
                   return SizedBox(
-                    height: plotHeight,
-                    child: PlotData(
-                      yRange: rangesList[2].sublist(0, 2), data: data));
+                      height: plotHeight,
+                      child: PlotData(
+                          yRange: rangesList[2].sublist(0, 2), data: data));
                 }),
           // ############### PLOT 4 ###############
           if (widget.dataChannelsNotifier.value.length > 3)
@@ -580,9 +599,9 @@ class _RealtimePageState extends State<RealtimePage> {
                 valueListenable: data4,
                 builder: (BuildContext context, List data, Widget child) {
                   return SizedBox(
-                    height: plotHeight,
-                    child: PlotData(
-                      yRange: rangesList[3].sublist(0, 2), data: data));
+                      height: plotHeight,
+                      child: PlotData(
+                          yRange: rangesList[3].sublist(0, 2), data: data));
                 }),
           // ############### PLOT 5 ###############
           if (widget.dataChannelsNotifier.value.length > 4)
@@ -594,9 +613,9 @@ class _RealtimePageState extends State<RealtimePage> {
                 valueListenable: data5,
                 builder: (BuildContext context, List data, Widget child) {
                   return SizedBox(
-                    height: plotHeight,
-                    child: PlotData(
-                      yRange: rangesList[4].sublist(0, 2), data: data));
+                      height: plotHeight,
+                      child: PlotData(
+                          yRange: rangesList[4].sublist(0, 2), data: data));
                 }),
           // ############### PLOT 6 ###############
           if (widget.dataChannelsNotifier.value.length > 5)
@@ -608,9 +627,9 @@ class _RealtimePageState extends State<RealtimePage> {
                 valueListenable: data6,
                 builder: (BuildContext context, List data, Widget child) {
                   return SizedBox(
-                    height: plotHeight,
-                    child: PlotData(
-                      yRange: rangesList[5].sublist(0, 2), data: data));
+                      height: plotHeight,
+                      child: PlotData(
+                          yRange: rangesList[5].sublist(0, 2), data: data));
                 }),
           // ############### PLOT 7 ###############
           if (widget.dataChannelsNotifier.value.length > 6)
@@ -622,9 +641,9 @@ class _RealtimePageState extends State<RealtimePage> {
                 valueListenable: data7,
                 builder: (BuildContext context, List data, Widget child) {
                   return SizedBox(
-                    height: plotHeight,
-                    child: PlotData(
-                      yRange: rangesList[6].sublist(0, 2), data: data));
+                      height: plotHeight,
+                      child: PlotData(
+                          yRange: rangesList[6].sublist(0, 2), data: data));
                 }),
           // ############### PLOT 8 ###############
           if (widget.dataChannelsNotifier.value.length > 7)
@@ -636,9 +655,9 @@ class _RealtimePageState extends State<RealtimePage> {
                 valueListenable: data8,
                 builder: (BuildContext context, List data, Widget child) {
                   return SizedBox(
-                    height: plotHeight,
-                    child: PlotData(
-                      yRange: rangesList[7].sublist(0, 2), data: data));
+                      height: plotHeight,
+                      child: PlotData(
+                          yRange: rangesList[7].sublist(0, 2), data: data));
                 }),
           // ############### PLOT 9 ###############
           if (widget.dataChannelsNotifier.value.length > 8)
@@ -650,9 +669,9 @@ class _RealtimePageState extends State<RealtimePage> {
                 valueListenable: data9,
                 builder: (BuildContext context, List data, Widget child) {
                   return SizedBox(
-                    height: plotHeight,
-                    child: PlotData(
-                      yRange: rangesList[8].sublist(0, 2), data: data));
+                      height: plotHeight,
+                      child: PlotData(
+                          yRange: rangesList[8].sublist(0, 2), data: data));
                 }),
           // ############### PLOT 10 ###############
           if (widget.dataChannelsNotifier.value.length > 9)
@@ -664,9 +683,9 @@ class _RealtimePageState extends State<RealtimePage> {
                 valueListenable: data10,
                 builder: (BuildContext context, List data, Widget child) {
                   return SizedBox(
-                    height: plotHeight,
-                    child: PlotData(
-                      yRange: rangesList[9].sublist(0, 2), data: data));
+                      height: plotHeight,
+                      child: PlotData(
+                          yRange: rangesList[9].sublist(0, 2), data: data));
                 }),
         ],
       ),

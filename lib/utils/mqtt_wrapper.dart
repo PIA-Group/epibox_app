@@ -21,7 +21,7 @@ class MQTTClientWrapper {
   Future<void> prepareMqttClient(hostAddress) async {
     _setupMqttClient(hostAddress);
     await _connectClient();
-    _subscribeToTopic(Constants.topicName);
+    //_subscribeToTopic(Constants.topicName);
   }
   
   Future<void> _connectClient() async {
@@ -64,9 +64,10 @@ class MQTTClientWrapper {
     //client = MqttServerClient.withPort('test.mosquitto.org', '#1', Constants.port);
     client = MqttServerClient.withPort(_hostAddress, '#1', 1883);
     client.logging(on: false);
-    client.keepAlivePeriod = 64800;
+    //client.keepAlivePeriod = 64800;
     //client.secure = true;
-    //client.autoReconnect = true;
+    client.autoReconnect = true;
+    client.onAutoReconnect = _onConnected;
     client.onDisconnected = _onDisconnected;
     client.onConnected = _onConnected;
     client.onSubscribed = _onSubscribed;
@@ -119,6 +120,7 @@ class MQTTClientWrapper {
     connectionState = MqttCurrentConnectionState.CONNECTED;
     print(
         'MQTTClientWrapper::OnConnected client callback - Client connection was sucessful');
+    _subscribeToTopic(Constants.topicName);
     onConnectedCallback();
     onNewConnection(connectionState);
   }
