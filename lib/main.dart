@@ -14,7 +14,7 @@ class InterfaceRPi extends StatelessWidget {
     return StreamProvider<User>.value(
       value: Auth().user,
       child: MaterialApp(
-          title: 'EpiBox',
+          title: 'EpiBOX',
           debugShowCheckedModeBanner: false,
           home: IDWrapper(),
         ),

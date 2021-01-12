@@ -165,13 +165,12 @@ class _HomeHPageState extends State<HomeHPage> {
 
   void getAnnotationTypes() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    print(prefs);
     List annot;
     try {
-      print(prefs.getStringList('annotationTypes'));
+      //print(prefs.getStringList('annotationTypes'));
       annot = prefs.getStringList('annotationTypes').toList();
       setState(() => annotationTypesD.value = annot);
-      print('ANNOT: ${annotationTypesD.value}');
+      //print('ANNOT: ${annotationTypesD.value}');
     } catch (e) {
       print(e);
     }
@@ -249,7 +248,7 @@ class _HomeHPageState extends State<HomeHPage> {
   void _isDefaultConfig(String message) {
     if (message.contains('DEFAULT CONFIG')) {
       List message2List = json.decode(message);
-      print(message2List[1]);
+      //print(message2List[1]);
       setState(() => configDefaultNotifier.value = message2List[1]);
     }
   }
@@ -388,7 +387,7 @@ class _HomeHPageState extends State<HomeHPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     try{
       List<String> user = (prefs.getStringList(uid) ?? []);
-      print('UserName: ${user[0]}');
+      //print('UserName: ${user[0]}');
       return user[0];
     } catch (e) {
       print(e);
@@ -401,7 +400,7 @@ class _HomeHPageState extends State<HomeHPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     try{
       List<String> user = (prefs.getStringList(uid) ?? []);
-      print('avatar: ${user[1]}');
+      //print('avatar: ${user[1]}');
       return user[1];
     } catch (e) {
       print(e);
@@ -872,7 +871,7 @@ class _HomeHPageState extends State<HomeHPage> {
             onPressed: sentMACNotifier.value
                 ? () async {
                     mqttClientWrapper.publishMessage("['START']");
-                    print(annotationTypesD);
+                    //print(annotationTypesD);
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) {

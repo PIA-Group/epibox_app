@@ -64,8 +64,9 @@ class MQTTClientWrapper {
     //client = MqttServerClient.withPort('test.mosquitto.org', '#1', Constants.port);
     client = MqttServerClient.withPort(_hostAddress, '#1', 1883);
     client.logging(on: false);
-    client.keepAlivePeriod = 20;
+    client.keepAlivePeriod = 64800;
     //client.secure = true;
+    //client.autoReconnect = true;
     client.onDisconnected = _onDisconnected;
     client.onConnected = _onConnected;
     client.onSubscribed = _onSubscribed;
