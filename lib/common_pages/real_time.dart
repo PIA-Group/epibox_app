@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:rPiInterface/hospital_pages/speed_annotation.dart';
@@ -23,6 +23,7 @@ class RealtimePage extends StatefulWidget {
   ValueNotifier<List> annotationTypesD;
 
   ValueNotifier<String> timedOut;
+  ValueNotifier<bool> startupError;
 
   ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
 
@@ -38,6 +39,7 @@ class RealtimePage extends StatefulWidget {
     this.annotationTypesD,
     this.connectionNotifier,
     this.timedOut,
+    this.startupError,
   });
 
   @override
@@ -48,7 +50,7 @@ class _RealtimePageState extends State<RealtimePage> {
   final GlobalKey<ScaffoldState> _scaffoldRealTime =
       new GlobalKey<ScaffoldState>();
   List aux;
-  final firestoreInstance = Firestore.instance;
+  //final firestoreInstance = Firestore.instance;
 
   final plotHeight = 120.0;
 
@@ -64,6 +66,8 @@ class _RealtimePageState extends State<RealtimePage> {
   ValueNotifier<List<double>> data8 = ValueNotifier([]);
   ValueNotifier<List<double>> data9 = ValueNotifier([]);
   ValueNotifier<List<double>> data10 = ValueNotifier([]);
+  ValueNotifier<List<double>> data11 = ValueNotifier([]);
+  ValueNotifier<List<double>> data12 = ValueNotifier([]);
 
   List<List<double>> rangesList = List.filled(12, [0, 10, 1]);
   bool _rangeInitiated;
@@ -186,25 +190,21 @@ class _RealtimePageState extends State<RealtimePage> {
     await Future.delayed(Duration.zero);
     if (!_isTimedOutOpen) {
       f = () {
-          print('I LISTENED');
-          setState(() => _isTimedOutOpen = false);
-          widget.dataNotifier.removeListener(f);
-          Navigator.of(context, rootNavigator: true).pop();
+        print('I LISTENED');
+        widget.dataNotifier.removeListener(f);
+        setState(() => _isTimedOutOpen = false);
+        Navigator.of(context, rootNavigator: true).pop();
       };
       widget.dataNotifier.addListener(f);
     }
-    /* else {
-      widget.dataNotifier.removeListener(() {
-        print('NOT LISTENING ANYMORE');
-      });
+    /* if (_isTimedOutOpen) {
+      Navigator.of(context, rootNavigator: true).pop();
     } */
     _isTimedOutOpen = true;
     return showDialog<void>(
       context: context,
       barrierDismissible: true,
       builder: (BuildContext context) {
-        //if _isTimedOutOpen
-        //widget.dataNotifier.addListener(() {print('I LISTENED');});
         return AlertDialog(
           title: Text(
             'Dificuldade em conectar',
@@ -226,8 +226,48 @@ class _RealtimePageState extends State<RealtimePage> {
                       RaisedButton(
                         child: Text("OK"),
                         onPressed: () {
-                          Navigator.of(context, rootNavigator: true).pop();
+                          widget.dataNotifier.removeListener(f);
                           setState(() => _isTimedOutOpen = false);
+                          Navigator.of(context, rootNavigator: true).pop();
+                        },
+                      ),
+                    ]),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _startupErrorDialog() async {
+    await Future.delayed(Duration.zero);
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'Erro ao iniciar',
+            textAlign: TextAlign.start,
+          ),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Padding(
+                  padding: EdgeInsets.only(right: 15.0, left: 15.0),
+                  child: Text(
+                    'Ocorreu um erro ao tentar iniciar a aquisição. Por favor desligue e ligue todos os dispositivos de aquisição e re-inicie o processo.',
+                    textAlign: TextAlign.justify,
+                  ),
+                ),
+                ButtonBar(
+                    alignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      RaisedButton(
+                        child: Text("OK"),
+                        onPressed: () {
+                          Navigator.of(context, rootNavigator: true).pop();
                         },
                       ),
                     ]),
@@ -243,6 +283,12 @@ class _RealtimePageState extends State<RealtimePage> {
   void initState() {
     super.initState();
 
+    widget.startupError.addListener(() {
+      if (widget.startupError.value) {
+        _startupErrorDialog();
+      }
+    });
+
     widget.timedOut.addListener(() {
       print(widget.timedOut.value);
       if (widget.timedOut.value != null) {
@@ -252,8 +298,6 @@ class _RealtimePageState extends State<RealtimePage> {
 
     setState(() => _rangeInitiated = false);
 
-    /* widget.acquisitionNotifier.addListener(() {
-      if (widget.acquisitionNotifier.value == 'stopped') Navigator.pop(context);}); */
     newAnnotation.addListener(() async {
       if (newAnnotation.value) {
         Future<Null>.delayed(Duration.zero, () {
@@ -397,6 +441,32 @@ class _RealtimePageState extends State<RealtimePage> {
               }
               if (rangesList[index][2] == 0) {
                 aux = []..addAll(data10.value);
+                aux.sort();
+                if (_rangeUpdateNeeded(aux, rangesList[index].sublist(0, 2))) {
+                  setState(() => rangesList[index] =
+                      _updateRange(aux, rangesList[index].sublist(0, 2)));
+                }
+              }
+            } else if (index == 10) {
+              setState(() => data11.value.add(value));
+              if (data10.value.length > canvasWidth) {
+                data10.value.removeAt(0);
+              }
+              if (rangesList[index][2] == 0) {
+                aux = []..addAll(data11.value);
+                aux.sort();
+                if (_rangeUpdateNeeded(aux, rangesList[index].sublist(0, 2))) {
+                  setState(() => rangesList[index] =
+                      _updateRange(aux, rangesList[index].sublist(0, 2)));
+                }
+              }
+            } else if (index == 11) {
+              setState(() => data12.value.add(value));
+              if (data10.value.length > canvasWidth) {
+                data10.value.removeAt(0);
+              }
+              if (rangesList[index][2] == 0) {
+                aux = []..addAll(data12.value);
                 aux.sort();
                 if (_rangeUpdateNeeded(aux, rangesList[index].sublist(0, 2))) {
                   setState(() => rangesList[index] =
@@ -686,6 +756,34 @@ class _RealtimePageState extends State<RealtimePage> {
                       height: plotHeight,
                       child: PlotData(
                           yRange: rangesList[9].sublist(0, 2), data: data));
+                }),
+          // ############### PLOT 11 ###############
+          if (widget.dataChannelsNotifier.value.length > 10)
+            PlotDataTitle(
+                channels: widget.dataChannelsNotifier.value[10],
+                sensor: widget.dataSensorsNotifier.value[10]),
+          if (widget.dataChannelsNotifier.value.length > 10)
+            ValueListenableBuilder(
+                valueListenable: data11,
+                builder: (BuildContext context, List data, Widget child) {
+                  return SizedBox(
+                      height: plotHeight,
+                      child: PlotData(
+                          yRange: rangesList[10].sublist(0, 2), data: data));
+                }),
+          // ############### PLOT 12 ###############
+          if (widget.dataChannelsNotifier.value.length > 11)
+            PlotDataTitle(
+                channels: widget.dataChannelsNotifier.value[11],
+                sensor: widget.dataSensorsNotifier.value[11]),
+          if (widget.dataChannelsNotifier.value.length > 11)
+            ValueListenableBuilder(
+                valueListenable: data12,
+                builder: (BuildContext context, List data, Widget child) {
+                  return SizedBox(
+                      height: plotHeight,
+                      child: PlotData(
+                          yRange: rangesList[11].sublist(0, 2), data: data));
                 }),
         ],
       ),

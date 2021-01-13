@@ -1,11 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:app_settings/app_settings.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:mqtt_client/mqtt_client.dart';
-import 'package:rPiInterface/common_pages/real_time.dart';
+import 'package:rPiInterface/common_pages/real_time_MAC1.dart';
 import 'package:rPiInterface/hospital_pages/config_page.dart';
 import 'package:rPiInterface/common_pages/rpi_setup.dart';
 import 'package:rPiInterface/hospital_pages/devices_H_setup.dart';
@@ -58,17 +57,20 @@ class _HomeHPageState extends State<HomeHPage> {
   ValueNotifier<double> batteryBit2Notifier = ValueNotifier(null);
 
   ValueNotifier<String> timedOut = ValueNotifier(null);
+  ValueNotifier<bool> startupError = ValueNotifier(false);
 
-  final firestoreInstance = Firestore.instance;
+  //final firestoreInstance = Firestore.instance;
 
   String message;
 
   ValueNotifier<bool> dialogNotifier = ValueNotifier(false);
 
-  // dataNotifier: list of lists, each sublist corresponds to a channel acquired
-  ValueNotifier<List> dataNotifier = ValueNotifier([]);
-  ValueNotifier<List> dataChannelsNotifier = ValueNotifier([]);
-  ValueNotifier<List> dataSensorsNotifier = ValueNotifier([]);
+  ValueNotifier<List<List>> dataMAC1Notifier = ValueNotifier([]);
+  ValueNotifier<List<List>> dataMAC2Notifier = ValueNotifier([]);
+  ValueNotifier<List<List>> channelsMAC1Notifier = ValueNotifier([]);
+  ValueNotifier<List<List>> channelsMAC2Notifier = ValueNotifier([]);
+  ValueNotifier<List> sensorsMAC1Notifier = ValueNotifier([]);
+  ValueNotifier<List> sensorsMAC2Notifier = ValueNotifier([]);
 
   MqttCurrentConnectionState connectionState;
   MQTTClientWrapper mqttClientWrapper;
@@ -104,17 +106,12 @@ class _HomeHPageState extends State<HomeHPage> {
     acquisitionNotifier.value = 'off';
     setupHome();
     _nameController.text = " ";
-
-    /* subscription = Connectivity()
-        .onConnectivityChanged
-        .listen((ConnectivityResult result) {
-      if (initiatedWifi && this.mounted)
-        _showSnackBar('Conexão à rede alterada.');
-    }); */
     _wifiDialog();
     getAnnotationTypes();
+    getLastMAC();
+    print(
+        'LAST MAC: ${macAddress1Notifier.value}, ${macAddress2Notifier.value}');
   }
-
 
   Future<void> _wifiDialog() async {
     await Future.delayed(Duration.zero);
@@ -162,20 +159,28 @@ class _HomeHPageState extends State<HomeHPage> {
     );
   }
 
-
   void getAnnotationTypes() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List annot;
     try {
-      //print(prefs.getStringList('annotationTypes'));
       annot = prefs.getStringList('annotationTypes').toList();
       setState(() => annotationTypesD.value = annot);
-      //print('ANNOT: ${annotationTypesD.value}');
     } catch (e) {
       print(e);
     }
   }
 
+  void getLastMAC() async {
+    await Future.delayed(Duration.zero);
+    await SharedPreferences.getInstance().then((value) {
+      List<String> lastMAC = (value.getStringList('lastMAC').toList() ??
+          ['Endereço MAC', 'Endereço MAC']);
+      setState(() => macAddress1Notifier.value = lastMAC[0]);
+      setState(() => macAddress2Notifier.value = lastMAC[1]);
+    });
+    print(
+        'LAST MAC: ${macAddress1Notifier.value}, ${macAddress2Notifier.value}');
+  }
 
   showNotification(device) async {
     print('BATERIA BAIXA: DEVICE $device');
@@ -205,6 +210,7 @@ class _HomeHPageState extends State<HomeHPage> {
     _isData(message);
     _isBatteryLevel(message);
     _isTimeout(message);
+    _isStartupError(message);
   }
 
   void updatedConnection(MqttCurrentConnectionState newConnectionState) {
@@ -287,13 +293,40 @@ class _HomeHPageState extends State<HomeHPage> {
 
   void _isData(String message) {
     if (message.contains('DATA')) {
-      if (timedOut.value != null) {setState(() => timedOut.value = null);}
       setState(() => acquisitionNotifier.value =
           'acquiring'); // if user leaves the app, this will enable the visualization nontheless
       List message2List = json.decode(message);
-      setState(() => dataNotifier.value = message2List[1]);
-      setState(() => dataChannelsNotifier.value = message2List[2]);
-      setState(() => dataSensorsNotifier.value = message2List[3]);
+
+      if (macAddress1Notifier.value == 'Endereço MAC') {
+        getLastMAC();
+      }
+
+      List<List> dataMAC1 = [];
+      List<List> channelsMAC1 = [];
+      List sensorsMAC1 = [];
+      List<List> dataMAC2 = [];
+      List<List> channelsMAC2 = [];
+      List sensorsMAC2 = [];
+
+      message2List[2].asMap().forEach((index, channel) {
+        print(macAddress1Notifier.value);
+        if (channel[0] == macAddress1Notifier.value) {
+          dataMAC1.add(message2List[1][index]);
+          channelsMAC1.add(channel);
+          sensorsMAC1.add(message2List[3][index]);
+        } else {
+          dataMAC2.add(message2List[1][index]);
+          channelsMAC2.add(channel);
+          sensorsMAC2.add(message2List[3][index]);
+        }
+      });
+
+      setState(() => dataMAC1Notifier.value = dataMAC1);
+      setState(() => channelsMAC1Notifier.value = channelsMAC1);
+      setState(() => sensorsMAC1Notifier.value = sensorsMAC1);
+      setState(() => dataMAC2Notifier.value = dataMAC2);
+      setState(() => channelsMAC2Notifier.value = channelsMAC2);
+      setState(() => sensorsMAC2Notifier.value = sensorsMAC2);
     }
   }
 
@@ -333,6 +366,12 @@ class _HomeHPageState extends State<HomeHPage> {
     }
   }
 
+  void _isStartupError(String message) {
+    if (message.contains('ERROR')) {
+      setState(() => startupError.value = true);
+      _restart();
+    }
+  }
 
   Future<void> _restart() async {
     mqttClientWrapper.publishMessage("['RESTART']");
@@ -373,7 +412,7 @@ class _HomeHPageState extends State<HomeHPage> {
   }
 
   void _submitNewName(String uid, username) async {
-    try{
+    try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       List<String> user = (prefs.getStringList(uid) ?? []);
       setState(() => prefs.setStringList(uid, [username, user[1]]));
@@ -382,30 +421,31 @@ class _HomeHPageState extends State<HomeHPage> {
     }
   }
 
-
   Future<String> getUserName(uid) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    try{
+    try {
       List<String> user = (prefs.getStringList(uid) ?? []);
       //print('UserName: ${user[0]}');
       return user[0];
     } catch (e) {
       print(e);
-      setState(() => prefs.setStringList(uid, ['Não definido', 'images/owl.jpg']));
-      return 'Não definido'; 
+      setState(
+          () => prefs.setStringList(uid, ['Não definido', 'images/owl.jpg']));
+      return 'Não definido';
     }
   }
 
   Future<String> _getAvatar(uid) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    try{
+    try {
       List<String> user = (prefs.getStringList(uid) ?? []);
       //print('avatar: ${user[1]}');
       return user[1];
     } catch (e) {
       print(e);
-      setState(() => prefs.setStringList(uid, ['Não definido', 'images/owl.jpg']));
-      return 'images/owl.jpg'; 
+      setState(
+          () => prefs.setStringList(uid, ['Não definido', 'images/owl.jpg']));
+      return 'images/owl.jpg';
     }
   }
 
@@ -434,8 +474,7 @@ class _HomeHPageState extends State<HomeHPage> {
                               ConnectionState.done) {
                             return CircleAvatar(
                                 radius: 40.0,
-                                backgroundImage:
-                                    AssetImage(snapshot.data));
+                                backgroundImage: AssetImage(snapshot.data));
                           } else {
                             return CircularProgressIndicator();
                           }
@@ -524,7 +563,8 @@ class _HomeHPageState extends State<HomeHPage> {
                             padding: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
                             child: RaisedButton(
                               onPressed: () {
-                                _submitNewName(widget.patientNotifier.value, _nameController.text.trim());
+                                _submitNewName(widget.patientNotifier.value,
+                                    _nameController.text.trim());
                                 setState(() => _nameController.text = " ");
                                 Navigator.pop(context);
                               },
@@ -824,15 +864,18 @@ class _HomeHPageState extends State<HomeHPage> {
                 ),
               ),
               title: Text('Iniciar visualização'),
-              enabled: acquisitionNotifier.value == 'acquiring',
+              //enabled: acquisitionNotifier.value == 'acquiring',
               onTap: () async {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) {
-                    return RealtimePage(
-                      dataNotifier: dataNotifier,
-                      dataChannelsNotifier: dataChannelsNotifier,
-                      dataSensorsNotifier: dataSensorsNotifier,
+                    return RealtimePageMAC1(
+                      dataMAC1Notifier: dataMAC1Notifier,
+                      dataMAC2Notifier: dataMAC2Notifier,
+                      channelsMAC1Notifier: channelsMAC1Notifier,
+                      channelsMAC2Notifier: channelsMAC2Notifier,
+                      sensorsMAC1Notifier: sensorsMAC1Notifier,
+                      sensorsMAC2Notifier: sensorsMAC2Notifier,
                       mqttClientWrapper: mqttClientWrapper,
                       acquisitionNotifier: acquisitionNotifier,
                       batteryBit1Notifier: batteryBit1Notifier,
@@ -841,6 +884,7 @@ class _HomeHPageState extends State<HomeHPage> {
                       annotationTypesD: annotationTypesD,
                       connectionNotifier: connectionNotifier,
                       timedOut: timedOut,
+                      startupError: startupError,
                     );
                   }),
                 );
@@ -875,10 +919,13 @@ class _HomeHPageState extends State<HomeHPage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) {
-                        return RealtimePage(
-                          dataNotifier: dataNotifier,
-                          dataChannelsNotifier: dataChannelsNotifier,
-                          dataSensorsNotifier: dataSensorsNotifier,
+                        return RealtimePageMAC1(
+                          dataMAC1Notifier: dataMAC1Notifier,
+                          dataMAC2Notifier: dataMAC2Notifier,
+                          channelsMAC1Notifier: channelsMAC1Notifier,
+                          channelsMAC2Notifier: channelsMAC2Notifier,
+                          sensorsMAC1Notifier: sensorsMAC1Notifier,
+                          sensorsMAC2Notifier: sensorsMAC2Notifier,
                           mqttClientWrapper: mqttClientWrapper,
                           acquisitionNotifier: acquisitionNotifier,
                           batteryBit1Notifier: batteryBit1Notifier,
@@ -887,6 +934,7 @@ class _HomeHPageState extends State<HomeHPage> {
                           annotationTypesD: annotationTypesD,
                           connectionNotifier: connectionNotifier,
                           timedOut: timedOut,
+                          startupError: startupError,
                         );
                       }),
                     );

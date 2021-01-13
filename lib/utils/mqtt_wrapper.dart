@@ -69,7 +69,7 @@ class MQTTClientWrapper {
     client.autoReconnect = true;
     client.onAutoReconnect = _onConnected;
     client.onDisconnected = _onDisconnected;
-    client.onConnected = _onConnected;
+    client.onConnected = _onReconnected;
     client.onSubscribed = _onSubscribed;
     print('SETUP DONE');
   }
@@ -120,6 +120,15 @@ class MQTTClientWrapper {
     connectionState = MqttCurrentConnectionState.CONNECTED;
     print(
         'MQTTClientWrapper::OnConnected client callback - Client connection was sucessful');
+    _subscribeToTopic(Constants.topicName);
+    onConnectedCallback();
+    onNewConnection(connectionState);
+  }
+
+  void _onReconnected() {
+    connectionState = MqttCurrentConnectionState.CONNECTED;
+    print(
+        'MQTTClientWrapper::OnRconnected client callback - Client connection was sucessful');
     _subscribeToTopic(Constants.topicName);
     onConnectedCallback();
     onNewConnection(connectionState);

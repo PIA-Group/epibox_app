@@ -5,6 +5,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:rPiInterface/utils/masked_text.dart';
 import 'package:rPiInterface/utils/models.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // programar button "Usar default" e "Usar novo" para enviar MACAddress para RPi e voltar à HomePage
 // programar button "Definir novo default" para enviar MACAddress para RPi e mudar "defaultBIT"
@@ -65,6 +66,18 @@ class _DevicesPageState extends State<DevicesPage> {
     _controller2.text = widget.defaultMacAddress2Notifier.value;
   }
 
+  Future<void> _saveMAC() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      setState(() => prefs.setStringList('lastMAC', [
+            widget.macAddress1Notifier.value,
+            widget.macAddress1Notifier.value
+          ]));
+    } catch (e) {
+      print(e);
+    }
+  }
+
   void _setNewDefault1() {
     setState(() => widget.defaultMacAddress1Notifier.value = _controller1.text);
   }
@@ -86,35 +99,35 @@ class _DevicesPageState extends State<DevicesPage> {
       body: Center(
         child: ListView(children: <Widget>[
           ValueListenableBuilder(
-            valueListenable: widget.connectionNotifier,
-            builder: (BuildContext context, MqttCurrentConnectionState state,
-                Widget child) {
-              return Container(
-                height: 20,
-                color: state == MqttCurrentConnectionState.CONNECTED
-                    ? Colors.green[50]
-                    : state == MqttCurrentConnectionState.CONNECTING
-                        ? Colors.yellow[50]
-                        : Colors.red[50],
-                child: Align(
-                  alignment: Alignment.center,
-                  child: Container(
-                    child: Text(
-                      state == MqttCurrentConnectionState.CONNECTED
-                          ? 'Conectado ao servidor'
-                          : state == MqttCurrentConnectionState.CONNECTING
-                              ? 'A conectar...'
-                              : 'Disconectado do servidor',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        //fontWeight: FontWeight.bold,
-                        fontSize: 13,
+              valueListenable: widget.connectionNotifier,
+              builder: (BuildContext context, MqttCurrentConnectionState state,
+                  Widget child) {
+                return Container(
+                  height: 20,
+                  color: state == MqttCurrentConnectionState.CONNECTED
+                      ? Colors.green[50]
+                      : state == MqttCurrentConnectionState.CONNECTING
+                          ? Colors.yellow[50]
+                          : Colors.red[50],
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: Container(
+                      child: Text(
+                        state == MqttCurrentConnectionState.CONNECTED
+                            ? 'Conectado ao servidor'
+                            : state == MqttCurrentConnectionState.CONNECTING
+                                ? 'A conectar...'
+                                : 'Disconectado do servidor',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          //fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              );
-            }),
+                );
+              }),
           ValueListenableBuilder(
               valueListenable: widget.sentMACNotifier,
               builder: (BuildContext context, bool state, Widget child) {
@@ -187,7 +200,6 @@ class _DevicesPageState extends State<DevicesPage> {
                                 counterText: "",
                                 labelText: "Endereço MAC",
                               ),
-                              
                             ),
                           ),
                           IconButton(
@@ -210,7 +222,6 @@ class _DevicesPageState extends State<DevicesPage> {
                                 counterText: "",
                                 labelText: "Endereço MAC",
                               ),
-                              
                             ),
                             /* child: TextField(
                                   style: TextStyle(color: Colors.grey[600]),
@@ -257,9 +268,8 @@ class _DevicesPageState extends State<DevicesPage> {
                             widget.macAddress2Notifier.value != '') {
                           setState(() => widget.isBit2Enabled.value = true);
                         }
-                        
+                        _saveMAC();
                         Navigator.pop(context);
-                        
                       },
                       child: new Text("Selecionar"),
                     ),

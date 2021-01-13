@@ -62,10 +62,11 @@ class PlotDataTitle extends StatefulWidget {
 class _PlotDataTitleState extends State<PlotDataTitle> {
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(top: 10.0),
+    return Center(
+    /* Padding(
+      padding: EdgeInsets.only(top: 10.0,), */
       child: Text(
-        'MAC: ${widget.channels[0]} | Canal: A${widget.channels[1]} | ${widget.sensor}',
+        'Canal: A${widget.channels[1]} | ${widget.sensor}',
         style: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 16,

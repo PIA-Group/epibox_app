@@ -13,7 +13,6 @@ class ConfigurationsDialog extends StatefulWidget {
 }
 
 class _ConfigurationsDialogState extends State<ConfigurationsDialog> {
-  List<Widget> _listChips = [];
   List<String> annotationTypesS;
   @override
   void initState() {

@@ -6,7 +6,6 @@ import 'package:rPiInterface/utils/id_wrapper.dart';
 void main() => runApp(new InterfaceRPi());
 
 class InterfaceRPi extends StatelessWidget {
-
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -14,10 +13,11 @@ class InterfaceRPi extends StatelessWidget {
     return StreamProvider<User>.value(
       value: Auth().user,
       child: MaterialApp(
-          title: 'EpiBOX',
-          debugShowCheckedModeBanner: false,
-          home: IDWrapper(),
-        ),
+        //showPerformanceOverlay: true,
+        title: 'EpiBOX',
+        debugShowCheckedModeBanner: false,
+        home: IDWrapper(),
+      ),
     );
   }
 }
