@@ -67,9 +67,9 @@ class MQTTClientWrapper {
     //client.keepAlivePeriod = 64800;
     //client.secure = true;
     client.autoReconnect = true;
-    client.onAutoReconnect = _onConnected;
+    client.onAutoReconnected = _onReconnected;
     client.onDisconnected = _onDisconnected;
-    client.onConnected = _onReconnected;
+    client.onConnected = _onConnected;
     client.onSubscribed = _onSubscribed;
     print('SETUP DONE');
   }
@@ -90,6 +90,24 @@ class MQTTClientWrapper {
       //print("MQTTClientWrapper::GOT A NEW MESSAGE $newMessage");
       onNewMessage(newMessage);
     });
+
+  }
+
+  Future<void> _reSubscribeToTopic(String topicName) async {
+
+    client.resubscribe();
+    print('RESUBSCRIPTION DONE TO TOPIC $topicName');
+
+    /* await publishMessage("['Send MAC Addresses']");
+    await publishMessage("['Send drives']"); */
+
+    /* client.updates.listen((List<MqttReceivedMessage<MqttMessage>> c) {
+      final MqttPublishMessage recMess = c[0].payload;
+      final String newMessage =
+      MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
+      //print("MQTTClientWrapper::GOT A NEW MESSAGE $newMessage");
+      onNewMessage(newMessage);
+    }); */
 
   }
 
@@ -129,7 +147,7 @@ class MQTTClientWrapper {
     connectionState = MqttCurrentConnectionState.CONNECTED;
     print(
         'MQTTClientWrapper::OnRconnected client callback - Client connection was sucessful');
-    _subscribeToTopic(Constants.topicName);
+    _reSubscribeToTopic(Constants.topicName);
     onConnectedCallback();
     onNewConnection(connectionState);
   }

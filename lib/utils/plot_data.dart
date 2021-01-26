@@ -24,7 +24,7 @@ class _PlotDataState extends State<PlotData> {
         padding: EdgeInsets.only(bottom: 20.0),
         child: Row(children: [
           Padding(
-            padding: EdgeInsets.only(left: 10.0),
+            padding: EdgeInsets.only(left: 5.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

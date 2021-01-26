@@ -40,7 +40,7 @@ class Oscilloscope extends StatefulWidget {
       {this.traceColor = Colors.blue,
       this.backgroundColor: Colors.white,
       this.yAxisColor: Colors.black,
-      this.padding = 20.0,
+      this.padding = 10.0,
       this.yAxisMax = 1.0,
       this.yAxisMin = -1.0,
       this.showCanvas = true,
@@ -116,6 +116,9 @@ class _TracePainter extends CustomPainter {
 
     double yRange = yMax - yMin;
     double yScale = (size.height / yRange);
+
+    
+    //print('SIZE: ${size.width}');
 
     // only start plot if dataset has data
     int length = dataSet.length;

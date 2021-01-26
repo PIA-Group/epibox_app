@@ -197,11 +197,11 @@ class _RPiPageState extends State<RPiPage> {
                           text: TextSpan(children: [
                         TextSpan(
                             text:
-                                'Caso queira fazer uma nova aquisição ou caso seja necessário reininciar o processo, clicar em ',
+                                'Caso queira fazer uma nova aquisição ou caso seja necessário reiniciar o processo, clicar em ',
                             style: TextStyle(
                                 fontSize: 16, color: Colors.grey[600])),
                         TextSpan(
-                            text: '"Reininciar" ',
+                            text: '"Reiniciar" ',
                             style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -225,7 +225,7 @@ class _RPiPageState extends State<RPiPage> {
                         onPressed: () {
                           _restart('all');
                         },
-                        child: new Text("Reininciar"),
+                        child: new Text("Reiniciar"),
                       ),
                     ],
                   ),

@@ -77,7 +77,7 @@ class _RealtimePageMAC2State extends State<RealtimePageMAC2> {
   List<List> channelsMAC = [];
   List<String> sensorsMAC = [];
 
-  List<List<double>> rangesList = List.filled(6, [0, 10, 1]);
+  List<List<double>> rangesList = List.filled(6, [-1, 10, 1]);
   bool _rangeInitiated;
   bool _isTimedOutOpen = false;
   var f;
@@ -90,7 +90,7 @@ class _RealtimePageMAC2State extends State<RealtimePageMAC2> {
     //List annotationTypesD = await getAnnotationTypes();
     List<String> annotationTypes =
         List<String>.from(widget.annotationTypesD.value);
-    print(annotationTypes);
+    //print(annotationTypes);
     Navigator.of(context).push(new MaterialPageRoute<Null>(
         builder: (BuildContext context) {
           return SpeedAnnotationDialog(
@@ -119,7 +119,7 @@ class _RealtimePageMAC2State extends State<RealtimePageMAC2> {
     } else if (sensor == 'EMG') {
       yRange = [-1.64, 1.64, 1];
     } else {
-      yRange = [0, 10, 0];
+      yRange = [-1, 10, 0];
     }
     return yRange;
   }
@@ -185,7 +185,7 @@ class _RealtimePageMAC2State extends State<RealtimePageMAC2> {
     await Future.delayed(Duration.zero);
     if (!_isTimedOutOpen) {
       f = () {
-        print('I LISTENED');
+        //print('I LISTENED');
         widget.dataMAC2Notifier.removeListener(f);
         setState(() => _isTimedOutOpen = false);
         Navigator.of(context, rootNavigator: true).pop();
@@ -285,7 +285,7 @@ class _RealtimePageMAC2State extends State<RealtimePageMAC2> {
     });
 
     widget.timedOut.addListener(() {
-      print(widget.timedOut.value);
+      //print(widget.timedOut.value);
       if (widget.timedOut.value != null) {
         _timedOutDialog(widget.timedOut.value);
       }
@@ -306,7 +306,7 @@ class _RealtimePageMAC2State extends State<RealtimePageMAC2> {
       if (this.mounted) {
         if (!_rangeInitiated && widget.sensorsMAC2Notifier.value.isNotEmpty) {
           _initRange(widget.sensorsMAC2Notifier.value);
-          print('RANGE: $rangesList');
+          //print('RANGE: $rangesList');
         }
         
         double canvasWidth = MediaQuery.of(context).size.width;

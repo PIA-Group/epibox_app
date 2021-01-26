@@ -62,7 +62,7 @@ class _HomeHPageState extends State<HomeHPage> {
   //final firestoreInstance = Firestore.instance;
 
   String message;
-
+  Timer timer;
   ValueNotifier<bool> dialogNotifier = ValueNotifier(false);
 
   ValueNotifier<List<List>> dataMAC1Notifier = ValueNotifier([]);
@@ -95,6 +95,8 @@ class _HomeHPageState extends State<HomeHPage> {
   @override
   void initState() {
     super.initState();
+
+    timer = Timer.periodic(Duration(seconds: 15), (Timer t) => print('timer'));
 
     var initializationSettingsAndroid =
         AndroidInitializationSettings('seizure_icon');
@@ -178,8 +180,7 @@ class _HomeHPageState extends State<HomeHPage> {
       setState(() => macAddress1Notifier.value = lastMAC[0]);
       setState(() => macAddress2Notifier.value = lastMAC[1]);
     });
-    print(
-        'LAST MAC: ${macAddress1Notifier.value}, ${macAddress2Notifier.value}');
+    //print('LAST MAC: ${macAddress1Notifier.value}, ${macAddress2Notifier.value}');
   }
 
   showNotification(device) async {
@@ -194,9 +195,9 @@ class _HomeHPageState extends State<HomeHPage> {
 
   @override
   void dispose() {
+    timer?.cancel();
     super.dispose();
     _nameController.dispose();
-    //subscription.cancel();
   }
 
   void gotNewMessage(String newMessage) {
@@ -309,7 +310,6 @@ class _HomeHPageState extends State<HomeHPage> {
       List sensorsMAC2 = [];
 
       message2List[2].asMap().forEach((index, channel) {
-        print(macAddress1Notifier.value);
         if (channel[0] == macAddress1Notifier.value) {
           dataMAC1.add(message2List[1][index]);
           channelsMAC1.add(channel);
@@ -333,11 +333,15 @@ class _HomeHPageState extends State<HomeHPage> {
   void _isBatteryLevel(String message) {
     if (message.contains('BATTERY')) {
       List message2List = json.decode(message);
+      double _levelRatio;
       print('BATTERY: ${message2List[1]}');
       for (var entry in message2List[1].entries) {
-        double _levelRatio = (entry.value - 520.66) /
-            (647.4 -
-                520.66); //max values calculated assuming 589 is 95% and 527 is 5%
+        if (entry > 63) { //max values calculated assuming 589 is 95% and 527 is 5%
+          _levelRatio = (entry.value - 520.66) / (647.4 - 520.66);
+        } else {
+          _levelRatio = (entry.value - 520.66) / (647.4 - 520.66);
+        }
+         
         double _level = (_levelRatio > 1)
             ? 1
             : (_levelRatio < 0)
@@ -608,7 +612,7 @@ class _HomeHPageState extends State<HomeHPage> {
                     color: Colors.grey[600],
                   ),
                   onPressed: () {
-                    print(annotationTypesD.value);
+                    //print(annotationTypesD.value);
                     Navigator.of(context).push(new MaterialPageRoute<Null>(
                         builder: (BuildContext context) {
                           return ConfigurationsDialog(

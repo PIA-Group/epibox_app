@@ -73,7 +73,7 @@ class _RealtimePageMAC1State extends State<RealtimePageMAC1> {
   ValueNotifier<List<double>> data5 = ValueNotifier([]);
   ValueNotifier<List<double>> data6 = ValueNotifier([]);
 
-  List<List<double>> rangesList = List.filled(6, [0, 10, 1]);
+  List<List<double>> rangesList = List.filled(6, [-1, 10, 1]);
   bool _rangeInitiated;
   bool _isTimedOutOpen = false;
   var f;
@@ -86,7 +86,7 @@ class _RealtimePageMAC1State extends State<RealtimePageMAC1> {
     //List annotationTypesD = await getAnnotationTypes();
     List<String> annotationTypes =
         List<String>.from(widget.annotationTypesD.value);
-    print(annotationTypes);
+    //print(annotationTypes);
     Navigator.of(context).push(new MaterialPageRoute<Null>(
         builder: (BuildContext context) {
           return SpeedAnnotationDialog(
@@ -115,7 +115,7 @@ class _RealtimePageMAC1State extends State<RealtimePageMAC1> {
     } else if (sensor == 'EMG') {
       yRange = [-1.64, 1.64, 1];
     } else {
-      yRange = [0, 10, 0];
+      yRange = [-1, 10, 0];
     }
     return yRange;
   }
@@ -181,7 +181,7 @@ class _RealtimePageMAC1State extends State<RealtimePageMAC1> {
     await Future.delayed(Duration.zero);
     if (!_isTimedOutOpen) {
       f = () {
-        print('I LISTENED');
+        //print('I LISTENED');
         widget.dataMAC1Notifier.removeListener(f);
         setState(() => _isTimedOutOpen = false);
         Navigator.of(context, rootNavigator: true).pop();
@@ -281,7 +281,7 @@ class _RealtimePageMAC1State extends State<RealtimePageMAC1> {
     });
 
     widget.timedOut.addListener(() {
-      print(widget.timedOut.value);
+      //print(widget.timedOut.value);
       if (widget.timedOut.value != null) {
         _timedOutDialog(widget.timedOut.value);
       }
@@ -302,11 +302,11 @@ class _RealtimePageMAC1State extends State<RealtimePageMAC1> {
       if (this.mounted) {
         if (!_rangeInitiated && widget.sensorsMAC1Notifier.value.isNotEmpty) {
           _initRange(widget.sensorsMAC1Notifier.value);
-          print('RANGE: $rangesList');
+          //print('RANGE: $rangesList');
         }
         
         double canvasWidth = MediaQuery.of(context).size.width;
-        print(widget.dataMAC1Notifier.value);
+
         widget.dataMAC1Notifier.value.asMap().forEach((index, channel) {
           channel.asMap().forEach((i, value) {
             if (index == 0) {
