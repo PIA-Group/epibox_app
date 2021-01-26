@@ -165,7 +165,7 @@ class _HomeHPageState extends State<HomeHPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List annot;
     try {
-      annot = prefs.getStringList('annotationTypes').toList();
+      annot = prefs.getStringList('annotationTypes').toList() ?? [];
       setState(() => annotationTypesD.value = annot);
     } catch (e) {
       print(e);
@@ -330,31 +330,29 @@ class _HomeHPageState extends State<HomeHPage> {
   }
 
   void _isBatteryLevel(String message) {
+
     if (message.contains('BATTERY')) {
       List message2List = json.decode(message);
       double _levelRatio;
       print('BATTERY: ${message2List[1]}');
-      for (var entry in message2List[1].entries) {
-        if (entry.value > 63) { // if battery value has 10 bits
-          _levelRatio = (entry.value - 520.66) / (647.4 - 520.66); //max values calculated assuming 589 is 95% and 527 is 5%
-        } else { // if battery value has 6 bits
-          _levelRatio = (entry.value - 31.78) / (36.22 - 31.78); //max values calculated assuming 36 is 95% and 32 is 5%
-        }
-         
+      for (var entry in message2List[1].entries) { // list of dict [{'MAC1': ABAT in volts}, {'MAC2': ABAT in volts}]
+
+        _levelRatio = (entry.value - 3.4) / (4.2 - 3.4);
         double _level = (_levelRatio > 1)
             ? 1
             : (_levelRatio < 0)
                 ? 0
                 : _levelRatio;
+
         if (entry.key == macAddress1Notifier.value) {
           setState(() => batteryBit1Notifier.value = _level);
-
-          if (_level <= 0.1) {
+          if (entry.value <= 3.4) {
             showNotification('1');
           }
+
         } else if (entry.key == macAddress2Notifier.value) {
           setState(() => batteryBit2Notifier.value = _level);
-          if (_level <= 0.1) {
+          if (entry.value <= 3.4) {
             showNotification('2');
           }
         }

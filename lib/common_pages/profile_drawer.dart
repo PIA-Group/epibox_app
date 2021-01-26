@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:rPiInterface/hospital_pages/configurations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileDrawer extends StatefulWidget {
