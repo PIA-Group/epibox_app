@@ -6,7 +6,6 @@ import 'models.dart';
 
 class MQTTClientWrapper {
 
-  //MqttClient client;
 
   MqttCurrentConnectionState connectionState = MqttCurrentConnectionState.IDLE;
   MqttSubscriptionState subscriptionState = MqttSubscriptionState.IDLE;

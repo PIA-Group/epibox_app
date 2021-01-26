@@ -4,11 +4,11 @@ import 'package:app_settings/app_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:mqtt_client/mqtt_client.dart';
+import 'package:rPiInterface/common_pages/profile_drawer.dart';
 import 'package:rPiInterface/common_pages/real_time_MAC1.dart';
 import 'package:rPiInterface/hospital_pages/config_page.dart';
 import 'package:rPiInterface/common_pages/rpi_setup.dart';
 import 'package:rPiInterface/hospital_pages/devices_H_setup.dart';
-import 'package:rPiInterface/hospital_pages/configurations.dart';
 import 'package:rPiInterface/hospital_pages/instructions_H.dart';
 import 'package:rPiInterface/utils/battery_indicator.dart';
 import 'package:rPiInterface/utils/models.dart';
@@ -76,7 +76,7 @@ class _HomeHPageState extends State<HomeHPage> {
   MQTTClientWrapper mqttClientWrapper;
   MqttClient client;
 
-  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
 
   FlutterLocalNotificationsPlugin batteryNotification =
       FlutterLocalNotificationsPlugin();
@@ -107,7 +107,7 @@ class _HomeHPageState extends State<HomeHPage> {
 
     acquisitionNotifier.value = 'off';
     setupHome();
-    _nameController.text = " ";
+    nameController.text = " ";
     _wifiDialog();
     getAnnotationTypes();
     getLastMAC();
@@ -197,7 +197,7 @@ class _HomeHPageState extends State<HomeHPage> {
   void dispose() {
     timer?.cancel();
     super.dispose();
-    _nameController.dispose();
+    nameController.dispose();
   }
 
   void gotNewMessage(String newMessage) {
@@ -255,7 +255,6 @@ class _HomeHPageState extends State<HomeHPage> {
   void _isDefaultConfig(String message) {
     if (message.contains('DEFAULT CONFIG')) {
       List message2List = json.decode(message);
-      //print(message2List[1]);
       setState(() => configDefaultNotifier.value = message2List[1]);
     }
   }
@@ -336,10 +335,10 @@ class _HomeHPageState extends State<HomeHPage> {
       double _levelRatio;
       print('BATTERY: ${message2List[1]}');
       for (var entry in message2List[1].entries) {
-        if (entry > 63) { //max values calculated assuming 589 is 95% and 527 is 5%
-          _levelRatio = (entry.value - 520.66) / (647.4 - 520.66);
-        } else {
-          _levelRatio = (entry.value - 520.66) / (647.4 - 520.66);
+        if (entry.value > 63) { // if battery value has 10 bits
+          _levelRatio = (entry.value - 520.66) / (647.4 - 520.66); //max values calculated assuming 589 is 95% and 527 is 5%
+        } else { // if battery value has 6 bits
+          _levelRatio = (entry.value - 31.78) / (36.22 - 31.78); //max values calculated assuming 36 is 95% and 32 is 5%
         }
          
         double _level = (_levelRatio > 1)
@@ -380,6 +379,7 @@ class _HomeHPageState extends State<HomeHPage> {
   Future<void> _restart() async {
     mqttClientWrapper.publishMessage("['RESTART']");
     await mqttClientWrapper.diconnectClient();
+
     setState(() {
       defaultMacAddress1Notifier.value = 'Endereço MAC';
       defaultMacAddress2Notifier.value = 'Endereço MAC';
@@ -415,43 +415,6 @@ class _HomeHPageState extends State<HomeHPage> {
     }
   }
 
-  void _submitNewName(String uid, username) async {
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      List<String> user = (prefs.getStringList(uid) ?? []);
-      setState(() => prefs.setStringList(uid, [username, user[1]]));
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  Future<String> getUserName(uid) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    try {
-      List<String> user = (prefs.getStringList(uid) ?? []);
-      //print('UserName: ${user[0]}');
-      return user[0];
-    } catch (e) {
-      print(e);
-      setState(
-          () => prefs.setStringList(uid, ['Não definido', 'images/owl.jpg']));
-      return 'Não definido';
-    }
-  }
-
-  Future<String> _getAvatar(uid) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    try {
-      List<String> user = (prefs.getStringList(uid) ?? []);
-      //print('avatar: ${user[1]}');
-      return user[1];
-    } catch (e) {
-      print(e);
-      setState(
-          () => prefs.setStringList(uid, ['Não definido', 'images/owl.jpg']));
-      return 'images/owl.jpg';
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -459,172 +422,11 @@ class _HomeHPageState extends State<HomeHPage> {
 
     return Scaffold(
       key: _scaffoldKey,
-      drawer: Drawer(
-        child: ListView(
-            // Important: Remove any padding from the ListView.
-            padding: EdgeInsets.zero,
-            children: <Widget>[
-              DrawerHeader(
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    FutureBuilder(
-                        future: _getAvatar(widget.patientNotifier.value),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.done) {
-                            return CircleAvatar(
-                                radius: 40.0,
-                                backgroundImage: AssetImage(snapshot.data));
-                          } else {
-                            return CircularProgressIndicator();
-                          }
-                        }),
-                    Text('ID:',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          decoration: TextDecoration.underline,
-                        )),
-                    Text(widget.patientNotifier.value,
-                        style: TextStyle(color: Colors.white, fontSize: 14)),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 0.0),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Container(
-                    child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Nome: ',
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          FutureBuilder(
-                            future: getUserName(widget.patientNotifier.value),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.done) {
-                                return Text(
-                                  '${snapshot.data}',
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                );
-                              } else {
-                                return CircularProgressIndicator();
-                              }
-                            },
-                          ),
-                        ]),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(10.0, 20.0, 10.0, 0.0),
-                child: Container(
-                  height: 130.0,
-                  width: 200.0,
-                  color: Colors.transparent,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.rectangle,
-                      borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                      boxShadow: [
-                        BoxShadow(
-                            color: Colors.grey[200],
-                            offset: new Offset(5.0, 5.0))
-                      ],
-                    ),
-                    child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
-                            child: TextField(
-                              decoration: InputDecoration(
-                                  border: OutlineInputBorder(),
-                                  labelText: "Novo nome",
-                                  isDense: true),
-                              controller: _nameController,
-                            ),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
-                            child: RaisedButton(
-                              onPressed: () {
-                                _submitNewName(widget.patientNotifier.value,
-                                    _nameController.text.trim());
-                                setState(() => _nameController.text = " ");
-                                Navigator.pop(context);
-                              },
-                              child: new Text("Submeter"),
-                            ),
-                          ),
-                        ]),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                    width - 0.9 * width, 50.0, width - 0.9 * width, 50.0),
-                child: RaisedButton.icon(
-                  label: Text(
-                    'Sign out',
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                  icon: Icon(
-                    Icons.person,
-                    color: Colors.grey[600],
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      widget.patientNotifier.value = null;
-                      Navigator.pop(context);
-                    });
-                  },
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                    width - 0.9 * width, 0.0, width - 0.9 * width, 0.0),
-                child: RaisedButton.icon(
-                  label: Text(
-                    'Configurações',
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                  icon: Icon(
-                    Icons.settings,
-                    color: Colors.grey[600],
-                  ),
-                  onPressed: () {
-                    //print(annotationTypesD.value);
-                    Navigator.of(context).push(new MaterialPageRoute<Null>(
-                        builder: (BuildContext context) {
-                          return ConfigurationsDialog(
-                            annotationTypesD: annotationTypesD,
-                          );
-                        },
-                        fullscreenDialog: true));
-                  },
-                ),
-              )
-            ]),
-      ),
+      drawer: ProfileDrawer(
+        patientNotifier: widget.patientNotifier,
+        nameController: nameController,
+        annotationTypesD: annotationTypesD,
+        ),
       appBar: new AppBar(title: new Text('EpiBox'), actions: <Widget>[
         Column(children: [
           ValueListenableBuilder(
@@ -777,6 +579,16 @@ class _HomeHPageState extends State<HomeHPage> {
                       batteryBit2Notifier: batteryBit2Notifier,
                       isBit1Enabled: isBit1Enabled,
                       isBit2Enabled: isBit2Enabled,
+                      dataMAC1Notifier: dataMAC1Notifier,
+                      dataMAC2Notifier: dataMAC2Notifier,
+                      channelsMAC1Notifier: channelsMAC1Notifier,
+                      channelsMAC2Notifier: channelsMAC2Notifier,
+                      sensorsMAC1Notifier: sensorsMAC1Notifier,
+                      sensorsMAC2Notifier: sensorsMAC2Notifier,
+                      patientNotifier: widget.patientNotifier,
+                      annotationTypesD: annotationTypesD,
+                      timedOut: timedOut,
+                      startupError: startupError,
                     );
                   }),
                 );

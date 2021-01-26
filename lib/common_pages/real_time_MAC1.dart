@@ -7,7 +7,6 @@ import 'package:rPiInterface/utils/plot_data.dart';
 import 'package:rPiInterface/utils/battery_indicator.dart';
 import 'package:rPiInterface/common_pages/real_time_MAC2.dart';
 
-
 class RealtimePageMAC1 extends StatefulWidget {
   ValueNotifier<String> macAddress1Notifier;
 
@@ -304,7 +303,7 @@ class _RealtimePageMAC1State extends State<RealtimePageMAC1> {
           _initRange(widget.sensorsMAC1Notifier.value);
           //print('RANGE: $rangesList');
         }
-        
+
         double canvasWidth = MediaQuery.of(context).size.width;
 
         widget.dataMAC1Notifier.value.asMap().forEach((index, channel) {
@@ -454,196 +453,225 @@ class _RealtimePageMAC1State extends State<RealtimePageMAC1> {
           ]),
         ],
       ),
-      body: Row(children: [
-        Container(
-          width: MediaQuery.of(context).size.width - 15.0,
-          child: ListView(
-            children: <Widget>[
-              ValueListenableBuilder(
-                  valueListenable: widget.connectionNotifier,
-                  builder: (BuildContext context,
-                      MqttCurrentConnectionState state, Widget child) {
-                    return Container(
-                      height: 20,
-                      color: state == MqttCurrentConnectionState.CONNECTED
-                          ? Colors.green[50]
+      body: Column(children: [
+        ValueListenableBuilder(
+            valueListenable: widget.connectionNotifier,
+            builder: (BuildContext context, MqttCurrentConnectionState state,
+                Widget child) {
+              return Container(
+                height: 20,
+                color: state == MqttCurrentConnectionState.CONNECTED
+                    ? Colors.green[50]
+                    : state == MqttCurrentConnectionState.CONNECTING
+                        ? Colors.yellow[50]
+                        : Colors.red[50],
+                child: Align(
+                  alignment: Alignment.center,
+                  child: Container(
+                    child: Text(
+                      state == MqttCurrentConnectionState.CONNECTED
+                          ? 'Conectado ao servidor'
                           : state == MqttCurrentConnectionState.CONNECTING
-                              ? Colors.yellow[50]
-                              : Colors.red[50],
-                      child: Align(
-                        alignment: Alignment.center,
-                        child: Container(
-                          child: Text(
-                            state == MqttCurrentConnectionState.CONNECTED
-                                ? 'Conectado ao servidor'
-                                : state == MqttCurrentConnectionState.CONNECTING
-                                    ? 'A conectar...'
-                                    : 'Disconectado do servidor',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              //fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ),
+                              ? 'A conectar...'
+                              : 'Disconectado do servidor',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        //fontWeight: FontWeight.bold,
+                        fontSize: 13,
                       ),
-                    );
-                  }),
-              ValueListenableBuilder(
-                  valueListenable: widget.acquisitionNotifier,
-                  builder: (BuildContext context, String state, Widget child) {
-                    return Container(
-                      height: 20,
-                      color: state == 'acquiring'
-                          ? Colors.green[50]
-                          : (state == 'starting' ||
-                                  state == 'reconnecting' ||
-                                  state == 'trying')
-                              ? Colors.yellow[50]
-                              : Colors.red[50],
-                      child: Align(
-                        alignment: Alignment.center,
-                        child: Container(
-                          child: Text(
-                            state == 'starting'
-                                ? 'A iniciar aquisição ...'
-                                : state == 'acquiring'
-                                    ? 'A adquirir dados'
-                                    : state == 'reconnecting'
-                                        ? 'A retomar aquisição ...'
-                                        : state == 'trying'
-                                            ? 'A reconectar aos dispositivos ...'
-                                            : state == 'stopped'
-                                                ? 'Aquisição terminada e dados gravados'
-                                                : 'Aquisição desligada',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              //fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
-              // ############### PLOT 1 ###############
-              if (widget.channelsMAC1Notifier.value.length > 0)
-                PlotDataTitle(channels: widget.channelsMAC1Notifier.value[0], sensor: widget.sensorsMAC1Notifier.value[0]),
-              if (widget.channelsMAC1Notifier.value.length > 0)
-                ValueListenableBuilder(
-                    valueListenable: data1,
-                    builder: (BuildContext context, List data, Widget child) {
-                      return SizedBox(
-                          height: plotHeight,
-                          child: PlotData(
-                              yRange: rangesList[0].sublist(0, 2), data: data));
-                    }),
-              // ############### PLOT 2 ###############
-              if (widget.channelsMAC1Notifier.value.length > 1)
-                PlotDataTitle(channels: widget.channelsMAC1Notifier.value[1], sensor: widget.sensorsMAC1Notifier.value[1]),
-              if (widget.channelsMAC1Notifier.value.length > 1)
-                ValueListenableBuilder(
-                    valueListenable: data2,
-                    builder: (BuildContext context, List data, Widget child) {
-                      return SizedBox(
-                          height: plotHeight,
-                          child: PlotData(
-                              yRange: rangesList[1].sublist(0, 2), data: data));
-                    }),
-              // ############### PLOT 3 ###############
-              if (widget.channelsMAC1Notifier.value.length > 2)
-                PlotDataTitle(channels: widget.channelsMAC1Notifier.value[2], sensor: widget.sensorsMAC1Notifier.value[2]),
-              if (widget.channelsMAC1Notifier.value.length > 2)
-                ValueListenableBuilder(
-                    valueListenable: data3,
-                    builder: (BuildContext context, List data, Widget child) {
-                      return SizedBox(
-                          height: plotHeight,
-                          child: PlotData(
-                              yRange: rangesList[2].sublist(0, 2), data: data));
-                    }),
-              // ############### PLOT 4 ###############
-              if (widget.channelsMAC1Notifier.value.length > 3)
-                PlotDataTitle(channels: widget.channelsMAC1Notifier.value[3], sensor: widget.sensorsMAC1Notifier.value[3]),
-              if (widget.channelsMAC1Notifier.value.length > 3)
-                ValueListenableBuilder(
-                    valueListenable: data4,
-                    builder: (BuildContext context, List data, Widget child) {
-                      return SizedBox(
-                          height: plotHeight,
-                          child: PlotData(
-                              yRange: rangesList[3].sublist(0, 2), data: data));
-                    }),
-              // ############### PLOT 5 ###############
-              if (widget.channelsMAC1Notifier.value.length > 4)
-                PlotDataTitle(channels: widget.channelsMAC1Notifier.value[4], sensor: widget.sensorsMAC1Notifier.value[4]),
-              if (widget.channelsMAC1Notifier.value.length > 4)
-                ValueListenableBuilder(
-                    valueListenable: data5,
-                    builder: (BuildContext context, List data, Widget child) {
-                      return SizedBox(
-                          height: plotHeight,
-                          child: PlotData(
-                              yRange: rangesList[4].sublist(0, 2), data: data));
-                    }),
-              // ############### PLOT 6 ###############
-              if (widget.channelsMAC1Notifier.value.length > 5)
-                PlotDataTitle(channels: widget.channelsMAC1Notifier.value[5], sensor: widget.sensorsMAC1Notifier.value[5]),
-              if (widget.channelsMAC1Notifier.value.length > 5)
-                ValueListenableBuilder(
-                    valueListenable: data6,
-                    builder: (BuildContext context, List data, Widget child) {
-                      return SizedBox(
-                          height: plotHeight,
-                          child: PlotData(
-                              yRange: rangesList[5].sublist(0, 2), data: data));
-                    }),
-            ],
-          ),
-        ),
-        Expanded(
-          child: FlatButton(
-            padding: EdgeInsets.zero,
-            textColor: Colors.black,
-            color: Colors.grey[300],
-            height: MediaQuery.of(context).size.height,
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) {
-                  return RealtimePageMAC2(
-                    dataMAC1Notifier: widget.dataMAC1Notifier,
-                    dataMAC2Notifier: widget.dataMAC2Notifier,
-                    channelsMAC1Notifier: widget.channelsMAC1Notifier,
-                    channelsMAC2Notifier: widget.channelsMAC2Notifier,
-                    sensorsMAC1Notifier: widget.sensorsMAC1Notifier,
-                    sensorsMAC2Notifier: widget.sensorsMAC2Notifier,
-                    mqttClientWrapper: widget.mqttClientWrapper,
-                    acquisitionNotifier: widget.acquisitionNotifier,
-                    batteryBit1Notifier: widget.batteryBit1Notifier,
-                    batteryBit2Notifier: widget.batteryBit2Notifier,
-                    patientNotifier: widget.patientNotifier,
-                    annotationTypesD: widget.annotationTypesD,
-                    connectionNotifier: widget.connectionNotifier,
-                    timedOut: widget.timedOut,
-                    startupError: widget.startupError,
-                  );
-                }),
-              );
-            },
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.arrow_forward_ios,
-                  color: Colors.grey,
-                  size: 20.0,
+                    ),
+                  ),
                 ),
-              ],
+              );
+            }),
+        ValueListenableBuilder(
+            valueListenable: widget.acquisitionNotifier,
+            builder: (BuildContext context, String state, Widget child) {
+              return Container(
+                height: 20,
+                color: state == 'acquiring'
+                    ? Colors.green[50]
+                    : (state == 'starting' ||
+                            state == 'reconnecting' ||
+                            state == 'trying')
+                        ? Colors.yellow[50]
+                        : Colors.red[50],
+                child: Align(
+                  alignment: Alignment.center,
+                  child: Container(
+                    child: Text(
+                      state == 'starting'
+                          ? 'A iniciar aquisição ...'
+                          : state == 'acquiring'
+                              ? 'A adquirir dados'
+                              : state == 'reconnecting'
+                                  ? 'A retomar aquisição ...'
+                                  : state == 'trying'
+                                      ? 'A reconectar aos dispositivos ...'
+                                      : state == 'stopped'
+                                          ? 'Aquisição terminada e dados gravados'
+                                          : 'Aquisição desligada',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        //fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+        Expanded(
+          child: Row(children: [
+            Container(
+              width: MediaQuery.of(context).size.width - 15.0,
+              child: ListView(
+                children: <Widget>[
+                  
+                  // ############### PLOT 1 ###############
+                  if (widget.channelsMAC1Notifier.value.length > 0)
+                    PlotDataTitle(
+                        channels: widget.channelsMAC1Notifier.value[0],
+                        sensor: widget.sensorsMAC1Notifier.value[0]),
+                  if (widget.channelsMAC1Notifier.value.length > 0)
+                    ValueListenableBuilder(
+                        valueListenable: data1,
+                        builder:
+                            (BuildContext context, List data, Widget child) {
+                          return SizedBox(
+                              height: plotHeight,
+                              child: PlotData(
+                                  yRange: rangesList[0].sublist(0, 2),
+                                  data: data));
+                        }),
+                  // ############### PLOT 2 ###############
+                  if (widget.channelsMAC1Notifier.value.length > 1)
+                    PlotDataTitle(
+                        channels: widget.channelsMAC1Notifier.value[1],
+                        sensor: widget.sensorsMAC1Notifier.value[1]),
+                  if (widget.channelsMAC1Notifier.value.length > 1)
+                    ValueListenableBuilder(
+                        valueListenable: data2,
+                        builder:
+                            (BuildContext context, List data, Widget child) {
+                          return SizedBox(
+                              height: plotHeight,
+                              child: PlotData(
+                                  yRange: rangesList[1].sublist(0, 2),
+                                  data: data));
+                        }),
+                  // ############### PLOT 3 ###############
+                  if (widget.channelsMAC1Notifier.value.length > 2)
+                    PlotDataTitle(
+                        channels: widget.channelsMAC1Notifier.value[2],
+                        sensor: widget.sensorsMAC1Notifier.value[2]),
+                  if (widget.channelsMAC1Notifier.value.length > 2)
+                    ValueListenableBuilder(
+                        valueListenable: data3,
+                        builder:
+                            (BuildContext context, List data, Widget child) {
+                          return SizedBox(
+                              height: plotHeight,
+                              child: PlotData(
+                                  yRange: rangesList[2].sublist(0, 2),
+                                  data: data));
+                        }),
+                  // ############### PLOT 4 ###############
+                  if (widget.channelsMAC1Notifier.value.length > 3)
+                    PlotDataTitle(
+                        channels: widget.channelsMAC1Notifier.value[3],
+                        sensor: widget.sensorsMAC1Notifier.value[3]),
+                  if (widget.channelsMAC1Notifier.value.length > 3)
+                    ValueListenableBuilder(
+                        valueListenable: data4,
+                        builder:
+                            (BuildContext context, List data, Widget child) {
+                          return SizedBox(
+                              height: plotHeight,
+                              child: PlotData(
+                                  yRange: rangesList[3].sublist(0, 2),
+                                  data: data));
+                        }),
+                  // ############### PLOT 5 ###############
+                  if (widget.channelsMAC1Notifier.value.length > 4)
+                    PlotDataTitle(
+                        channels: widget.channelsMAC1Notifier.value[4],
+                        sensor: widget.sensorsMAC1Notifier.value[4]),
+                  if (widget.channelsMAC1Notifier.value.length > 4)
+                    ValueListenableBuilder(
+                        valueListenable: data5,
+                        builder:
+                            (BuildContext context, List data, Widget child) {
+                          return SizedBox(
+                              height: plotHeight,
+                              child: PlotData(
+                                  yRange: rangesList[4].sublist(0, 2),
+                                  data: data));
+                        }),
+                  // ############### PLOT 6 ###############
+                  if (widget.channelsMAC1Notifier.value.length > 5)
+                    PlotDataTitle(
+                        channels: widget.channelsMAC1Notifier.value[5],
+                        sensor: widget.sensorsMAC1Notifier.value[5]),
+                  if (widget.channelsMAC1Notifier.value.length > 5)
+                    ValueListenableBuilder(
+                        valueListenable: data6,
+                        builder:
+                            (BuildContext context, List data, Widget child) {
+                          return SizedBox(
+                              height: plotHeight,
+                              child: PlotData(
+                                  yRange: rangesList[5].sublist(0, 2),
+                                  data: data));
+                        }),
+                ],
+              ),
             ),
-          ),
+            Expanded(
+              child: FlatButton(
+                padding: EdgeInsets.zero,
+                textColor: Colors.black,
+                color: Colors.grey[300],
+                height: MediaQuery.of(context).size.height,
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) {
+                      return RealtimePageMAC2(
+                        dataMAC1Notifier: widget.dataMAC1Notifier,
+                        dataMAC2Notifier: widget.dataMAC2Notifier,
+                        channelsMAC1Notifier: widget.channelsMAC1Notifier,
+                        channelsMAC2Notifier: widget.channelsMAC2Notifier,
+                        sensorsMAC1Notifier: widget.sensorsMAC1Notifier,
+                        sensorsMAC2Notifier: widget.sensorsMAC2Notifier,
+                        mqttClientWrapper: widget.mqttClientWrapper,
+                        acquisitionNotifier: widget.acquisitionNotifier,
+                        batteryBit1Notifier: widget.batteryBit1Notifier,
+                        batteryBit2Notifier: widget.batteryBit2Notifier,
+                        patientNotifier: widget.patientNotifier,
+                        annotationTypesD: widget.annotationTypesD,
+                        connectionNotifier: widget.connectionNotifier,
+                        timedOut: widget.timedOut,
+                        startupError: widget.startupError,
+                      );
+                    }),
+                  );
+                },
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      color: Colors.grey,
+                      size: 20.0,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ]),
         ),
       ]),
       floatingActionButton: Stack(children: [

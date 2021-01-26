@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rPiInterface/common_pages/real_time_MAC1.dart';
 import 'package:rPiInterface/utils/models.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
 
@@ -27,6 +28,20 @@ class RPiPage extends StatefulWidget {
   ValueNotifier<bool> isBit1Enabled;
   ValueNotifier<bool> isBit2Enabled;
 
+  ValueNotifier<List<List>> dataMAC1Notifier;
+  ValueNotifier<List<List>> dataMAC2Notifier;
+  ValueNotifier<List<List>> channelsMAC1Notifier;
+  ValueNotifier<List<List>> channelsMAC2Notifier;
+  ValueNotifier<List> sensorsMAC1Notifier;
+  ValueNotifier<List> sensorsMAC2Notifier;
+
+  ValueNotifier<String> patientNotifier;
+
+  ValueNotifier<List> annotationTypesD;
+
+  ValueNotifier<String> timedOut;
+  ValueNotifier<bool> startupError;
+
   RPiPage({
     this.mqttClientWrapper,
     this.connectionNotifier,
@@ -44,6 +59,16 @@ class RPiPage extends StatefulWidget {
     this.batteryBit2Notifier,
     this.isBit1Enabled,
     this.isBit2Enabled,
+    this.dataMAC1Notifier,
+    this.dataMAC2Notifier,
+    this.channelsMAC1Notifier,
+    this.channelsMAC2Notifier,
+    this.sensorsMAC1Notifier,
+    this.sensorsMAC2Notifier,
+    this.patientNotifier,
+    this.annotationTypesD,
+    this.timedOut,
+    this.startupError,
   });
 
   @override
@@ -86,7 +111,8 @@ class _RPiPageState extends State<RPiPage> {
     await widget.mqttClientWrapper
         .prepareMqttClient(widget.hostnameNotifier.value);
     var timeStamp = DateTime.now();
-    String time = "${timeStamp.year}-${timeStamp.month}-${timeStamp.day} ${timeStamp.hour}:${timeStamp.minute}:${timeStamp.second}";
+    String time =
+        "${timeStamp.year}-${timeStamp.month}-${timeStamp.day} ${timeStamp.hour}:${timeStamp.minute}:${timeStamp.second}";
     widget.mqttClientWrapper.publishMessage("['TIME', '$time']");
     widget.mqttClientWrapper.publishMessage("['Send MAC Addresses']");
     widget.mqttClientWrapper.publishMessage("['Send config']");
@@ -167,23 +193,23 @@ class _RPiPageState extends State<RPiPage> {
                       child: RichText(
                           textAlign: TextAlign.justify,
                           text: TextSpan(children: [
-                        TextSpan(
-                            text:
-                                'Para conectar ao servidor e iniciar processo, clicar em ',
-                            style: TextStyle(
-                                fontSize: 16, color: Colors.grey[600])),
-                        TextSpan(
-                            text: '"Conectar"',
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey[600])),
-                        TextSpan(
-                            text:
-                                '. Isto irá colocar em marcha os procedimentos necessários para iniciar a aquisição de dados! ',
-                            style: TextStyle(
-                                fontSize: 16, color: Colors.grey[600])),
-                      ])),
+                            TextSpan(
+                                text:
+                                    'Para conectar ao servidor e iniciar processo, clicar em ',
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.grey[600])),
+                            TextSpan(
+                                text: '"Conectar"',
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey[600])),
+                            TextSpan(
+                                text:
+                                    '. Isto irá colocar em marcha os procedimentos necessários para iniciar a aquisição de dados! ',
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.grey[600])),
+                          ])),
                     ),
                   ),
                 ),
@@ -195,18 +221,18 @@ class _RPiPageState extends State<RPiPage> {
                       child: RichText(
                           textAlign: TextAlign.justify,
                           text: TextSpan(children: [
-                        TextSpan(
-                            text:
-                                'Caso queira fazer uma nova aquisição ou caso seja necessário reiniciar o processo, clicar em ',
-                            style: TextStyle(
-                                fontSize: 16, color: Colors.grey[600])),
-                        TextSpan(
-                            text: '"Reiniciar" ',
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey[600])),
-                      ])),
+                            TextSpan(
+                                text:
+                                    'Caso queira fazer uma nova aquisição ou caso seja necessário reiniciar o processo, clicar em ',
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.grey[600])),
+                            TextSpan(
+                                text: '"Reiniciar" ',
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey[600])),
+                          ])),
                     ),
                   ),
                 ),
@@ -269,6 +295,60 @@ class _RPiPageState extends State<RPiPage> {
                       ),
                     ),
                   ),
+                ),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
+                  child: ValueListenableBuilder(
+                      valueListenable: widget.acquisitionNotifier,
+                      builder:
+                          (BuildContext context, String state, Widget child) {
+                        return RaisedButton(
+                          textColor: Colors.grey[600],
+                          disabledTextColor: Colors.transparent,
+                          disabledColor: Colors.transparent,
+                          elevation: state == 'acquiring' ? 2 : 0,
+                          onPressed: state == 'acquiring'
+                              ? () {
+                                  Navigator.pop(context);
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) {
+                                      return RealtimePageMAC1(
+                                        dataMAC1Notifier:
+                                            widget.dataMAC1Notifier,
+                                        dataMAC2Notifier:
+                                            widget.dataMAC2Notifier,
+                                        channelsMAC1Notifier:
+                                            widget.channelsMAC1Notifier,
+                                        channelsMAC2Notifier:
+                                            widget.channelsMAC2Notifier,
+                                        sensorsMAC1Notifier:
+                                            widget.sensorsMAC1Notifier,
+                                        sensorsMAC2Notifier:
+                                            widget.sensorsMAC2Notifier,
+                                        mqttClientWrapper:
+                                            widget.mqttClientWrapper,
+                                        acquisitionNotifier:
+                                            widget.acquisitionNotifier,
+                                        batteryBit1Notifier:
+                                            widget.batteryBit1Notifier,
+                                        batteryBit2Notifier:
+                                            widget.batteryBit2Notifier,
+                                        patientNotifier: widget.patientNotifier,
+                                        annotationTypesD:
+                                            widget.annotationTypesD,
+                                        connectionNotifier:
+                                            widget.connectionNotifier,
+                                        timedOut: widget.timedOut,
+                                        startupError: widget.startupError,
+                                      );
+                                    }),
+                                  );
+                                }
+                              : null,
+                          child: new Text("Aquisição a decorrer!"),
+                        );
+                      }),
                 ),
               ]),
             ),
