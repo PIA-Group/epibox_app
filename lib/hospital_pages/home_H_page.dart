@@ -330,12 +330,13 @@ class _HomeHPageState extends State<HomeHPage> {
   }
 
   void _isBatteryLevel(String message) {
-
     if (message.contains('BATTERY')) {
       List message2List = json.decode(message);
       double _levelRatio;
       print('BATTERY: ${message2List[1]}');
-      for (var entry in message2List[1].entries) { // list of dict [{'MAC1': ABAT in volts}, {'MAC2': ABAT in volts}]
+
+      for (var entry in message2List[1].entries) {
+        // list of dict [{'MAC1': ABAT in volts}, {'MAC2': ABAT in volts}]
 
         _levelRatio = (entry.value - 3.4) / (4.2 - 3.4);
         double _level = (_levelRatio > 1)
@@ -349,7 +350,6 @@ class _HomeHPageState extends State<HomeHPage> {
           if (entry.value <= 3.4) {
             showNotification('1');
           }
-
         } else if (entry.key == macAddress2Notifier.value) {
           setState(() => batteryBit2Notifier.value = _level);
           if (entry.value <= 3.4) {
@@ -413,7 +413,6 @@ class _HomeHPageState extends State<HomeHPage> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
@@ -424,7 +423,7 @@ class _HomeHPageState extends State<HomeHPage> {
         patientNotifier: widget.patientNotifier,
         nameController: nameController,
         annotationTypesD: annotationTypesD,
-        ),
+      ),
       appBar: new AppBar(title: new Text('EpiBox'), actions: <Widget>[
         Column(children: [
           ValueListenableBuilder(
@@ -607,7 +606,7 @@ class _HomeHPageState extends State<HomeHPage> {
                 ),
               ),
               title: Text('Selecionar dispositivos'),
-              //enabled: receivedMACNotifier.value == true,
+              enabled: receivedMACNotifier.value == true,
               onTap: () async {
                 Navigator.push(
                   context,
@@ -623,7 +622,10 @@ class _HomeHPageState extends State<HomeHPage> {
                         isBit1Enabled: isBit1Enabled,
                         isBit2Enabled: isBit2Enabled,
                         receivedMACNotifier: receivedMACNotifier,
-                        sentMACNotifier: sentMACNotifier);
+                        sentMACNotifier: sentMACNotifier,
+                        driveListNotifier: driveListNotifier,
+                        sentConfigNotifier: sentConfigNotifier,
+                        configDefault: configDefaultNotifier);
                   }),
                 );
               },
@@ -643,7 +645,7 @@ class _HomeHPageState extends State<HomeHPage> {
                 ),
               ),
               title: Text('Configurações'),
-              //enabled: receivedMACNotifier.value == true,
+              enabled: receivedMACNotifier.value == true,
               onTap: () async {
                 Navigator.push(
                   context,
@@ -678,7 +680,7 @@ class _HomeHPageState extends State<HomeHPage> {
                 ),
               ),
               title: Text('Iniciar visualização'),
-              //enabled: acquisitionNotifier.value == 'acquiring',
+              enabled: acquisitionNotifier.value == 'acquiring',
               onTap: () async {
                 Navigator.push(
                   context,

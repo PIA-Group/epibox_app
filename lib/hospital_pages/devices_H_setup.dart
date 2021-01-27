@@ -2,6 +2,7 @@ import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:rPiInterface/hospital_pages/config_page.dart';
 import 'package:rPiInterface/utils/masked_text.dart';
 import 'package:rPiInterface/utils/models.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
@@ -29,18 +30,26 @@ class DevicesPage extends StatefulWidget {
   ValueNotifier<bool> receivedMACNotifier;
   ValueNotifier<bool> sentMACNotifier;
 
-  DevicesPage(
-      {this.mqttClientWrapper,
-      this.defaultMacAddress1Notifier,
-      this.defaultMacAddress2Notifier,
-      this.macAddress1Notifier,
-      this.macAddress2Notifier,
-      this.connectionNotifier,
-      this.patientNotifier,
-      this.isBit1Enabled,
-      this.isBit2Enabled,
-      this.receivedMACNotifier,
-      this.sentMACNotifier});
+  ValueNotifier<List<String>> driveListNotifier;
+  ValueNotifier<bool> sentConfigNotifier;
+  ValueNotifier<List> configDefault;
+
+  DevicesPage({
+    this.mqttClientWrapper,
+    this.defaultMacAddress1Notifier,
+    this.defaultMacAddress2Notifier,
+    this.macAddress1Notifier,
+    this.macAddress2Notifier,
+    this.connectionNotifier,
+    this.patientNotifier,
+    this.isBit1Enabled,
+    this.isBit2Enabled,
+    this.receivedMACNotifier,
+    this.sentMACNotifier,
+    this.driveListNotifier,
+    this.sentConfigNotifier,
+    this.configDefault,
+  });
 
   @override
   _DevicesPageState createState() => _DevicesPageState();
@@ -270,6 +279,22 @@ class _DevicesPageState extends State<DevicesPage> {
                         }
                         _saveMAC();
                         Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) {
+                            return ConfigPage(
+                              mqttClientWrapper: widget.mqttClientWrapper,
+                              connectionNotifier: widget.connectionNotifier,
+                              driveListNotifier: widget.driveListNotifier,
+                              isBit1Enabled: widget.isBit1Enabled,
+                              isBit2Enabled: widget.isBit2Enabled,
+                              macAddress1Notifier: widget.macAddress1Notifier,
+                              macAddress2Notifier: widget.macAddress2Notifier,
+                              sentConfigNotifier: widget.sentConfigNotifier,
+                              configDefault: widget.configDefault,
+                            );
+                          }),
+                        );
                       },
                       child: new Text("Selecionar"),
                     ),

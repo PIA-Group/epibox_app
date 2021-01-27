@@ -87,8 +87,11 @@ class _ConfigPageState extends State<ConfigPage> {
       _controllerFreq.text = '1000';
     }
     try {
-      if (widget.driveListNotifier.value.contains(widget.configDefault.value[0])) {
-        _chosenDrive = widget.configDefault.value[0];
+      /* if (widget.driveListNotifier.value.contains(widget.configDefault.value[0])) { */
+      print(widget.driveListNotifier.value.toString());
+      if ('${widget.driveListNotifier.value}'.contains(widget.configDefault.value[0])) {
+        widget.driveListNotifier.value.forEach((element) {
+          if (element.contains(widget.configDefault.value[0])) {_chosenDrive = element;}});
       } else {
         _chosenDrive = widget.driveListNotifier.value[0];
       }
@@ -110,9 +113,7 @@ class _ConfigPageState extends State<ConfigPage> {
   }
 
   void _getDefaultSensors(List channels) { //List<String>
-    /* sensors.asMap().forEach((i, sensor) {
-      controllerSensors[i].text = sensor;
-    }); */
+
     channels.asMap().forEach((i, triplet) {
       if (triplet[0] == widget.macAddress1Notifier.value) {
         controllerSensors[int.parse(triplet[1])-1].text = triplet[2];
@@ -123,40 +124,6 @@ class _ConfigPageState extends State<ConfigPage> {
     });
   }
 
-  /* List<String> _getSensors2Send() {
-    List<String> _sensors2Send = [];
-
-    List<String> sensors = [
-      controllerSensors[0].text,
-      controllerSensors[1].text,
-      controllerSensors[2].text,
-      controllerSensors[3].text,
-      controllerSensors[4].text,
-      controllerSensors[5].text,
-    ];
-    _bit1Selections.asMap().forEach((channel, value) {
-      if (value) {
-        _sensors2Send.add("'${sensors[channel]}'");
-      }
-    });
-
-    sensors = [
-      controllerSensors[6].text,
-      controllerSensors[7].text,
-      controllerSensors[8].text,
-      controllerSensors[9].text,
-      controllerSensors[10].text,
-      controllerSensors[11].text,
-    ];
-
-    _bit2Selections.asMap().forEach((channel, value) {
-      if (value) {
-        _sensors2Send.add("'${sensors[channel]}'");
-      }
-    });
-    print('sensors: $_sensors2Send');
-    return _sensors2Send;
-  } */
 
   List<List<String>> _getChannels2Send() {
     List<List<String>> _channels2Send = [];
@@ -176,29 +143,14 @@ class _ConfigPageState extends State<ConfigPage> {
 
   void _newDefault() {
     List<List<String>> _channels2Send = _getChannels2Send();
-    
-    /* List<String> _sensors2Send = [
-      "'${controllerSensors[0].text}'",
-      "'${controllerSensors[1].text}'",
-      "'${controllerSensors[2].text}'",
-      "'${controllerSensors[3].text}'",
-      "'${controllerSensors[4].text}'",
-      "'${controllerSensors[5].text}'",
-      "'${controllerSensors[6].text}'",
-      "'${controllerSensors[7].text}'",
-      "'${controllerSensors[8].text}'",
-      "'${controllerSensors[9].text}'",
-      "'${controllerSensors[10].text}'",
-      "'${controllerSensors[11].text}'",
-    ]; */
-
-    //print("['NEW CONFIG DEFAULT', ['$_chosenDrive', ${_controllerFreq.text}, $_channels2Send, $_sensors2Send]]");
-    widget.mqttClientWrapper.publishMessage("['NEW CONFIG DEFAULT', ['$_chosenDrive', ${_controllerFreq.text}, $_channels2Send]]");
+    String _newDefaultDrive = _chosenDrive.substring(0, _chosenDrive.indexOf('(')).trim();
+    widget.mqttClientWrapper.publishMessage("['NEW CONFIG DEFAULT', ['$_newDefaultDrive', ${_controllerFreq.text}, $_channels2Send]]");
   }
 
   Future<void> _setup() async {
 
-    widget.mqttClientWrapper.publishMessage("['FOLDER', '$_chosenDrive']");
+    String _newDrive = _chosenDrive.substring(0, _chosenDrive.indexOf('(')).trim();
+    widget.mqttClientWrapper.publishMessage("['FOLDER', '$_newDrive']");
     widget.mqttClientWrapper.publishMessage("['FS', ${_controllerFreq.text}]");
 
     List<List<String>> _channels2Send = _getChannels2Send();
