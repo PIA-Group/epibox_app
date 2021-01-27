@@ -5,6 +5,7 @@ import 'package:rPiInterface/utils/models.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
 
 class ConfigPage extends StatefulWidget {
+  
   MQTTClientWrapper mqttClientWrapper;
   ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
   ValueNotifier<List<String>> driveListNotifier;
@@ -19,31 +20,51 @@ class ConfigPage extends StatefulWidget {
 
   ValueNotifier<List> configDefault;
 
-  ConfigPage(
-      {this.mqttClientWrapper,
-      this.connectionNotifier,
-      this.driveListNotifier,
-      this.isBit1Enabled,
-      this.isBit2Enabled,
-      this.macAddress1Notifier,
-      this.macAddress2Notifier,
-      this.sentConfigNotifier,
-      this.configDefault,
-      });
+  ValueNotifier<String> chosenDrive;
+  ValueNotifier<List<bool>> bit1Selections;
+  ValueNotifier<List<bool>> bit2Selections;
+  ValueNotifier<List<TextEditingController>> controllerSensors;
+  ValueNotifier<TextEditingController> controllerFreq;
+
+  ConfigPage({
+    this.mqttClientWrapper,
+    this.connectionNotifier,
+    this.driveListNotifier,
+    this.isBit1Enabled,
+    this.isBit2Enabled,
+    this.macAddress1Notifier,
+    this.macAddress2Notifier,
+    this.sentConfigNotifier,
+    this.configDefault,
+    this.chosenDrive,
+    this.bit1Selections,
+    this.bit2Selections,
+    this.controllerSensors,
+    this.controllerFreq,
+  });
 
   @override
   _ConfigPageState createState() => _ConfigPageState();
 }
 
 class _ConfigPageState extends State<ConfigPage> {
-  String _chosenDrive;
+  //String widget.chosenDrive;
 
-  List<bool> _bit1Selections = List.generate(6, (_) => false);
-  List<bool> _bit2Selections = List.generate(6, (_) => false);
+  /* List<bool> widget.bit1Selections = List.generate(6, (_) => false);
+  List<bool> widget.bit2Selections.value = List.generate(6, (_) => false); */
 
-
-  List<DropdownMenuItem<String>> sensorItems =
-      ['-', 'ECG', 'EEG', 'PPG', 'PZT', 'ACC', 'SpO2', 'EDA', 'EMG', 'EOG'].map((String value) {
+  List<DropdownMenuItem<String>> sensorItems = [
+    '-',
+    'ECG',
+    'EEG',
+    'PPG',
+    'PZT',
+    'ACC',
+    'SpO2',
+    'EDA',
+    'EMG',
+    'EOG'
+  ].map((String value) {
     return new DropdownMenuItem<String>(
       value: value,
       child: Center(
@@ -56,85 +77,110 @@ class _ConfigPageState extends State<ConfigPage> {
     );
   }).toList();
 
-  final List<TextEditingController> controllerSensors = List.generate(12, (i) => TextEditingController());
-  final TextEditingController _controllerFreq = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    try {
-      _getDefaultChannels(widget.configDefault.value[2]);
-    } catch (e) {
-      print(e);
-    }
 
-    try {
-      for (int i=0; i<controllerSensors.length; i++) {
-        controllerSensors[i].text = '-';
-      }
-      _getDefaultSensors(widget.configDefault.value[2]);
-    } catch (e) {
-      print(e);
-      for (int i=0; i<controllerSensors.length; i++) {
-        controllerSensors[i].text = '-';
+    if (widget.bit1Selections.value == null && widget.bit2Selections.value == null) {
+      try {
+        _getDefaultChannels(widget.configDefault.value[2]);
+      } catch (e) {
+        print(e);
       }
     }
 
-    try {
-      _controllerFreq.text = widget.configDefault.value[1].toString();
-    } catch (e) {
-      print(e);
-      _controllerFreq.text = '1000';
-    }
-    try {
-      /* if (widget.driveListNotifier.value.contains(widget.configDefault.value[0])) { */
-      print(widget.driveListNotifier.value.toString());
-      if ('${widget.driveListNotifier.value}'.contains(widget.configDefault.value[0])) {
-        widget.driveListNotifier.value.forEach((element) {
-          if (element.contains(widget.configDefault.value[0])) {_chosenDrive = element;}});
-      } else {
-        _chosenDrive = widget.driveListNotifier.value[0];
+    if (widget.controllerSensors.value[0].text == "") {
+      try {
+        for (int i = 0; i < widget.controllerSensors.value.length; i++) {
+          widget.controllerSensors.value[i].text = '-';
+        }
+        _getDefaultSensors(widget.configDefault.value[2]);
+      } catch (e) {
+        print(e);
+        for (int i = 0; i < widget.controllerSensors.value.length; i++) {
+          widget.controllerSensors.value[i].text = '-';
+        }
       }
-    } catch (e) {
-      print(e);
-      _chosenDrive = widget.driveListNotifier.value[0];
+    }
+
+    if (widget.controllerFreq.value.text == '') {
+      try {
+        widget.controllerFreq.value.text =
+            widget.configDefault.value[1].toString();
+      } catch (e) {
+        print(e);
+        widget.controllerFreq.value.text = '1000';
+      }
+    }
+
+    if (widget.chosenDrive.value == null) {
+      try {
+        print(widget.driveListNotifier.value.toString());
+        if ('${widget.driveListNotifier.value}'
+            .contains(widget.configDefault.value[0])) {
+          widget.driveListNotifier.value.forEach((element) {
+            if (element.contains(widget.configDefault.value[0])) {
+              widget.chosenDrive.value = element;
+            }
+          });
+        } else {
+          widget.chosenDrive.value = widget.driveListNotifier.value[0];
+        }
+      } catch (e) {
+        print(e);
+        widget.chosenDrive.value = widget.driveListNotifier.value[0];
+      }
     }
   }
 
-  void _getDefaultChannels(List channels) { //List<List<String>>
+  void _getDefaultChannels(List channels) {
+    //List<List<String>>
+    setState(() => widget.bit1Selections.value = List.generate(6, (_) => false));
+    setState(() => widget.bit2Selections.value = List.generate(6, (_) => false));
     channels.asMap().forEach((i, triplet) {
       if (triplet[0] == widget.macAddress1Notifier.value) {
-        _bit1Selections[int.parse(triplet[1])-1] = true;
+        widget.bit1Selections.value[int.parse(triplet[1]) - 1] = true;
       }
       if (triplet[0] == widget.macAddress2Notifier.value) {
-        _bit2Selections[int.parse(triplet[1])-1] = true;
+        widget.bit2Selections.value[int.parse(triplet[1]) - 1] = true;
       }
     });
   }
 
-  void _getDefaultSensors(List channels) { //List<String>
+  void _getDefaultSensors(List channels) {
+    //List<String>
 
     channels.asMap().forEach((i, triplet) {
       if (triplet[0] == widget.macAddress1Notifier.value) {
-        controllerSensors[int.parse(triplet[1])-1].text = triplet[2];
+        widget.controllerSensors.value[int.parse(triplet[1]) - 1].text =
+            triplet[2];
       }
       if (triplet[0] == widget.macAddress2Notifier.value) {
-        controllerSensors[int.parse(triplet[1])+5].text = triplet[2];
+        widget.controllerSensors.value[int.parse(triplet[1]) + 5].text =
+            triplet[2];
       }
     });
   }
-
 
   List<List<String>> _getChannels2Send() {
     List<List<String>> _channels2Send = [];
-    _bit1Selections.asMap().forEach((channel, value) {
+    widget.bit1Selections.value.asMap().forEach((channel, value) {
       if (value) {
-        _channels2Send.add(["'${widget.macAddress1Notifier.value}'", "'${(channel + 1).toString()}'", "'${controllerSensors[channel].text}'"]);
+        _channels2Send.add([
+          "'${widget.macAddress1Notifier.value}'",
+          "'${(channel + 1).toString()}'",
+          "'${widget.controllerSensors.value[channel].text}'"
+        ]);
       }
     });
-    _bit2Selections.asMap().forEach((channel, value) {
+    widget.bit2Selections.value.asMap().forEach((channel, value) {
       if (value) {
-        _channels2Send.add(["'${widget.macAddress2Notifier.value}'", "'${(channel + 1).toString()}'", "'${controllerSensors[channel+5].text}'"]);
+        _channels2Send.add([
+          "'${widget.macAddress2Notifier.value}'",
+          "'${(channel + 1).toString()}'",
+          "'${widget.controllerSensors.value[channel + 5].text}'"
+        ]);
       }
     });
     print('chn: $_channels2Send');
@@ -143,15 +189,20 @@ class _ConfigPageState extends State<ConfigPage> {
 
   void _newDefault() {
     List<List<String>> _channels2Send = _getChannels2Send();
-    String _newDefaultDrive = _chosenDrive.substring(0, _chosenDrive.indexOf('(')).trim();
-    widget.mqttClientWrapper.publishMessage("['NEW CONFIG DEFAULT', ['$_newDefaultDrive', ${_controllerFreq.text}, $_channels2Send]]");
+    String _newDefaultDrive = widget.chosenDrive.value
+        .substring(0, widget.chosenDrive.value.indexOf('('))
+        .trim();
+    widget.mqttClientWrapper.publishMessage(
+        "['NEW CONFIG DEFAULT', ['$_newDefaultDrive', ${widget.controllerFreq.value.text}, $_channels2Send]]");
   }
 
   Future<void> _setup() async {
-
-    String _newDrive = _chosenDrive.substring(0, _chosenDrive.indexOf('(')).trim();
+    String _newDrive = widget.chosenDrive.value
+        .substring(0, widget.chosenDrive.value.indexOf('('))
+        .trim();
     widget.mqttClientWrapper.publishMessage("['FOLDER', '$_newDrive']");
-    widget.mqttClientWrapper.publishMessage("['FS', ${_controllerFreq.text}]");
+    widget.mqttClientWrapper
+        .publishMessage("['FS', ${widget.controllerFreq.value.text}]");
 
     List<List<String>> _channels2Send = _getChannels2Send();
     widget.mqttClientWrapper.publishMessage("['CHANNELS', $_channels2Send]");
@@ -180,35 +231,35 @@ class _ConfigPageState extends State<ConfigPage> {
         child: ListView(
           children: <Widget>[
             ValueListenableBuilder(
-            valueListenable: widget.connectionNotifier,
-            builder: (BuildContext context, MqttCurrentConnectionState state,
-                Widget child) {
-              return Container(
-                height: 20,
-                color: state == MqttCurrentConnectionState.CONNECTED
-                    ? Colors.green[50]
-                    : state == MqttCurrentConnectionState.CONNECTING
-                        ? Colors.yellow[50]
-                        : Colors.red[50],
-                child: Align(
-                  alignment: Alignment.center,
-                  child: Container(
-                    child: Text(
-                      state == MqttCurrentConnectionState.CONNECTED
-                          ? 'Conectado ao servidor'
-                          : state == MqttCurrentConnectionState.CONNECTING
-                              ? 'A conectar...'
-                              : 'Disconectado do servidor',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        //fontWeight: FontWeight.bold,
-                        fontSize: 13,
+                valueListenable: widget.connectionNotifier,
+                builder: (BuildContext context,
+                    MqttCurrentConnectionState state, Widget child) {
+                  return Container(
+                    height: 20,
+                    color: state == MqttCurrentConnectionState.CONNECTED
+                        ? Colors.green[50]
+                        : state == MqttCurrentConnectionState.CONNECTING
+                            ? Colors.yellow[50]
+                            : Colors.red[50],
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: Container(
+                        child: Text(
+                          state == MqttCurrentConnectionState.CONNECTED
+                              ? 'Conectado ao servidor'
+                              : state == MqttCurrentConnectionState.CONNECTING
+                                  ? 'A conectar...'
+                                  : 'Disconectado do servidor',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            //fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              );
-            }),
+                  );
+                }),
             ValueListenableBuilder(
                 valueListenable: widget.sentConfigNotifier,
                 builder: (BuildContext context, bool state, Widget child) {
@@ -271,7 +322,7 @@ class _ConfigPageState extends State<ConfigPage> {
                         Padding(
                           padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 0.0),
                           child: DropdownButton(
-                            value: _chosenDrive,
+                            value: widget.chosenDrive.value,
                             items: widget.driveListNotifier.value
                                 .map<DropdownMenuItem<String>>((String value) {
                               return DropdownMenuItem<String>(
@@ -282,8 +333,8 @@ class _ConfigPageState extends State<ConfigPage> {
                                 ),
                               );
                             }).toList(),
-                            onChanged: (newDrive) =>
-                                setState(() => _chosenDrive = newDrive),
+                            onChanged: (newDrive) => setState(
+                                () => widget.chosenDrive.value = newDrive),
                           ),
                         ),
                       ],
@@ -342,7 +393,7 @@ class _ConfigPageState extends State<ConfigPage> {
                                   margin:
                                       EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 0.0),
                                   child: DropdownButton(
-                                    value: _controllerFreq.text,
+                                    value: widget.controllerFreq.value.text,
                                     items: ['1000', '100', '10', '1']
                                         .map<DropdownMenuItem<String>>(
                                             (String value) {
@@ -355,8 +406,8 @@ class _ConfigPageState extends State<ConfigPage> {
                                         ),
                                       );
                                     }).toList(),
-                                    onChanged: (fs) => setState(
-                                        () => _controllerFreq.text = fs),
+                                    onChanged: (fs) => setState(() =>
+                                        widget.controllerFreq.value.text = fs),
                                   ),
                                 ),
                               ),
@@ -391,12 +442,13 @@ class _ConfigPageState extends State<ConfigPage> {
                                   Text('A5'),
                                   Text('A6'),
                                 ],
-                                isSelected: _bit1Selections,
+                                isSelected: widget.bit1Selections.value,
                                 onPressed: widget.isBit1Enabled.value
                                     ? (int index) {
                                         setState(() {
-                                          _bit1Selections[index] =
-                                              !_bit1Selections[index];
+                                          widget.bit1Selections.value[index] =
+                                              !widget
+                                                  .bit1Selections.value[index];
                                         });
                                       }
                                     : null,
@@ -430,12 +482,13 @@ class _ConfigPageState extends State<ConfigPage> {
                                   Text('A5'),
                                   Text('A6'),
                                 ],
-                                isSelected: _bit2Selections,
+                                isSelected: widget.bit2Selections.value,
                                 onPressed: widget.isBit2Enabled.value
                                     ? (int index) {
                                         setState(() {
-                                          _bit2Selections[index] =
-                                              !_bit2Selections[index];
+                                          widget.bit2Selections.value[index] =
+                                              !widget
+                                                  .bit2Selections.value[index];
                                         });
                                       }
                                     : null,
@@ -453,32 +506,32 @@ class _ConfigPageState extends State<ConfigPage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
                               SensorContainer(
-                                  controller: controllerSensors[0],
+                                  controller: widget.controllerSensors.value[0],
                                   sensorItems: sensorItems,
                                   position: 'cornerL',
                                   isBitEnabled: widget.isBit1Enabled.value),
                               SensorContainer(
-                                  controller: controllerSensors[1],
+                                  controller: widget.controllerSensors.value[1],
                                   sensorItems: sensorItems,
                                   position: 'secondL',
                                   isBitEnabled: widget.isBit1Enabled.value),
                               SensorContainer(
-                                  controller: controllerSensors[2],
+                                  controller: widget.controllerSensors.value[2],
                                   sensorItems: sensorItems,
                                   position: 'middle',
                                   isBitEnabled: widget.isBit1Enabled.value),
                               SensorContainer(
-                                  controller: controllerSensors[3],
+                                  controller: widget.controllerSensors.value[3],
                                   sensorItems: sensorItems,
                                   position: 'middle',
                                   isBitEnabled: widget.isBit1Enabled.value),
                               SensorContainer(
-                                  controller: controllerSensors[4],
+                                  controller: widget.controllerSensors.value[4],
                                   sensorItems: sensorItems,
                                   position: 'middle',
                                   isBitEnabled: widget.isBit1Enabled.value),
                               SensorContainer(
-                                  controller: controllerSensors[5],
+                                  controller: widget.controllerSensors.value[5],
                                   sensorItems: sensorItems,
                                   position: 'cornerR',
                                   isBitEnabled: widget.isBit1Enabled.value),
@@ -495,32 +548,34 @@ class _ConfigPageState extends State<ConfigPage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
                               SensorContainer(
-                                  controller: controllerSensors[6],
+                                  controller: widget.controllerSensors.value[6],
                                   sensorItems: sensorItems,
                                   position: 'cornerL',
                                   isBitEnabled: widget.isBit2Enabled.value),
                               SensorContainer(
-                                  controller: controllerSensors[7],
+                                  controller: widget.controllerSensors.value[7],
                                   sensorItems: sensorItems,
                                   position: 'secondL',
                                   isBitEnabled: widget.isBit2Enabled.value),
                               SensorContainer(
-                                  controller: controllerSensors[8],
+                                  controller: widget.controllerSensors.value[8],
                                   sensorItems: sensorItems,
                                   position: 'middle',
                                   isBitEnabled: widget.isBit2Enabled.value),
                               SensorContainer(
-                                  controller: controllerSensors[9],
+                                  controller: widget.controllerSensors.value[9],
                                   sensorItems: sensorItems,
                                   position: 'middle',
                                   isBitEnabled: widget.isBit2Enabled.value),
                               SensorContainer(
-                                  controller: controllerSensors[10],
+                                  controller:
+                                      widget.controllerSensors.value[10],
                                   sensorItems: sensorItems,
                                   position: 'middle',
                                   isBitEnabled: widget.isBit2Enabled.value),
                               SensorContainer(
-                                  controller: controllerSensors[11],
+                                  controller:
+                                      widget.controllerSensors.value[11],
                                   sensorItems: sensorItems,
                                   position: 'cornerR',
                                   isBitEnabled: widget.isBit2Enabled.value),

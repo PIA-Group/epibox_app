@@ -33,6 +33,11 @@ class DevicesPage extends StatefulWidget {
   ValueNotifier<List<String>> driveListNotifier;
   ValueNotifier<bool> sentConfigNotifier;
   ValueNotifier<List> configDefault;
+  ValueNotifier<String> chosenDrive;
+  ValueNotifier<List<bool>> bit1Selections;
+  ValueNotifier<List<bool>> bit2Selections;
+  ValueNotifier<List<TextEditingController>> controllerSensors;
+  ValueNotifier<TextEditingController> controllerFreq;
 
   DevicesPage({
     this.mqttClientWrapper,
@@ -49,6 +54,11 @@ class DevicesPage extends StatefulWidget {
     this.driveListNotifier,
     this.sentConfigNotifier,
     this.configDefault,
+    this.chosenDrive,
+    this.bit1Selections,
+    this.bit2Selections,
+    this.controllerSensors,
+    this.controllerFreq,
   });
 
   @override
@@ -71,8 +81,13 @@ class _DevicesPageState extends State<DevicesPage> {
   @override
   void initState() {
     super.initState();
-    _controller1.text = widget.defaultMacAddress1Notifier.value;
-    _controller2.text = widget.defaultMacAddress2Notifier.value;
+    if (widget.macAddress1Notifier.value == 'Endereço MAC') {
+      _controller1.text = widget.defaultMacAddress1Notifier.value;
+      _controller2.text = widget.defaultMacAddress2Notifier.value;
+    } else {
+      _controller1.text = widget.macAddress1Notifier.value;
+      _controller2.text = widget.macAddress2Notifier.value;
+    }
   }
 
   Future<void> _saveMAC() async {
@@ -292,6 +307,11 @@ class _DevicesPageState extends State<DevicesPage> {
                               macAddress2Notifier: widget.macAddress2Notifier,
                               sentConfigNotifier: widget.sentConfigNotifier,
                               configDefault: widget.configDefault,
+                              chosenDrive: widget.chosenDrive,
+                              bit1Selections: widget.bit1Selections,
+                              bit2Selections: widget.bit2Selections,
+                              controllerSensors: widget.controllerSensors,
+                              controllerFreq: widget.controllerFreq,
                             );
                           }),
                         );

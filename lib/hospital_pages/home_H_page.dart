@@ -37,8 +37,7 @@ class _HomeHPageState extends State<HomeHPage> {
   ValueNotifier<String> defaultMacAddress2Notifier =
       ValueNotifier('Endereço MAC');
 
-  ValueNotifier<List<String>> driveListNotifier =
-      ValueNotifier(['Armazenamento interno']);
+  ValueNotifier<List<String>> driveListNotifier = ValueNotifier(['RPi']);
 
   ValueNotifier<String> hostnameNotifier = ValueNotifier('192.168.0.10');
 
@@ -59,7 +58,13 @@ class _HomeHPageState extends State<HomeHPage> {
   ValueNotifier<String> timedOut = ValueNotifier(null);
   ValueNotifier<bool> startupError = ValueNotifier(false);
 
-  //final firestoreInstance = Firestore.instance;
+  ValueNotifier<String> chosenDrive = ValueNotifier(null);
+  ValueNotifier<List<bool>> bit1Selections = ValueNotifier(null);
+  ValueNotifier<List<bool>> bit2Selections = ValueNotifier(null);
+  ValueNotifier<List<TextEditingController>> controllerSensors =
+      ValueNotifier(List.generate(12, (i) => TextEditingController()));
+  ValueNotifier<TextEditingController> controllerFreq =
+      ValueNotifier(TextEditingController());
 
   String message;
   Timer timer;
@@ -113,6 +118,9 @@ class _HomeHPageState extends State<HomeHPage> {
     getLastMAC();
     print(
         'LAST MAC: ${macAddress1Notifier.value}, ${macAddress2Notifier.value}');
+    getLastBatteries();
+    print(
+        'LAST BATTERIES: ${batteryBit1Notifier.value}, ${batteryBit2Notifier.value}');
   }
 
   Future<void> _wifiDialog() async {
@@ -181,6 +189,38 @@ class _HomeHPageState extends State<HomeHPage> {
       setState(() => macAddress2Notifier.value = lastMAC[1]);
     });
     //print('LAST MAC: ${macAddress1Notifier.value}, ${macAddress2Notifier.value}');
+  }
+
+  void getLastBatteries() async {
+    await Future.delayed(Duration.zero);
+    await SharedPreferences.getInstance().then((value) {
+      List<String> lastBatteries =
+          (value.getStringList('lastBatteries').toList() ?? [null, null]);
+      if (lastBatteries[0] != null) {
+        print(lastBatteries[0]);
+        print(num.tryParse(lastBatteries[0])?.toDouble());
+        setState(
+            () => batteryBit1Notifier.value = num.tryParse(lastBatteries[0])?.toDouble());
+      }
+      if (lastBatteries[1] != null) {
+        setState(
+            () => batteryBit2Notifier.value = num.tryParse(lastBatteries[1])?.toDouble());
+      }
+    });
+    print(
+        'LAST BATTERY: ${batteryBit1Notifier.value}, ${batteryBit2Notifier.value}');
+  }
+
+  Future<void> saveBatteries(battery1, battery2) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      setState(() => prefs.setStringList('lastBatteries', [
+            battery1,
+            battery2,
+          ]));
+    } catch (e) {
+      print(e);
+    }
   }
 
   showNotification(device) async {
@@ -357,6 +397,8 @@ class _HomeHPageState extends State<HomeHPage> {
           }
         }
       }
+      saveBatteries(batteryBit1Notifier.value.toString(),
+          batteryBit2Notifier.value.toString());
     }
   }
 
@@ -391,7 +433,7 @@ class _HomeHPageState extends State<HomeHPage> {
 
       acquisitionNotifier.value = 'off';
 
-      driveListNotifier.value = ['Armazenamento interno'];
+      driveListNotifier.value = ['RPi'];
 
       batteryBit1Notifier.value = null;
       batteryBit2Notifier.value = null;
@@ -399,6 +441,8 @@ class _HomeHPageState extends State<HomeHPage> {
       isBit1Enabled.value = false;
       isBit1Enabled.value = false;
     });
+
+    saveBatteries(null, null);
   }
 
   void _showSnackBar(String _message) {
@@ -612,20 +656,26 @@ class _HomeHPageState extends State<HomeHPage> {
                   context,
                   MaterialPageRoute(builder: (context) {
                     return DevicesPage(
-                        patientNotifier: widget.patientNotifier,
-                        mqttClientWrapper: mqttClientWrapper,
-                        defaultMacAddress1Notifier: defaultMacAddress1Notifier,
-                        defaultMacAddress2Notifier: defaultMacAddress2Notifier,
-                        macAddress1Notifier: macAddress1Notifier,
-                        macAddress2Notifier: macAddress2Notifier,
-                        connectionNotifier: connectionNotifier,
-                        isBit1Enabled: isBit1Enabled,
-                        isBit2Enabled: isBit2Enabled,
-                        receivedMACNotifier: receivedMACNotifier,
-                        sentMACNotifier: sentMACNotifier,
-                        driveListNotifier: driveListNotifier,
-                        sentConfigNotifier: sentConfigNotifier,
-                        configDefault: configDefaultNotifier);
+                      patientNotifier: widget.patientNotifier,
+                      mqttClientWrapper: mqttClientWrapper,
+                      defaultMacAddress1Notifier: defaultMacAddress1Notifier,
+                      defaultMacAddress2Notifier: defaultMacAddress2Notifier,
+                      macAddress1Notifier: macAddress1Notifier,
+                      macAddress2Notifier: macAddress2Notifier,
+                      connectionNotifier: connectionNotifier,
+                      isBit1Enabled: isBit1Enabled,
+                      isBit2Enabled: isBit2Enabled,
+                      receivedMACNotifier: receivedMACNotifier,
+                      sentMACNotifier: sentMACNotifier,
+                      driveListNotifier: driveListNotifier,
+                      sentConfigNotifier: sentConfigNotifier,
+                      configDefault: configDefaultNotifier,
+                      chosenDrive: chosenDrive,
+                      bit1Selections: bit1Selections,
+                      bit2Selections: bit2Selections,
+                      controllerSensors: controllerSensors,
+                      controllerFreq: controllerFreq,
+                    );
                   }),
                 );
               },
@@ -660,6 +710,11 @@ class _HomeHPageState extends State<HomeHPage> {
                       macAddress2Notifier: macAddress2Notifier,
                       sentConfigNotifier: sentConfigNotifier,
                       configDefault: configDefaultNotifier,
+                      chosenDrive: chosenDrive,
+                      bit1Selections: bit1Selections,
+                      bit2Selections: bit2Selections,
+                      controllerSensors: controllerSensors,
+                      controllerFreq: controllerFreq,
                     );
                   }),
                 );
