@@ -30,6 +30,8 @@ class DevicesPage extends StatefulWidget {
   ValueNotifier<bool> receivedMACNotifier;
   ValueNotifier<bool> sentMACNotifier;
 
+  ValueNotifier<List<String>> historyMAC;
+
   ValueNotifier<List<String>> driveListNotifier;
   ValueNotifier<bool> sentConfigNotifier;
   ValueNotifier<List> configDefault;
@@ -59,6 +61,7 @@ class DevicesPage extends StatefulWidget {
     this.bit2Selections,
     this.controllerSensors,
     this.controllerFreq,
+    this.historyMAC,
   });
 
   @override
@@ -66,13 +69,13 @@ class DevicesPage extends StatefulWidget {
 }
 
 class _DevicesPageState extends State<DevicesPage> {
-  final TextEditingController _controller1 = TextEditingController();
-  final TextEditingController _controller2 = TextEditingController();
+  TextEditingController _controller1 = TextEditingController();
+  TextEditingController _controller2 = TextEditingController();
+  String _histMAC1 = ' ';
+  String _histMAC2 = ' ';
 
   @override
   void dispose() {
-    // Clean up the controller when the widget is removed from the
-    // widget tree.
     _controller1.dispose();
     _controller2.dispose();
     super.dispose();
@@ -90,13 +93,10 @@ class _DevicesPageState extends State<DevicesPage> {
     }
   }
 
-  Future<void> _saveMAC() async {
+  Future<void> _saveMAC(mac1, mac2) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     try {
-      setState(() => prefs.setStringList('lastMAC', [
-            widget.macAddress1Notifier.value,
-            widget.macAddress1Notifier.value
-          ]));
+      await prefs.setStringList('lastMAC', [mac1, mac2]);
     } catch (e) {
       print(e);
     }
@@ -108,6 +108,31 @@ class _DevicesPageState extends State<DevicesPage> {
 
   void _setNewDefault2() {
     setState(() => widget.defaultMacAddress2Notifier.value = _controller2.text);
+  }
+
+  Future<void> _saveMACHistory(mac1, mac2) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      if (mac1 != '' &&
+          mac1 != ' ' &&
+          !widget.historyMAC.value.contains(mac1)) {
+        setState(() => widget.historyMAC.value.add(_controller1.text));
+        await prefs.setStringList('historyMAC', widget.historyMAC.value);
+      }
+    } catch (e) {
+      print(e);
+    }
+
+    try {
+      if (mac2 != '' &&
+          mac2 != ' ' &&
+          !widget.historyMAC.value.contains(mac2)) {
+        setState(() => widget.historyMAC.value.add(mac2));
+        await prefs.setStringList('historyMAC', widget.historyMAC.value);
+      }
+    } catch (e) {
+      print(e);
+    }
   }
 
   @override
@@ -222,7 +247,7 @@ class _DevicesPageState extends State<DevicesPage> {
                               inputDecoration: InputDecoration(
                                 border: OutlineInputBorder(),
                                 counterText: "",
-                                labelText: "Endereço MAC",
+                                labelText: "MAC 1",
                               ),
                             ),
                           ),
@@ -244,17 +269,9 @@ class _DevicesPageState extends State<DevicesPage> {
                               inputDecoration: InputDecoration(
                                 border: OutlineInputBorder(),
                                 counterText: "",
-                                labelText: "Endereço MAC",
+                                labelText: "MAC 2",
                               ),
                             ),
-                            /* child: TextField(
-                                  style: TextStyle(color: Colors.grey[600]),
-                                  controller: _controller2,
-                                  decoration: InputDecoration(
-                                    border: OutlineInputBorder(),
-                                    labelText: 'Endereço MAC',
-                                  ),
-                                  onChanged: null), */
                           ),
                           IconButton(
                               icon: Icon(
@@ -266,6 +283,119 @@ class _DevicesPageState extends State<DevicesPage> {
                     ],
                   ),
                 ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
+                child: Column(children: [
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(20.0, 0.0, 0.0, 20.0),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Container(
+                        child: Text(
+                          'Histórico de dispositivos',
+                          textAlign: TextAlign.left,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    height: 150.0,
+                    width: 0.95 * bodyWidth,
+                    color: Colors.transparent,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.rectangle,
+                        borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                        boxShadow: [
+                          BoxShadow(
+                              color: Colors.grey[200],
+                              offset: new Offset(5.0, 5.0))
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(5.0, 0.0, 53.0, 0.0),
+                            child: Container(
+                              padding: EdgeInsets.all(0),
+                              height: 60.0,
+                              child: InputDecorator(
+                                decoration: InputDecoration(
+                                  labelText: 'MAC 1',
+                                  border: OutlineInputBorder(),
+                                ),
+                                child: DropdownButtonHideUnderline(
+                                  child: DropdownButton(
+                                      isDense: true,
+                                      value: _histMAC1,
+                                      items: widget.historyMAC.value
+                                          .map<DropdownMenuItem<String>>(
+                                              (String value) {
+                                        return DropdownMenuItem<String>(
+                                          value: value,
+                                          child: Text(
+                                            value,
+                                            style: TextStyle(
+                                                color: Colors.grey[600]),
+                                          ),
+                                        );
+                                      }).toList(),
+                                      onChanged: (hist) => {
+                                            setState(() => _histMAC1 = hist),
+                                            setState(
+                                                () => _controller1.text = hist)
+                                          }),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(5.0, 0.0, 53.0, 0.0),
+                            child: Container(
+                              padding: EdgeInsets.all(0),
+                              height: 60.0,
+                              child: InputDecorator(
+                                decoration: InputDecoration(
+                                  labelText: 'MAC 2',
+                                  border: OutlineInputBorder(),
+                                ),
+                                child: DropdownButtonHideUnderline(
+                                  child: DropdownButton(
+                                      isDense: true,
+                                      value: _histMAC2,
+                                      items: widget.historyMAC.value
+                                          .map<DropdownMenuItem<String>>(
+                                              (String value) {
+                                        return DropdownMenuItem<String>(
+                                          value: value,
+                                          child: Text(
+                                            value,
+                                            style: TextStyle(
+                                                color: Colors.grey[600]),
+                                          ),
+                                        );
+                                      }).toList(),
+                                      onChanged: (hist) => {
+                                            setState(() => _histMAC2 = hist),
+                                            setState(
+                                                () => _controller2.text = hist)
+                                          }),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ]),
               ),
               Padding(
                 padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
@@ -292,7 +422,10 @@ class _DevicesPageState extends State<DevicesPage> {
                             widget.macAddress2Notifier.value != '') {
                           setState(() => widget.isBit2Enabled.value = true);
                         }
-                        _saveMAC();
+                        _saveMAC(widget.macAddress1Notifier.value,
+                            widget.macAddress2Notifier.value);
+                        _saveMACHistory(widget.macAddress1Notifier.value,
+                            widget.macAddress2Notifier.value);
                         Navigator.pop(context);
                         Navigator.push(
                           context,

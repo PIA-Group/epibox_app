@@ -5,11 +5,13 @@ class ProfileDrawer extends StatefulWidget {
   ValueNotifier<String> patientNotifier;
   TextEditingController nameController;
   ValueNotifier<List> annotationTypesD;
+  ValueNotifier<List<String>> historyMAC;
 
   ProfileDrawer({
     this.patientNotifier,
     this.nameController,
     this.annotationTypesD,
+    this.historyMAC,
   });
 
   @override
@@ -17,7 +19,6 @@ class ProfileDrawer extends StatefulWidget {
 }
 
 class _ProfileDrawerState extends State<ProfileDrawer> {
-
   List<String> annotationTypesS;
   @override
   void initState() {
@@ -69,6 +70,12 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
     print('removed annot');
   }
 
+  void _updateHistory() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('historyMAC', widget.historyMAC.value);
+    print('removed MAC');
+  }
+
   Iterable<Widget> get annotationsWidgets sync* {
     for (String annot in annotationTypesS) {
       yield Padding(
@@ -86,6 +93,28 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
           },
         ),
       );
+    }
+  }
+
+  Iterable<Widget> get historyWidgets sync* {
+    for (String mac in widget.historyMAC.value) {
+      if (mac != ' ') {
+        yield Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: Chip(
+            label: Text(mac),
+            onDeleted: () {
+              setState(() {
+                widget.historyMAC.value.removeWhere((String entry) {
+                  return entry == mac;
+                });
+              });
+              //setState(() => widget.annotationTypesD.value.remove(annot));
+              _updateHistory();
+            },
+          ),
+        );
+      }
     }
   }
 
@@ -286,6 +315,40 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                       padding: EdgeInsets.only(left: 10.0, right: 10.0),
                       child: Wrap(
                         children: annotationsWidgets.toList(),
+                      )),
+                ),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                  width - 0.9 * width, 20.0, width - 0.9 * width, 0.0),
+              child: Text('Histórico de dispositivos:',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    decoration: TextDecoration.underline,
+                  )),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                  width - 0.95 * width, 10.0, width - 0.95 * width, 0.0),
+              child: Container(
+                color: Colors.transparent,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.rectangle,
+                    borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.grey[200], offset: new Offset(5.0, 5.0))
+                    ],
+                  ),
+                  child: Padding(
+                      padding: EdgeInsets.only(left: 10.0, right: 10.0),
+                      child: Wrap(
+                        children: historyWidgets.toList(),
                       )),
                 ),
               ),

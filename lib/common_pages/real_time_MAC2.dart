@@ -85,6 +85,14 @@ class _RealtimePageMAC2State extends State<RealtimePageMAC2> {
     widget.mqttClientWrapper.publishMessage("['INTERRUPT']");
   }
 
+  void _resumeAcquisition() {
+    widget.mqttClientWrapper.publishMessage("['RESUME ACQ']");
+  }
+
+  void _pauseAcquisition() {
+    widget.mqttClientWrapper.publishMessage("['PAUSE ACQ']");
+  }
+
   Future<void> _speedAnnotation() async {
     //List annotationTypesD = await getAnnotationTypes();
     List<String> annotationTypes =
@@ -133,9 +141,6 @@ class _RealtimePageMAC2State extends State<RealtimePageMAC2> {
 
   bool _rangeUpdateNeeded(List data, List currentRange) {
     bool update = false;
-    //List<double> dataL =  List<double>.from(data);
-    //final stats = Stats.fromData(dataL).toJson();
-    //final std = stats['standardDeviation'];
     int std = 5;
     if (data.first < currentRange[0] ||
         currentRange[0] < data.first - 3 * std) {
@@ -151,9 +156,6 @@ class _RealtimePageMAC2State extends State<RealtimePageMAC2> {
     double min;
     double max;
 
-    //List<double> dataL =  List<double>.from(data);
-    //final stats = Stats.fromData(dataL).toJson();
-    //final std = stats['standardDeviation'];
     int std = 5;
 
     if (data.first < currentRange[0] || currentRange[0] < data.first - std) {
@@ -191,9 +193,7 @@ class _RealtimePageMAC2State extends State<RealtimePageMAC2> {
       };
       widget.dataMAC2Notifier.addListener(f);
     }
-    /* if (_isTimedOutOpen) {
-      Navigator.of(context, rootNavigator: true).pop();
-    } */
+
     _isTimedOutOpen = true;
     return showDialog<void>(
       context: context,
@@ -496,7 +496,9 @@ class _RealtimePageMAC2State extends State<RealtimePageMAC2> {
                     ? Colors.green[50]
                     : (state == 'starting' ||
                             state == 'reconnecting' ||
-                            state == 'trying')
+                            state == 'trying' ||
+                            state == 'pairing' ||
+                            state == 'paused')
                         ? Colors.yellow[50]
                         : Colors.red[50],
                 child: Align(
@@ -509,11 +511,15 @@ class _RealtimePageMAC2State extends State<RealtimePageMAC2> {
                               ? 'A adquirir dados'
                               : state == 'reconnecting'
                                   ? 'A retomar aquisição ...'
-                                  : state == 'trying'
-                                      ? 'A reconectar aos dispositivos ...'
-                                      : state == 'stopped'
-                                          ? 'Aquisição terminada e dados gravados'
-                                          : 'Aquisição desligada',
+                                  : state == 'pairing'
+                                      ? 'A emparelhar dispositivos ...'
+                                      : state == 'paused'
+                                          ? 'Aquisição em pausa ...'
+                                          : state == 'trying'
+                                              ? 'A reconectar aos dispositivos ...'
+                                              : state == 'stopped'
+                                                  ? 'Aquisição terminada e dados gravados'
+                                                  : 'Aquisição desligada',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         //fontWeight: FontWeight.bold,
@@ -684,6 +690,19 @@ class _RealtimePageMAC2State extends State<RealtimePageMAC2> {
             heroTag: null,
             onPressed: () => _speedAnnotation(),
             child: Icon(MdiIcons.lightningBolt),
+          ),
+        ),
+        Align(
+          alignment: Alignment(0.2, 1.0),
+          child: FloatingActionButton(
+            mini: true,
+            heroTag: null,
+            onPressed: widget.acquisitionNotifier.value == 'paused'
+                ? () => _resumeAcquisition()
+                : () => _pauseAcquisition(),
+            child: widget.acquisitionNotifier.value == 'paused'
+                ? Icon(Icons.play_arrow)
+                : Icon(Icons.pause),
           ),
         ),
         Align(

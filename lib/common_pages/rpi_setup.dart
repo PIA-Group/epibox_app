@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rPiInterface/common_pages/real_time_MAC1.dart';
 import 'package:rPiInterface/utils/models.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RPiPage extends StatefulWidget {
   ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
@@ -96,7 +97,7 @@ class _RPiPageState extends State<RPiPage> {
 
       widget.acquisitionNotifier.value = 'off';
 
-      widget.driveListNotifier.value = ['Armazenamento interno'];
+      widget.driveListNotifier.value = ['RPi'];
 
       widget.batteryBit1Notifier.value = null;
       widget.batteryBit2Notifier.value = null;
@@ -104,10 +105,34 @@ class _RPiPageState extends State<RPiPage> {
       widget.isBit1Enabled.value = false;
       widget.isBit1Enabled.value = false;
     });
+
+    saveBatteries(null, null);
+    saveMAC('Endereço MAC', 'Endereço MAC');
+  }
+
+  Future<void> saveMAC(mac1, mac2) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      await prefs.setStringList('lastMAC', [mac1, mac2]);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> saveBatteries(battery1, battery2) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      await prefs.setStringList('lastBatteries', [
+        battery1,
+        battery2,
+      ]);
+    } catch (e) {
+      print(e);
+    }
   }
 
   Future<void> _setup() async {
-    _restart('');
+    //_restart('');
     await widget.mqttClientWrapper
         .prepareMqttClient(widget.hostnameNotifier.value);
     var timeStamp = DateTime.now();

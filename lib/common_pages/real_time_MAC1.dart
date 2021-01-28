@@ -81,6 +81,14 @@ class _RealtimePageMAC1State extends State<RealtimePageMAC1> {
     widget.mqttClientWrapper.publishMessage("['INTERRUPT']");
   }
 
+  void _resumeAcquisition() {
+    widget.mqttClientWrapper.publishMessage("['RESUME ACQ']");
+  }
+
+  void _pauseAcquisition() {
+    widget.mqttClientWrapper.publishMessage("['PAUSE ACQ']");
+  }
+
   Future<void> _speedAnnotation() async {
     //List annotationTypesD = await getAnnotationTypes();
     List<String> annotationTypes =
@@ -493,7 +501,9 @@ class _RealtimePageMAC1State extends State<RealtimePageMAC1> {
                     ? Colors.green[50]
                     : (state == 'starting' ||
                             state == 'reconnecting' ||
-                            state == 'trying')
+                            state == 'trying' ||
+                            state == 'pairing' ||
+                            state == 'paused')
                         ? Colors.yellow[50]
                         : Colors.red[50],
                 child: Align(
@@ -506,11 +516,15 @@ class _RealtimePageMAC1State extends State<RealtimePageMAC1> {
                               ? 'A adquirir dados'
                               : state == 'reconnecting'
                                   ? 'A retomar aquisição ...'
-                                  : state == 'trying'
-                                      ? 'A reconectar aos dispositivos ...'
-                                      : state == 'stopped'
-                                          ? 'Aquisição terminada e dados gravados'
-                                          : 'Aquisição desligada',
+                                  : state == 'pairing'
+                                      ? 'A emparelhar dispositivos ...'
+                                      : state == 'paused'
+                                          ? 'Aquisição em pausa ...'
+                                          : state == 'trying'
+                                              ? 'A reconectar aos dispositivos ...'
+                                              : state == 'stopped'
+                                                  ? 'Aquisição terminada e dados gravados'
+                                                  : 'Aquisição desligada',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         //fontWeight: FontWeight.bold,
@@ -527,7 +541,6 @@ class _RealtimePageMAC1State extends State<RealtimePageMAC1> {
               width: MediaQuery.of(context).size.width - 15.0,
               child: ListView(
                 children: <Widget>[
-                  
                   // ############### PLOT 1 ###############
                   if (widget.channelsMAC1Notifier.value.length > 0)
                     PlotDataTitle(
@@ -682,6 +695,19 @@ class _RealtimePageMAC1State extends State<RealtimePageMAC1> {
             heroTag: null,
             onPressed: () => _speedAnnotation(),
             child: Icon(MdiIcons.lightningBolt),
+          ),
+        ),
+        Align(
+          alignment: Alignment(0.2, 1.0),
+          child: FloatingActionButton(
+            mini: true,
+            heroTag: null,
+            onPressed: widget.acquisitionNotifier.value == 'paused'
+                ? () => _resumeAcquisition()
+                : () => _pauseAcquisition(),
+            child: widget.acquisitionNotifier.value == 'paused'
+                ? Icon(Icons.play_arrow)
+                : Icon(Icons.pause),
           ),
         ),
         Align(

@@ -70,6 +70,8 @@ class _HomeHPageState extends State<HomeHPage> {
   Timer timer;
   ValueNotifier<bool> dialogNotifier = ValueNotifier(false);
 
+  ValueNotifier<List<String>> historyMAC = ValueNotifier([]);
+
   ValueNotifier<List<List>> dataMAC1Notifier = ValueNotifier([]);
   ValueNotifier<List<List>> dataMAC2Notifier = ValueNotifier([]);
   ValueNotifier<List<List>> channelsMAC1Notifier = ValueNotifier([]);
@@ -121,6 +123,8 @@ class _HomeHPageState extends State<HomeHPage> {
     getLastBatteries();
     print(
         'LAST BATTERIES: ${batteryBit1Notifier.value}, ${batteryBit2Notifier.value}');
+    getMACHistory();
+    print('MAC HISTORY: ${historyMAC.value}');
   }
 
   Future<void> _wifiDialog() async {
@@ -188,7 +192,17 @@ class _HomeHPageState extends State<HomeHPage> {
       setState(() => macAddress1Notifier.value = lastMAC[0]);
       setState(() => macAddress2Notifier.value = lastMAC[1]);
     });
-    //print('LAST MAC: ${macAddress1Notifier.value}, ${macAddress2Notifier.value}');
+    print(
+        'LAST MAC: ${macAddress1Notifier.value}, ${macAddress2Notifier.value}');
+  }
+
+  Future<void> saveMAC(mac1, mac2) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      setState(() => prefs.setStringList('lastMAC', [mac1, mac2]));
+    } catch (e) {
+      print(e);
+    }
   }
 
   void getLastBatteries() async {
@@ -199,12 +213,12 @@ class _HomeHPageState extends State<HomeHPage> {
       if (lastBatteries[0] != null) {
         print(lastBatteries[0]);
         print(num.tryParse(lastBatteries[0])?.toDouble());
-        setState(
-            () => batteryBit1Notifier.value = num.tryParse(lastBatteries[0])?.toDouble());
+        setState(() => batteryBit1Notifier.value =
+            num.tryParse(lastBatteries[0])?.toDouble());
       }
       if (lastBatteries[1] != null) {
-        setState(
-            () => batteryBit2Notifier.value = num.tryParse(lastBatteries[1])?.toDouble());
+        setState(() => batteryBit2Notifier.value =
+            num.tryParse(lastBatteries[1])?.toDouble());
       }
     });
     print(
@@ -221,6 +235,21 @@ class _HomeHPageState extends State<HomeHPage> {
     } catch (e) {
       print(e);
     }
+  }
+
+  void getMACHistory() async {
+    await Future.delayed(Duration.zero);
+    List<String> history;
+    await SharedPreferences.getInstance().then((value) {
+      try {
+        setState(() =>
+            history = (value.getStringList('historyMAC').toList() ?? [' ']));
+      } catch (e) {
+        setState(() => history = [' ']);
+      }
+      setState(() => historyMAC.value = history);
+    });
+    print('MAC HISTORY: ${historyMAC.value}');
   }
 
   showNotification(device) async {
@@ -324,10 +353,16 @@ class _HomeHPageState extends State<HomeHPage> {
     } else if (message.contains('RECONNECTING')) {
       setState(() => acquisitionNotifier.value = 'reconnecting');
       print('RECONNECTING ACQUISITION');
+    } else if (message.contains('PAIRING')) {
+      setState(() => acquisitionNotifier.value = 'pairing');
+      print('PAIRING');
     } else if (message.contains('STOPPED')) {
       setState(() => acquisitionNotifier.value = 'stopped');
       _restart();
       print('ACQUISITION STOPPED AND SAVED');
+    } else if (message.contains('PAUSED')) {
+      setState(() => acquisitionNotifier.value = 'paused');
+      print('ACQUISITION PAUSED');
     }
   }
 
@@ -443,6 +478,7 @@ class _HomeHPageState extends State<HomeHPage> {
     });
 
     saveBatteries(null, null);
+    saveMAC('Endereço MAC', 'Endereço MAC');
   }
 
   void _showSnackBar(String _message) {
@@ -459,14 +495,13 @@ class _HomeHPageState extends State<HomeHPage> {
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
-
     return Scaffold(
       key: _scaffoldKey,
       drawer: ProfileDrawer(
         patientNotifier: widget.patientNotifier,
         nameController: nameController,
         annotationTypesD: annotationTypesD,
+        historyMAC: historyMAC,
       ),
       appBar: new AppBar(title: new Text('EpiBox'), actions: <Widget>[
         Column(children: [
@@ -558,7 +593,9 @@ class _HomeHPageState extends State<HomeHPage> {
                     ? Colors.green[50]
                     : (state == 'starting' ||
                             state == 'reconnecting' ||
-                            state == 'trying')
+                            state == 'trying' ||
+                            state == 'pairing' ||
+                            state == 'paused')
                         ? Colors.yellow[50]
                         : Colors.red[50],
                 child: Align(
@@ -571,11 +608,15 @@ class _HomeHPageState extends State<HomeHPage> {
                               ? 'A adquirir dados'
                               : state == 'reconnecting'
                                   ? 'A retomar aquisição ...'
-                                  : state == 'trying'
-                                      ? 'A reconectar aos dispositivos ...'
-                                      : state == 'stopped'
-                                          ? 'Aquisição terminada e dados gravados'
-                                          : 'Aquisição desligada',
+                                  : state == 'pairing'
+                                      ? 'A emparelhar dispositivos ...'
+                                      : state == 'paused'
+                                          ? 'Aquisição em pausa ...'
+                                          : state == 'trying'
+                                              ? 'A reconectar aos dispositivos ...'
+                                              : state == 'stopped'
+                                                  ? 'Aquisição terminada e dados gravados'
+                                                  : 'Aquisição desligada',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         //fontWeight: FontWeight.bold,
@@ -675,6 +716,7 @@ class _HomeHPageState extends State<HomeHPage> {
                       bit2Selections: bit2Selections,
                       controllerSensors: controllerSensors,
                       controllerFreq: controllerFreq,
+                      historyMAC: historyMAC,
                     );
                   }),
                 );
@@ -735,7 +777,7 @@ class _HomeHPageState extends State<HomeHPage> {
                 ),
               ),
               title: Text('Iniciar visualização'),
-              enabled: acquisitionNotifier.value == 'acquiring',
+              //enabled: acquisitionNotifier.value == 'acquiring',
               onTap: () async {
                 Navigator.push(
                   context,
