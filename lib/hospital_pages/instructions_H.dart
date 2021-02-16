@@ -435,6 +435,37 @@ class _InstructionsHPageState extends State<InstructionsHPage> {
             ),
           ),
           Padding(
+            padding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
+            child: Container(
+              width: 0.95 * bodyWidth,
+              color: Colors.transparent,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.rectangle,
+                  borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.grey[200], offset: new Offset(5.0, 5.0))
+                  ],
+                ),
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 10.0),
+                  child: Column(children: [
+                    Padding(
+                      padding: EdgeInsets.only(top: 10.0),
+                      child: Text(
+                          'Apenas é possível selecionar os canais/sensores do(s) dispositivo(s) que foram selecionados no passo 2. ',
+                          textAlign: TextAlign.justify,
+                          style:
+                              TextStyle(fontSize: 16, color: Colors.grey[600])),
+                    ),
+                  ]),
+                ),
+              ),
+            ),
+          ),
+          Padding(
             padding: EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0.0),
             child: Text(
               'Sai da aplicação durante uma aquisição. Tenho de reiniciar o processo?',
@@ -476,37 +507,7 @@ class _InstructionsHPageState extends State<InstructionsHPage> {
               ),
             ),
           ),
-          Padding(
-            padding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
-            child: Container(
-              width: 0.95 * bodyWidth,
-              color: Colors.transparent,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.rectangle,
-                  borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                  boxShadow: [
-                    BoxShadow(
-                        color: Colors.grey[200], offset: new Offset(5.0, 5.0))
-                  ],
-                ),
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 10.0),
-                  child: Column(children: [
-                    Padding(
-                      padding: EdgeInsets.only(top: 10.0),
-                      child: Text(
-                          'Apenas é possível selecionar os canais/sensores do(s) dispositivo(s) que foram selecionados no passo 2. ',
-                          textAlign: TextAlign.justify,
-                          style:
-                              TextStyle(fontSize: 16, color: Colors.grey[600])),
-                    ),
-                  ]),
-                ),
-              ),
-            ),
-          ),
+        
           Padding(
             padding: EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0.0),
             child: Text(

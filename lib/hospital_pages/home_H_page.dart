@@ -469,6 +469,7 @@ class _HomeHPageState extends State<HomeHPage> {
       acquisitionNotifier.value = 'off';
 
       driveListNotifier.value = ['RPi'];
+      chosenDrive.value = null;
 
       batteryBit1Notifier.value = null;
       batteryBit2Notifier.value = null;
@@ -777,7 +778,7 @@ class _HomeHPageState extends State<HomeHPage> {
                 ),
               ),
               title: Text('Iniciar visualização'),
-              //enabled: acquisitionNotifier.value == 'acquiring',
+              enabled: acquisitionNotifier.value == 'acquiring',
               onTap: () async {
                 Navigator.push(
                   context,

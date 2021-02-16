@@ -65,12 +65,12 @@ class _RealtimePageMAC2State extends State<RealtimePageMAC2> {
 
   ValueNotifier<bool> newAnnotation = ValueNotifier(false);
 
-  ValueNotifier<List<double>> data1 = ValueNotifier([]);
-  ValueNotifier<List<double>> data2 = ValueNotifier([]);
-  ValueNotifier<List<double>> data3 = ValueNotifier([]);
-  ValueNotifier<List<double>> data4 = ValueNotifier([]);
-  ValueNotifier<List<double>> data5 = ValueNotifier([]);
-  ValueNotifier<List<double>> data6 = ValueNotifier([]);
+  ValueNotifier<List> data1 = ValueNotifier([]);
+  ValueNotifier<List> data2 = ValueNotifier([]);
+  ValueNotifier<List> data3 = ValueNotifier([]);
+  ValueNotifier<List> data4 = ValueNotifier([]);
+  ValueNotifier<List> data5 = ValueNotifier([]);
+  ValueNotifier<List> data6 = ValueNotifier([]);
 
   List<List> dataMAC = [];
   List<List> channelsMAC = [];
@@ -310,92 +310,102 @@ class _RealtimePageMAC2State extends State<RealtimePageMAC2> {
 
         double canvasWidth = MediaQuery.of(context).size.width;
         widget.dataMAC2Notifier.value.asMap().forEach((index, channel) {
-          channel.asMap().forEach((i, value) {
-            if (index == 0) {
-              setState(() => data1.value.add(value));
-              if (data1.value.length > canvasWidth) {
-                data1.value.removeAt(0);
-              }
-              if (rangesList[index][2] == 0) {
-                aux = []..addAll(data1.value);
-                aux.sort();
-                if (_rangeUpdateNeeded(aux, rangesList[index].sublist(0, 2))) {
-                  setState(() => rangesList[index] =
-                      _updateRange(aux, rangesList[index].sublist(0, 2)));
-                }
-              }
-            } else if (index == 1) {
-              setState(() => data2.value.add(value));
-              if (data2.value.length > canvasWidth) {
-                data2.value.removeAt(0);
-              }
-              if (rangesList[index][2] == 0) {
-                aux = []..addAll(data2.value);
-                aux.sort();
-                if (_rangeUpdateNeeded(aux, rangesList[index].sublist(0, 2))) {
-                  setState(() => rangesList[index] =
-                      _updateRange(aux, rangesList[index].sublist(0, 2)));
-                }
-              }
-            } else if (index == 2) {
-              setState(() => data3.value.add(value));
-              if (data3.value.length > canvasWidth) {
-                data3.value.removeAt(0);
-              }
-              if (rangesList[index][2] == 0) {
-                aux = []..addAll(data3.value);
-                aux.sort();
-                if (_rangeUpdateNeeded(aux, rangesList[index].sublist(0, 2))) {
-                  setState(() => rangesList[index] =
-                      _updateRange(aux, rangesList[index].sublist(0, 2)));
-                }
-              }
-            } else if (index == 3) {
-              setState(() => data4.value.add(value));
-              if (data4.value.length > canvasWidth) {
-                data4.value.removeAt(0);
-              }
-              if (rangesList[index][2] == 0) {
-                aux = []..addAll(data4.value);
-                aux.sort();
-                if (_rangeUpdateNeeded(aux, rangesList[index].sublist(0, 2))) {
-                  setState(() => rangesList[index] =
-                      _updateRange(aux, rangesList[index].sublist(0, 2)));
-                }
-              }
-            } else if (index == 4) {
-              setState(() => data5.value.add(value));
-              if (data5.value.length > canvasWidth) {
-                data5.value.removeAt(0);
-              }
-              if (rangesList[index][2] == 0) {
-                aux = []..addAll(data5.value);
-                aux.sort();
-                if (_rangeUpdateNeeded(aux, rangesList[index].sublist(0, 2))) {
-                  setState(() => rangesList[index] =
-                      _updateRange(aux, rangesList[index].sublist(0, 2)));
-                }
-              }
-            } else if (index == 5) {
-              setState(() => data6.value.add(value));
-              if (data6.value.length > canvasWidth) {
-                data6.value.removeAt(0);
-              }
-              if (rangesList[index][2] == 0) {
-                aux = []..addAll(data6.value);
-                aux.sort();
-                if (_rangeUpdateNeeded(aux, rangesList[index].sublist(0, 2))) {
-                  setState(() => rangesList[index] =
-                      _updateRange(aux, rangesList[index].sublist(0, 2)));
-                }
+          if (index == 0) {
+            List auxData = data1.value + channel;
+            if (auxData.length > canvasWidth) {
+              auxData = auxData.sublist(auxData.length - canvasWidth.floor());
+            }
+            setState(() => data1.value = auxData);
+            if (rangesList[index][2] == 0) {
+              aux = []..addAll(data1.value);
+              aux.sort();
+              if (_rangeUpdateNeeded(aux, rangesList[index].sublist(0, 2))) {
+                setState(() => rangesList[index] =
+                    _updateRange(aux, rangesList[index].sublist(0, 2)));
               }
             }
-          });
+
+          } else if (index == 1) {
+            List auxData = data2.value + channel;
+            if (auxData.length > canvasWidth) {
+              auxData = auxData.sublist(auxData.length - canvasWidth.floor());
+            }
+            setState(() => data2.value = auxData);
+            if (rangesList[index][2] == 0) {
+              aux = []..addAll(data2.value);
+              aux.sort();
+              if (_rangeUpdateNeeded(aux, rangesList[index].sublist(0, 2))) {
+                setState(() => rangesList[index] =
+                    _updateRange(aux, rangesList[index].sublist(0, 2)));
+              }
+            }
+
+          } else if (index == 2) {
+            List auxData = data3.value + channel;
+            if (auxData.length > canvasWidth) {
+              auxData = auxData.sublist(auxData.length - canvasWidth.floor());
+            }
+            setState(() => data3.value = auxData);
+            if (rangesList[index][2] == 0) {
+              aux = []..addAll(data3.value);
+              aux.sort();
+              if (_rangeUpdateNeeded(aux, rangesList[index].sublist(0, 2))) {
+                setState(() => rangesList[index] =
+                    _updateRange(aux, rangesList[index].sublist(0, 2)));
+              }
+            }
+
+          } else if (index == 3) {
+            List auxData = data4.value + channel;
+            if (auxData.length > canvasWidth) {
+              auxData = auxData.sublist(auxData.length - canvasWidth.floor());
+            }
+            setState(() => data4.value = auxData);
+            if (rangesList[index][2] == 0) {
+              aux = []..addAll(data4.value);
+              aux.sort();
+              if (_rangeUpdateNeeded(aux, rangesList[index].sublist(0, 2))) {
+                setState(() => rangesList[index] =
+                    _updateRange(aux, rangesList[index].sublist(0, 2)));
+              }
+            }
+
+          } else if (index == 4) {
+            List auxData = data5.value + channel;
+            if (auxData.length > canvasWidth) {
+              auxData = auxData.sublist(auxData.length - canvasWidth.floor());
+            }
+            setState(() => data5.value = auxData);
+            if (rangesList[index][2] == 0) {
+              aux = []..addAll(data5.value);
+              aux.sort();
+              if (_rangeUpdateNeeded(aux, rangesList[index].sublist(0, 2))) {
+                setState(() => rangesList[index] =
+                    _updateRange(aux, rangesList[index].sublist(0, 2)));
+              }
+            }
+
+          } else if (index == 5) {
+            List auxData = data6.value + channel;
+            if (auxData.length > canvasWidth) {
+              auxData = auxData.sublist(auxData.length - canvasWidth.floor());
+            }
+            setState(() => data6.value = auxData);
+            if (rangesList[index][2] == 0) {
+              aux = []..addAll(data6.value);
+              aux.sort();
+              if (_rangeUpdateNeeded(aux, rangesList[index].sublist(0, 2))) {
+                setState(() => rangesList[index] =
+                    _updateRange(aux, rangesList[index].sublist(0, 2)));
+              }
+            }
+          }
         });
       }
     });
   }
 
+  
   @override
   Widget build(BuildContext context) {
     //double screenHeight = MediaQuery.of(context).size.height;
@@ -594,7 +604,7 @@ class _RealtimePageMAC2State extends State<RealtimePageMAC2> {
                               height: plotHeight,
                               child: PlotData(
                                   yRange: rangesList[0].sublist(0, 2),
-                                  data: data));
+                                  data: data.map((s) => s as double).toList()));
                         }),
                   // ############### PLOT 2 ###############
                   if (widget.channelsMAC2Notifier.value.length > 1)
@@ -610,7 +620,7 @@ class _RealtimePageMAC2State extends State<RealtimePageMAC2> {
                               height: plotHeight,
                               child: PlotData(
                                   yRange: rangesList[1].sublist(0, 2),
-                                  data: data));
+                                  data: data.map((s) => s as double).toList()));
                         }),
                   // ############### PLOT 3 ###############
                   if (widget.channelsMAC2Notifier.value.length > 2)
@@ -626,7 +636,7 @@ class _RealtimePageMAC2State extends State<RealtimePageMAC2> {
                               height: plotHeight,
                               child: PlotData(
                                   yRange: rangesList[2].sublist(0, 2),
-                                  data: data));
+                                  data: data.map((s) => s as double).toList()));
                         }),
                   // ############### PLOT 4 ###############
                   if (widget.channelsMAC2Notifier.value.length > 3)
@@ -642,7 +652,7 @@ class _RealtimePageMAC2State extends State<RealtimePageMAC2> {
                               height: plotHeight,
                               child: PlotData(
                                   yRange: rangesList[3].sublist(0, 2),
-                                  data: data));
+                                  data: data.map((s) => s as double).toList()));
                         }),
                   // ############### PLOT 5 ###############
                   if (widget.channelsMAC2Notifier.value.length > 4)
@@ -658,7 +668,7 @@ class _RealtimePageMAC2State extends State<RealtimePageMAC2> {
                               height: plotHeight,
                               child: PlotData(
                                   yRange: rangesList[4].sublist(0, 2),
-                                  data: data));
+                                  data: data.map((s) => s as double).toList()));
                         }),
                   // ############### PLOT 6 ###############
                   if (widget.channelsMAC2Notifier.value.length > 5)
@@ -674,7 +684,7 @@ class _RealtimePageMAC2State extends State<RealtimePageMAC2> {
                               height: plotHeight,
                               child: PlotData(
                                   yRange: rangesList[5].sublist(0, 2),
-                                  data: data));
+                                  data: data.map((s) => s as double).toList()));
                         }),
                 ],
               ),
@@ -693,18 +703,21 @@ class _RealtimePageMAC2State extends State<RealtimePageMAC2> {
           ),
         ),
         Align(
-          alignment: Alignment(0.2, 1.0),
-          child: FloatingActionButton(
-            mini: true,
-            heroTag: null,
-            onPressed: widget.acquisitionNotifier.value == 'paused'
-                ? () => _resumeAcquisition()
-                : () => _pauseAcquisition(),
-            child: widget.acquisitionNotifier.value == 'paused'
-                ? Icon(Icons.play_arrow)
-                : Icon(Icons.pause),
-          ),
-        ),
+            alignment: Alignment(0.2, 1.0),
+            child: ValueListenableBuilder(
+                valueListenable: widget.acquisitionNotifier,
+                builder: (BuildContext context, String state, Widget child) {
+                  return FloatingActionButton(
+                    mini: true,
+                    heroTag: null,
+                    onPressed: state == 'paused'
+                        ? () => _resumeAcquisition()
+                        : () => _pauseAcquisition(),
+                    child: state == 'paused'
+                        ? Icon(Icons.play_arrow)
+                        : Icon(Icons.pause),
+                  );
+                })),
         Align(
           alignment: Alignment.bottomRight,
           child: FloatingActionButton.extended(
