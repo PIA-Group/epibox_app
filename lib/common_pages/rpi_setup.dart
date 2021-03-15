@@ -3,6 +3,8 @@ import 'package:rPiInterface/common_pages/real_time_MAC1.dart';
 import 'package:rPiInterface/utils/models.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:rPiInterface/utils/server_state.dart';
+import 'package:rPiInterface/utils/process_state.dart';
 
 class RPiPage extends StatefulWidget {
   ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
@@ -147,68 +149,90 @@ class _RPiPageState extends State<RPiPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: new Text('Conectividade'),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(120),
+        child: AppBar(
+            //title: Padding(padding: EdgeInsets.only(top: 50), child:Text('cenas'),),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(
+                bottom: Radius.circular(30),
+              ),
+            ),
+            elevation: 4,
+            flexibleSpace: Padding(
+              padding: EdgeInsets.only(left: 50, top: 32, right: 20),
+              child: Container(
+                  child: Column(children: [
+                Row(
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Servidor: ',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    Expanded(
+                      child: Container(
+                        height: 40,
+                        // width: double.infinity,
+                        child: Card(
+                          child: Center(
+                            child: ServerState(
+                                connectionNotifier: widget.connectionNotifier, fontSize: 16),
+                          ),
+                          color: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Processo: ',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    Expanded(
+                      child: Container(
+                        height: 40,
+                        // width: double.infinity,
+                        child: Card(
+                          child: Center(
+                            child: ProcessState(
+                              receivedMACNotifier: widget.receivedMACNotifier,
+                              fontSize: 16,
+                            ),
+                          ),
+                          color: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              ])),
+            ),
+            
+      ),
       ),
       body: Center(
         child: ListView(
           children: <Widget>[
-            ValueListenableBuilder(
-                valueListenable: widget.connectionNotifier,
-                builder: (BuildContext context,
-                    MqttCurrentConnectionState state, Widget child) {
-                  return Container(
-                    height: 20,
-                    color: state == MqttCurrentConnectionState.CONNECTED
-                        ? Colors.green[50]
-                        : state == MqttCurrentConnectionState.CONNECTING
-                            ? Colors.yellow[50]
-                            : Colors.red[50],
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Container(
-                        child: Text(
-                          state == MqttCurrentConnectionState.CONNECTED
-                              ? 'Conectado ao servidor'
-                              : state == MqttCurrentConnectionState.CONNECTING
-                                  ? 'A conectar...'
-                                  : 'Disconectado do servidor',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            //fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-            ValueListenableBuilder(
-                valueListenable: widget.receivedMACNotifier,
-                builder: (BuildContext context, bool state, Widget child) {
-                  return Container(
-                    height: 20,
-                    color: state ? Colors.green[50] : Colors.red[50],
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Container(
-                        child: Text(
-                          state
-                              // && _conn == MqttCurrentConnectionState.CONNECTED)
-                              ? 'Processo iniciado'
-                              : 'Processo não iniciado',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            //fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }),
+            
             Padding(
-              padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
+              padding: EdgeInsets.only(top: 50.0),
               child: Column(children: [
                 Padding(
                   padding: EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 0.0),

@@ -6,7 +6,8 @@ import 'package:rPiInterface/utils/mqtt_wrapper.dart';
 import 'package:rPiInterface/utils/plot_data.dart';
 import 'package:rPiInterface/utils/battery_indicator.dart';
 import 'package:rPiInterface/common_pages/real_time_MAC2.dart';
-import 'package:xrange/xrange.dart';
+import 'package:rPiInterface/utils/server_state.dart';
+import 'package:rPiInterface/utils/acquisition_state.dart';
 
 class RealtimePageMAC1 extends StatefulWidget {
   ValueNotifier<String> macAddress1Notifier;
@@ -417,134 +418,135 @@ class _RealtimePageMAC1State extends State<RealtimePageMAC1> {
 
     return Scaffold(
       key: _scaffoldRealTime,
-      appBar: new AppBar(
-        title: new Text('MAC1'),
-        actions: [
-          Column(children: [
-            ValueListenableBuilder(
-              valueListenable: widget.batteryBit1Notifier,
-              builder: (BuildContext context, double battery, Widget child) {
-                return battery != null
-                    ? Row(children: [
-                        Text('MAC 1: ',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 13)),
-                        SizedBox(
-                          width: 50.0,
-                          height: 27.0,
-                          child: new Center(
-                            child: BatteryIndicator(
-                              style: BatteryIndicatorStyle.skeumorphism,
-                              batteryLevel: battery,
-                            ),
+      appBar: new PreferredSize(
+        preferredSize: Size.fromHeight(160),
+        child: AppBar(
+          title: Text('Dispositivo MAC 1', style: TextStyle(fontWeight: FontWeight.bold),),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(
+                bottom: Radius.circular(30),
+              ),
+            ),
+            elevation: 4,
+            flexibleSpace: Padding(
+              padding: EdgeInsets.only(left: 20, top: 75, right: 20),
+              child: Container(
+                  child: Column(children: [
+                Row(
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Servidor: ',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Expanded(
+                      child: Container(
+                        height: 40,
+                        // width: double.infinity,
+                        child: Card(
+                          child: Center(
+                            child: ServerState(
+                                connectionNotifier: widget.connectionNotifier),
+                          ),
+                          color: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
                           ),
                         ),
-                      ])
-                    : SizedBox.shrink();
-              },
-            ),
-            ValueListenableBuilder(
-              valueListenable: widget.batteryBit2Notifier,
-              builder: (BuildContext context, double battery, Widget child) {
-                return battery != null
-                    ? Row(children: [
-                        Text('MAC 2: ',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 13)),
-                        SizedBox(
-                          width: 50.0,
-                          height: 27.0,
-                          child: new Center(
-                            child: BatteryIndicator(
-                              style: BatteryIndicatorStyle.skeumorphism,
-                              batteryLevel: battery,
-                              //showPercentSlide: _showPercentSlide,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Aquisição: ',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Expanded(
+                      child: Container(
+                        height: 40,
+                        // width: double.infinity,
+                        child: Card(
+                          child: Center(
+                            child: AcquisitionState(
+                              acquisitionNotifier: widget.acquisitionNotifier,
                             ),
                           ),
+                          color: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
                         ),
-                      ])
-                    : SizedBox.shrink();
-              },
+                      ),
+                    ),
+                  ],
+                )
+              ])),
             ),
-          ]),
-        ],
+            actions: <Widget>[
+              Column(children: [
+                ValueListenableBuilder(
+                  valueListenable: widget.batteryBit1Notifier,
+                  builder:
+                      (BuildContext context, double battery, Widget child) {
+                    return battery != null
+                        ? Row(children: [
+                            Text('MAC 1: ',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 13)),
+                            SizedBox(
+                              width: 50.0,
+                              height: 27.0,
+                              child: new Center(
+                                child: BatteryIndicator(
+                                  style: BatteryIndicatorStyle.skeumorphism,
+                                  batteryLevel: battery,
+                                ),
+                              ),
+                            ),
+                          ])
+                        : SizedBox.shrink();
+                  },
+                ),
+                ValueListenableBuilder(
+                  valueListenable: widget.batteryBit2Notifier,
+                  builder:
+                      (BuildContext context, double battery, Widget child) {
+                    return battery != null
+                        ? Row(children: [
+                            Text('MAC 2: ',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 13)),
+                            SizedBox(
+                              width: 50.0,
+                              height: 27.0,
+                              child: new Center(
+                                child: BatteryIndicator(
+                                  style: BatteryIndicatorStyle.skeumorphism,
+                                  batteryLevel: battery,
+                                ),
+                              ),
+                            ),
+                          ])
+                        : SizedBox.shrink();
+                  },
+                ),
+              ]),
+            ]),
       ),
       body: Column(children: [
-        ValueListenableBuilder(
-            valueListenable: widget.connectionNotifier,
-            builder: (BuildContext context, MqttCurrentConnectionState state,
-                Widget child) {
-              return Container(
-                height: 20,
-                color: state == MqttCurrentConnectionState.CONNECTED
-                    ? Colors.green[50]
-                    : state == MqttCurrentConnectionState.CONNECTING
-                        ? Colors.yellow[50]
-                        : Colors.red[50],
-                child: Align(
-                  alignment: Alignment.center,
-                  child: Container(
-                    child: Text(
-                      state == MqttCurrentConnectionState.CONNECTED
-                          ? 'Conectado ao servidor'
-                          : state == MqttCurrentConnectionState.CONNECTING
-                              ? 'A conectar...'
-                              : 'Disconectado do servidor',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        //fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            }),
-        ValueListenableBuilder(
-            valueListenable: widget.acquisitionNotifier,
-            builder: (BuildContext context, String state, Widget child) {
-              return Container(
-                height: 20,
-                color: state == 'acquiring'
-                    ? Colors.green[50]
-                    : (state == 'starting' ||
-                            state == 'reconnecting' ||
-                            state == 'trying' ||
-                            state == 'pairing' ||
-                            state == 'paused')
-                        ? Colors.yellow[50]
-                        : Colors.red[50],
-                child: Align(
-                  alignment: Alignment.center,
-                  child: Container(
-                    child: Text(
-                      state == 'starting'
-                          ? 'A iniciar aquisição ...'
-                          : state == 'acquiring'
-                              ? 'A adquirir dados'
-                              : state == 'reconnecting'
-                                  ? 'A retomar aquisição ...'
-                                  : state == 'pairing'
-                                      ? 'A emparelhar dispositivos ...'
-                                      : state == 'paused'
-                                          ? 'Aquisição em pausa ...'
-                                          : state == 'trying'
-                                              ? 'A reconectar aos dispositivos ...'
-                                              : state == 'stopped'
-                                                  ? 'Aquisição terminada e dados gravados'
-                                                  : 'Aquisição desligada',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        //fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            }),
+        
         Expanded(
           child: Row(children: [
             Container(

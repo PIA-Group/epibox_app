@@ -36,12 +36,22 @@ class _ScanPageState extends State<ScanPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: new AppBar(
-        title: new Text('EpiBox'),
+               centerTitle: true,
+
+        shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(
+                bottom: Radius.circular(30),
+              ),
+            ),
+        title: new Text('Bem vindo ao EpiBox!', style: TextStyle(fontWeight: FontWeight.bold,
+                  letterSpacing: 1,
+                  fontFamily: 'Hind',
+                  color: Colors.grey[800]),),
       ),
       body: new Center(
         child: new ListView(
           children: <Widget>[
-            Padding(
+            /* Padding(
               padding: EdgeInsets.only(top: 70.0),
               child: Align(
                 alignment: Alignment.center,
@@ -67,9 +77,9 @@ class _ScanPageState extends State<ScanPage> {
                       ])),
                 ),
               ),
-            ),
+            ), */
             Padding(
-              padding: EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0.0),
+              padding: EdgeInsets.fromLTRB(20.0, 100.0, 20.0, 0.0),
               child: Align(
                 alignment: Alignment.center,
                 child: Container(
@@ -82,9 +92,9 @@ class _ScanPageState extends State<ScanPage> {
             Padding(
               padding: EdgeInsets.fromLTRB(20.0, 30.0, 20.0, 0.0),
               child: RaisedButton.icon(
-                  color: Colors.blue,
-                  textColor: Colors.white,
-                  splashColor: Colors.blueGrey,
+                  
+                  /* textColor: Colors.white,
+                  splashColor: Colors.blueGrey, */
                   onPressed: () => scan(widget.patientNotifier),
                   icon: Icon(
                     MdiIcons.qrcode,
@@ -121,7 +131,7 @@ class _ScanPageState extends State<ScanPage> {
                     IconButton(
                         icon: Icon(
                           Icons.check_circle,
-                          color: Colors.blue,
+                          color: Colors.blueGrey[200],
                           size: 30,
                         ),
                         onPressed: () => setState(() =>

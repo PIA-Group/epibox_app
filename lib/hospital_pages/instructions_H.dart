@@ -158,7 +158,7 @@ class _InstructionsHPageState extends State<InstructionsHPage> {
                                   fontWeight: FontWeight.bold)),
                           TextSpan(
                               text:
-                                  ': Permite selecionar os dispositivos de aquisição default ou novos (por escrita ou código QR). Para selecionar apenas 1 dispositivo, deixe a outra entrada em branco. Caso queira guardar os novos dispositivos como default, pressione ',
+                                  ': Permite selecionar os dispositivos de aquisição default, novos (por escrita ou código QR) ou dispositivos utilizados anteriormente. Para selecionar apenas 1 dispositivo, deixe a outra entrada em branco. Caso queira guardar os novos dispositivos como default, pressione ',
                               style: TextStyle(
                                   fontSize: 16, color: Colors.grey[600])),
                           TextSpan(
@@ -426,6 +426,48 @@ class _InstructionsHPageState extends State<InstructionsHPage> {
           Padding(
             padding: EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0.0),
             child: Text(
+              'Em "Configurações", não aparece a minha PEN USB.',
+              style: TextStyle(
+                  fontStyle: FontStyle.italic,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.grey[600]),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
+            child: Container(
+              width: 0.95 * bodyWidth,
+              color: Colors.transparent,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.rectangle,
+                  borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.grey[200], offset: new Offset(5.0, 5.0))
+                  ],
+                ),
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 10.0),
+                  child: Column(children: [
+                    Padding(
+                      padding: EdgeInsets.only(top: 10.0),
+                      child: Text(
+                          'O Raspberry Pi pode não ter reconhecido a introdução da PEN antes de ser iniciado o processo. Retire e volte a introduzir - e reinicie o processo!',
+                          textAlign: TextAlign.justify,
+                          style:
+                              TextStyle(fontSize: 16, color: Colors.grey[600])),
+                    ),
+                  ]),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0.0),
+            child: Text(
               'Em "Configurações", não consigo selecionar os canais/sensores de um (ou ambos) os dispositivos.',
               style: TextStyle(
                   fontStyle: FontStyle.italic,
@@ -468,7 +510,7 @@ class _InstructionsHPageState extends State<InstructionsHPage> {
           Padding(
             padding: EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0.0),
             child: Text(
-              'Sai da aplicação durante uma aquisição. Tenho de reiniciar o processo?',
+              'Iniciei a aquisição, mas o servidor disconectou-se.',
               style: TextStyle(
                   fontStyle: FontStyle.italic,
                   fontWeight: FontWeight.bold,
@@ -497,7 +539,7 @@ class _InstructionsHPageState extends State<InstructionsHPage> {
                     Padding(
                       padding: EdgeInsets.only(top: 10.0),
                       child: Text(
-                          'Se a aquisição ainda estiver a decorrer (o botão "Parar" não foi pressionado), basta conectar-se ao servidor e o passo 4 "Iniciar visualização" deverá ficar disponível.',
+                          'O Raspberry Pi pode ter encontrado um problema externo ao EpiBOX (ex: Bluetooth) e não consegue iniciar a aquisição. Desligue o Raspberry Pi e tente novamente.',
                           textAlign: TextAlign.justify,
                           style:
                               TextStyle(fontSize: 16, color: Colors.grey[600])),
@@ -507,11 +549,136 @@ class _InstructionsHPageState extends State<InstructionsHPage> {
               ),
             ),
           ),
-        
           Padding(
             padding: EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0.0),
             child: Text(
-              '...',
+              'Pausei a aquisição e está a demorar muito tempo a retomar.',
+              style: TextStyle(
+                  fontStyle: FontStyle.italic,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.grey[600]),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
+            child: Container(
+              width: 0.95 * bodyWidth,
+              color: Colors.transparent,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.rectangle,
+                  borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.grey[200], offset: new Offset(5.0, 5.0))
+                  ],
+                ),
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 10.0),
+                  child: Column(children: [
+                    Padding(
+                      padding: EdgeInsets.only(top: 10.0),
+                      child: Text(
+                          'Ao pausar uma aquisição, retomar a mesma não é imediato - é necessário reconectar aos dispositivos. No entanto, se o tempo de espera parecer demasiado longo, deve parar a aquisição e recomeçar.',
+                          textAlign: TextAlign.justify,
+                          style:
+                              TextStyle(fontSize: 16, color: Colors.grey[600])),
+                    ),
+                  ]),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0.0),
+            child: Text(
+              'Saí da aplicação durante uma aquisição. Tenho de reiniciar o processo?',
+              style: TextStyle(
+                  fontStyle: FontStyle.italic,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.grey[600]),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
+            child: Container(
+              width: 0.95 * bodyWidth,
+              color: Colors.transparent,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.rectangle,
+                  borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.grey[200], offset: new Offset(5.0, 5.0))
+                  ],
+                ),
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 10.0),
+                  child: Column(children: [
+                    Padding(
+                      padding: EdgeInsets.only(top: 10.0),
+                      child: Text(
+                          'Se a aquisição não tiver sido interrompida e os dispositivos continuam a adquirir (verificar se a luz branca pisca rapidamente), basta conectar-se ao servidor e o passo 4 "Iniciar visualização" deverá ficar disponível.',
+                          textAlign: TextAlign.justify,
+                          style:
+                              TextStyle(fontSize: 16, color: Colors.grey[600])),
+                    ),
+                  ]),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0.0),
+            child: Text(
+              'A aplicação diz "A adquirir dados", mas "Disconectado do servidor".',
+              style: TextStyle(
+                  fontStyle: FontStyle.italic,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.grey[600]),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
+            child: Container(
+              width: 0.95 * bodyWidth,
+              color: Colors.transparent,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.rectangle,
+                  borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.grey[200], offset: new Offset(5.0, 5.0))
+                  ],
+                ),
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 10.0),
+                  child: Column(children: [
+                    Padding(
+                      padding: EdgeInsets.only(top: 10.0),
+                      child: Text(
+                          'Verifique a ligação wifi - é possível que o telemóvel se tenha disconectado do PreEpiSeizures.',
+                          textAlign: TextAlign.justify,
+                          style:
+                              TextStyle(fontSize: 16, color: Colors.grey[600])),
+                    ),
+                  ]),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0.0),
+            child: Text(
+              'A aplicação diz "Conectado ao servidor" e "A adquirir dados", mas não tenho acesso à secção 4. ou os gráficos não estão a ser alterados.',
               style: TextStyle(
                   fontStyle: FontStyle.italic,
                   fontWeight: FontWeight.bold,
@@ -540,7 +707,7 @@ class _InstructionsHPageState extends State<InstructionsHPage> {
                     Padding(
                       padding: EdgeInsets.only(top: 10.0),
                       child: Text(
-                          ' ',
+                          'Verifique a ligação wifi - é possível que o telemóvel se tenha disconectado do PreEpiSeizures.',
                           textAlign: TextAlign.justify,
                           style:
                               TextStyle(fontSize: 16, color: Colors.grey[600])),
@@ -550,7 +717,6 @@ class _InstructionsHPageState extends State<InstructionsHPage> {
               ),
             ),
           ),
-
         ]),
       ),
     );
