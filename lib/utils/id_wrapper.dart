@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:rPiInterface/hospital_pages/home_H_page.dart';
-import 'package:rPiInterface/hospital_pages/scan_page.dart';
+import 'package:rPiInterface/pages/homepage.dart';
+import 'package:rPiInterface/pages/scan_page.dart';
 
 class IDWrapper extends StatelessWidget {
 

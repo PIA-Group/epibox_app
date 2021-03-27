@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:rPiInterface/utils/default_colors.dart';
+import 'package:rPiInterface/decor/default_colors.dart';
+import 'package:rPiInterface/decor/text_styles.dart';
 
 class AcquisitionState extends StatelessWidget {
   final ValueNotifier<String> acquisitionNotifier;
@@ -13,34 +14,33 @@ class AcquisitionState extends StatelessWidget {
         builder: (BuildContext context, String state, Widget child) {
           return Text(
             state == 'starting'
-                ? 'A iniciar ...'
+                ? 'A iniciar aquisição...'
                 : state == 'acquiring'
                     ? 'A adquirir dados'
                     : state == 'reconnecting'
-                        ? 'A retomar ...'
+                        ? 'A retomar aquisição ...'
                         : state == 'pairing'
                             ? 'A emparelhar dispositivos ...'
                             : state == 'paused'
-                                ? 'Em pausa ...'
+                                ? 'Aquisição em pausa ...'
                                 : state == 'trying'
                                     ? 'A reconectar aos dispositivos ...'
                                     : state == 'stopped'
-                                        ? 'Terminada e dados gravados'
-                                        : 'Desligada',
+                                        ? 'Aquisição terminada'
+                                        : 'Aquisição desligada',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: fontSize,
-              color: state == 'acquiring'
-                  ? LightColors.kGreen
-                  : (state == 'starting' ||
-                          state == 'reconnecting' ||
-                          state == 'trying' ||
-                          state == 'pairing' ||
-                          state == 'paused')
-                      ? LightColors.kDarkYellow
-                      : LightColors.kRed
-            ),
+            style: MyTextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: fontSize,
+                color: state == 'acquiring'
+                    ? LightColors.kGreen
+                    : (state == 'starting' ||
+                            state == 'reconnecting' ||
+                            state == 'trying' ||
+                            state == 'pairing' ||
+                            state == 'paused')
+                        ? LightColors.kDarkYellow
+                        : LightColors.kRed),
           );
         });
   }

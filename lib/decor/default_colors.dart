@@ -16,3 +16,13 @@ class LightColors  {
 
   static const Color kDarkBlue = Color(0xFF0D253F);
 }
+
+class DefaultColors  {
+  static const Color mainColor = Color(0xFF1D3557);
+  static const Color mainLColor = Color(0xFF457B9D);
+  static const Color mainXLColor = Color(0xFFA8DADC);
+  static const Color backgroundColor = Color(0xFFFAFAFA); //Color(0xFFF1FAEE);
+  static const Color accentColor = Color(0xFFE63946);
+  static const Color textColorOnLight = Color(0xFF424242);
+  static const Color textColorOnDark = Color(0xFFFFFFFF);
+}

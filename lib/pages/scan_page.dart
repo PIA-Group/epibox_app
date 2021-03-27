@@ -4,7 +4,9 @@ import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:rPiInterface/hospital_pages/instructions_H.dart';
+import 'package:rPiInterface/decor/text_styles.dart';
+import 'package:rPiInterface/pages/instructions_H.dart';
+import 'package:rPiInterface/decor/default_colors.dart';
 
 class ScanPage extends StatefulWidget {
   ValueNotifier<String> patientNotifier;
@@ -22,7 +24,8 @@ class _ScanPageState extends State<ScanPage> {
   initState() {
     super.initState();
     var timeStamp = DateTime.now();
-    _idController.text = '${timeStamp.day}_${timeStamp.month}_${timeStamp.year}';
+    _idController.text =
+        '${timeStamp.day}_${timeStamp.month}_${timeStamp.year}';
   }
 
   @override
@@ -31,53 +34,26 @@ class _ScanPageState extends State<ScanPage> {
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: new AppBar(
-               centerTitle: true,
-
+        centerTitle: true,
         shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(
-                bottom: Radius.circular(30),
-              ),
-            ),
-        title: new Text('Bem vindo ao EpiBox!', style: TextStyle(fontWeight: FontWeight.bold,
-                  letterSpacing: 1,
-                  fontFamily: 'Hind',
-                  color: Colors.grey[800]),),
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(30),
+          ),
+        ),
+        title: new Text(
+          'Bem vindo ao EpiBOX!',
+          style: MyTextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       body: new Center(
         child: new ListView(
           children: <Widget>[
-            /* Padding(
-              padding: EdgeInsets.only(top: 70.0),
-              child: Align(
-                alignment: Alignment.center,
-                child: Container(
-                  child: RichText(
-                      textAlign: TextAlign.justify,
-                      text: TextSpan(children: [
-                        TextSpan(
-                            text: 'Bem vindo ao  ',
-                            style: TextStyle(
-                                fontSize: 16, color: Colors.grey[600])),
-                        TextSpan(
-                            text: 'EpiBox',
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontStyle: FontStyle.italic,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey[600])),
-                        TextSpan(
-                            text: '!',
-                            style: TextStyle(
-                                fontSize: 16, color: Colors.grey[600])),
-                      ])),
-                ),
-              ),
-            ), */
             Padding(
               padding: EdgeInsets.fromLTRB(20.0, 100.0, 20.0, 0.0),
               child: Align(
@@ -85,16 +61,18 @@ class _ScanPageState extends State<ScanPage> {
                 child: Container(
                     child: Text(
                         'Para começar as aquisições, faça scan do ID do paciente ou introduza-o manualmente.',
-                        style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                        style:
+                            MyTextStyle(color: DefaultColors.textColorOnLight),
                         textAlign: TextAlign.center)),
               ),
             ),
             Padding(
               padding: EdgeInsets.fromLTRB(20.0, 30.0, 20.0, 0.0),
-              child: RaisedButton.icon(
-                  
-                  /* textColor: Colors.white,
-                  splashColor: Colors.blueGrey, */
+              child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    primary: DefaultColors.mainLColor, // background
+                    //onPrimary: Colors.white, // foreground
+                  ),
                   onPressed: () => scan(widget.patientNotifier),
                   icon: Icon(
                     MdiIcons.qrcode,
@@ -106,9 +84,9 @@ class _ScanPageState extends State<ScanPage> {
               child: Align(
                 alignment: Alignment.center,
                 child: Container(
-                    child: Text(
-                        barcode,
-                        style: TextStyle(fontSize: 16, color: Colors.red[200]),
+                    child: Text(barcode,
+                        style:
+                            MyTextStyle(color: DefaultColors.textColorOnLight),
                         textAlign: TextAlign.center)),
               ),
             ),
@@ -119,9 +97,13 @@ class _ScanPageState extends State<ScanPage> {
                   children: [
                     Expanded(
                       child: TextField(
-                          style: TextStyle(color: Colors.grey[600]),
+                          style: MyTextStyle(
+                            color: DefaultColors.textColorOnLight,
+                          ),
                           controller: _idController,
                           decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.white,
                               border: OutlineInputBorder(),
                               labelText: 'ID do paciente',
                               isDense: true,
@@ -131,14 +113,13 @@ class _ScanPageState extends State<ScanPage> {
                     IconButton(
                         icon: Icon(
                           Icons.check_circle,
-                          color: Colors.blueGrey[200],
+                          color: DefaultColors.mainLColor,
                           size: 30,
                         ),
-                        onPressed: () => setState(() =>
-                            widget.patientNotifier.value = _idController.text.trim()))
+                        onPressed: () => setState(() => widget
+                            .patientNotifier.value = _idController.text.trim()))
                   ],
                 )),
-            
           ],
         ),
       ),

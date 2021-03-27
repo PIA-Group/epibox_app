@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:rPiInterface/decor/text_styles.dart';
 import 'package:rPiInterface/utils/models.dart';
-import 'package:rPiInterface/utils/default_colors.dart';
+import 'package:rPiInterface/decor/default_colors.dart';
 
 class ServerState extends StatelessWidget {
   final ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
@@ -15,12 +16,12 @@ class ServerState extends StatelessWidget {
             Widget child) {
           return Text(
               state == MqttCurrentConnectionState.CONNECTED
-                  ? 'Conectado'
+                  ? 'Conectado ao servidor'
                   : state == MqttCurrentConnectionState.CONNECTING
                       ? 'A conectar...'
-                      : 'Disconectado',
+                      : 'Desconectado do servidor',
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: MyTextStyle(
                 fontWeight: FontWeight.bold,
                 color: state == MqttCurrentConnectionState.CONNECTED
                     ? LightColors.kGreen

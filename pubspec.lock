@@ -609,13 +609,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.3.22+1"
-  wifi_flutter:
+  wifi_info_flutter:
     dependency: "direct main"
     description:
-      name: wifi_flutter
+      name: wifi_info_flutter
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.1.0+1"
+    version: "2.0.0"
+  wifi_info_flutter_platform_interface:
+    dependency: transitive
+    description:
+      name: wifi_info_flutter_platform_interface
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.0"
   win32:
     dependency: transitive
     description:
@@ -652,5 +659,5 @@ packages:
     source: hosted
     version: "2.2.1"
 sdks:
-  dart: ">=2.12.0-0.0 <3.0.0"
-  flutter: ">=1.16.0"
+  dart: ">=2.12.0-259.9.beta <3.0.0"
+  flutter: ">=1.20.0"

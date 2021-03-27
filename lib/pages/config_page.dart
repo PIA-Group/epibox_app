@@ -1,11 +1,15 @@
 //import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:rPiInterface/appbars/condensed_appbar.dart';
+import 'package:rPiInterface/decor/default_colors.dart';
+import 'package:rPiInterface/decor/text_styles.dart';
 import 'package:rPiInterface/utils/models.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
+import 'package:rPiInterface/states/server_state.dart';
+import 'package:rPiInterface/states/config_sent_state.dart';
 
 class ConfigPage extends StatefulWidget {
-  
   MQTTClientWrapper mqttClientWrapper;
   ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
   ValueNotifier<List<String>> driveListNotifier;
@@ -70,19 +74,19 @@ class _ConfigPageState extends State<ConfigPage> {
       child: Center(
         child: Text(
           value,
-          style: TextStyle(color: Colors.black),
+          style: MyTextStyle(color: DefaultColors.textColorOnLight),
           textAlign: TextAlign.center,
         ),
       ),
     );
   }).toList();
 
-
   @override
   void initState() {
     super.initState();
 
-    if (widget.bit1Selections.value == null && widget.bit2Selections.value == null) {
+    if (widget.bit1Selections.value == null &&
+        widget.bit2Selections.value == null) {
       try {
         _getDefaultChannels(widget.configDefault.value[2]);
       } catch (e) {
@@ -136,8 +140,10 @@ class _ConfigPageState extends State<ConfigPage> {
 
   void _getDefaultChannels(List channels) {
     //List<List<String>>
-    setState(() => widget.bit1Selections.value = List.generate(6, (_) => false));
-    setState(() => widget.bit2Selections.value = List.generate(6, (_) => false));
+    setState(
+        () => widget.bit1Selections.value = List.generate(6, (_) => false));
+    setState(
+        () => widget.bit2Selections.value = List.generate(6, (_) => false));
     channels.asMap().forEach((i, triplet) {
       if (triplet[0] == widget.macAddress1Notifier.value) {
         widget.bit1Selections.value[int.parse(triplet[1]) - 1] = true;
@@ -224,65 +230,21 @@ class _ConfigPageState extends State<ConfigPage> {
         MediaQuery.of(context).viewInsets.bottom;
 
     return Scaffold(
-      appBar: AppBar(
-        title: new Text('Configurações'),
+      appBar: CondensedAppBar(
+        text1: 'Servidor: ',
+        state1: ServerState(
+          connectionNotifier: widget.connectionNotifier,
+          fontSize: 16,
+        ),
+        text2: '',
+        state2: ConfigSentState(
+          sentConfigNotifier: widget.sentConfigNotifier,
+          fontSize: 16,
+        ),
       ),
       body: Center(
         child: ListView(
           children: <Widget>[
-            ValueListenableBuilder(
-                valueListenable: widget.connectionNotifier,
-                builder: (BuildContext context,
-                    MqttCurrentConnectionState state, Widget child) {
-                  return Container(
-                    height: 20,
-                    color: state == MqttCurrentConnectionState.CONNECTED
-                        ? Colors.green[50]
-                        : state == MqttCurrentConnectionState.CONNECTING
-                            ? Colors.yellow[50]
-                            : Colors.red[50],
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Container(
-                        child: Text(
-                          state == MqttCurrentConnectionState.CONNECTED
-                              ? 'Conectado ao servidor'
-                              : state == MqttCurrentConnectionState.CONNECTING
-                                  ? 'A conectar...'
-                                  : 'Disconectado do servidor',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            //fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-            ValueListenableBuilder(
-                valueListenable: widget.sentConfigNotifier,
-                builder: (BuildContext context, bool state, Widget child) {
-                  return Container(
-                    height: 20,
-                    color: state ? Colors.green[50] : Colors.red[50],
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Container(
-                        child: Text(
-                          state
-                              ? 'Enviado'
-                              : 'Selecione configurações para proceder',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            //fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }),
             Padding(
               padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
               child: Column(children: [
@@ -294,9 +256,9 @@ class _ConfigPageState extends State<ConfigPage> {
                       child: Text(
                         'Pasta para armazenamento',
                         textAlign: TextAlign.left,
-                        style: TextStyle(
+                        style: MyTextStyle(
+                          color: DefaultColors.textColorOnLight,
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
                         ),
                       ),
                     ),
@@ -304,7 +266,7 @@ class _ConfigPageState extends State<ConfigPage> {
                 ),
                 Container(
                   height: height * 0.1,
-                  width: width * 0.85,
+                  width: width * 0.9,
                   color: Colors.transparent,
                   child: Container(
                     decoration: BoxDecoration(
@@ -329,7 +291,8 @@ class _ConfigPageState extends State<ConfigPage> {
                                 value: value,
                                 child: Text(
                                   value,
-                                  style: TextStyle(color: Colors.grey[600]),
+                                  style: MyTextStyle(
+                                      color: DefaultColors.textColorOnLight),
                                 ),
                               );
                             }).toList(),
@@ -354,9 +317,9 @@ class _ConfigPageState extends State<ConfigPage> {
                       child: Text(
                         'Configurações de aquisição',
                         textAlign: TextAlign.left,
-                        style: TextStyle(
+                        style: MyTextStyle(
+                          color: DefaultColors.textColorOnLight,
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
                         ),
                       ),
                     ),
@@ -364,7 +327,7 @@ class _ConfigPageState extends State<ConfigPage> {
                 ),
                 Container(
                   height: 320.0,
-                  width: width * 0.85,
+                  width: width * 0.9,
                   color: Colors.transparent,
                   child: Container(
                     decoration: BoxDecoration(
@@ -384,9 +347,9 @@ class _ConfigPageState extends State<ConfigPage> {
                           child: Row(
                             children: [
                               Text(
-                                'Freq. amostragem [Hz]:',
-                                style: TextStyle(
-                                    fontSize: 16, color: Colors.grey[600]),
+                                'Freq.amostragem [Hz]:',
+                                style: MyTextStyle(
+                                    color: DefaultColors.textColorOnLight),
                               ),
                               Expanded(
                                 child: Container(
@@ -401,8 +364,9 @@ class _ConfigPageState extends State<ConfigPage> {
                                         value: value,
                                         child: Text(
                                           value,
-                                          style: TextStyle(
-                                              color: Colors.grey[600]),
+                                          style: MyTextStyle(
+                                              color: DefaultColors
+                                                  .textColorOnLight),
                                         ),
                                       );
                                     }).toList(),
@@ -418,8 +382,8 @@ class _ConfigPageState extends State<ConfigPage> {
                           padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 5.0),
                           child: Text(
                             'Canais dispositivo 1:',
-                            style: TextStyle(
-                                fontSize: 16, color: Colors.grey[600]),
+                            style: MyTextStyle(
+                                color: DefaultColors.textColorOnLight),
                           ),
                         ),
                         Row(
@@ -442,7 +406,8 @@ class _ConfigPageState extends State<ConfigPage> {
                                   Text('A5'),
                                   Text('A6'),
                                 ],
-                                isSelected: widget.bit1Selections.value,
+                                isSelected: widget.bit1Selections.value ??
+                                    [false, false, false, false, false, false],
                                 onPressed: widget.isBit1Enabled.value
                                     ? (int index) {
                                         setState(() {
@@ -458,8 +423,8 @@ class _ConfigPageState extends State<ConfigPage> {
                           padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 5.0),
                           child: Text(
                             'Canais dispositivo 2:',
-                            style: TextStyle(
-                                fontSize: 16, color: Colors.grey[600]),
+                            style: MyTextStyle(
+                                color: DefaultColors.textColorOnLight),
                           ),
                         ),
                         Row(
@@ -482,7 +447,8 @@ class _ConfigPageState extends State<ConfigPage> {
                                   Text('A5'),
                                   Text('A6'),
                                 ],
-                                isSelected: widget.bit2Selections.value,
+                                isSelected: widget.bit2Selections.value ??
+                                    [false, false, false, false, false, false],
                                 onPressed: widget.isBit2Enabled.value
                                     ? (int index) {
                                         setState(() {
@@ -498,8 +464,8 @@ class _ConfigPageState extends State<ConfigPage> {
                           padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 5.0),
                           child: Text(
                             'Sensores dispositivo 1:',
-                            style: TextStyle(
-                                fontSize: 16, color: Colors.grey[600]),
+                            style: MyTextStyle(
+                                color: DefaultColors.textColorOnLight),
                           ),
                         ),
                         Row(
@@ -540,8 +506,8 @@ class _ConfigPageState extends State<ConfigPage> {
                           padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 5.0),
                           child: Text(
                             'Sensores dispositivo 2:',
-                            style: TextStyle(
-                                fontSize: 16, color: Colors.grey[600]),
+                            style: MyTextStyle(
+                                color: DefaultColors.textColorOnLight),
                           ),
                         ),
                         Row(
@@ -591,17 +557,31 @@ class _ConfigPageState extends State<ConfigPage> {
               child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    RaisedButton(
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        primary: DefaultColors.mainLColor, // background
+                        //onPrimary: Colors.white, // foreground
+                      ),
                       onPressed: () {
                         _setup();
                       },
-                      child: new Text("Selecionar"),
+                      child: new Text(
+                        "Selecionar",
+                        style: MyTextStyle(),
+                      ),
                     ),
-                    RaisedButton(
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        primary: DefaultColors.mainLColor, // background
+                        //onPrimary: Colors.white, // foreground
+                      ),
                       onPressed: () {
                         _newDefault();
                       },
-                      child: new Text("Definir novo default"),
+                      child: new Text(
+                        "Definir novo default",
+                        style: MyTextStyle(),
+                      ),
                     ),
                   ]),
             ),
@@ -674,7 +654,7 @@ class _SensorContainerState extends State<SensorContainer> {
           disabledHint: Center(
             child: Text(
               '-',
-              style: TextStyle(color: Colors.grey[400]),
+              style: MyTextStyle(color: DefaultColors.textColorOnLight),
               textAlign: TextAlign.center,
             ),
           ),

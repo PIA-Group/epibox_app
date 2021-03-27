@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:rPiInterface/decor/default_colors.dart';
+import 'package:rPiInterface/decor/text_styles.dart';
 
 import 'oscilloscope.dart';
 
@@ -67,9 +69,9 @@ class _PlotDataTitleState extends State<PlotDataTitle> {
       padding: EdgeInsets.only(top: 10.0,), */
       child: Text(
         'Canal: A${widget.channels[1]} | ${widget.sensor}',
-        style: TextStyle(
+        style: MyTextStyle(
           fontWeight: FontWeight.bold,
-          fontSize: 16,
+          color: DefaultColors.textColorOnLight
         ),
       ),
     );

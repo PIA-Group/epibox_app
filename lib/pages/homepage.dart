@@ -4,18 +4,22 @@ import 'package:app_settings/app_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:mqtt_client/mqtt_client.dart';
-import 'package:rPiInterface/common_pages/profile_drawer.dart';
-import 'package:rPiInterface/common_pages/real_time_MAC1.dart';
-import 'package:rPiInterface/hospital_pages/config_page.dart';
-import 'package:rPiInterface/common_pages/rpi_setup.dart';
-import 'package:rPiInterface/hospital_pages/devices_H_setup.dart';
-import 'package:rPiInterface/hospital_pages/instructions_H.dart';
-import 'package:rPiInterface/utils/battery_indicator.dart';
+import 'package:rPiInterface/appbars/expanded_appbar.dart';
+import 'package:rPiInterface/bottom_navbar/destinations.dart';
+import 'package:rPiInterface/bottom_navbar/visualization_page.dart';
+import 'package:rPiInterface/decor/text_styles.dart';
+import 'package:rPiInterface/pages/config_page.dart';
+import 'package:rPiInterface/pages/devices_setup.dart';
+import 'package:rPiInterface/pages/instructions_H.dart';
+import 'package:rPiInterface/pages/profile_drawer.dart';
+import 'package:rPiInterface/pages/rpi_setup.dart';
+import 'package:rPiInterface/decor/default_colors.dart';
 import 'package:rPiInterface/utils/models.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
-import 'package:rPiInterface/utils/server_state.dart';
-import 'package:rPiInterface/utils/acquisition_state.dart';
+import 'package:rPiInterface/states/server_state.dart';
+import 'package:rPiInterface/states/acquisition_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wifi_info_flutter/wifi_info_flutter.dart';
 
 class HomeHPage extends StatefulWidget {
   ValueNotifier<String> patientNotifier;
@@ -85,6 +89,8 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
   MQTTClientWrapper mqttClientWrapper;
   MqttClient client;
 
+  ValueNotifier<List<Destination>> allDestinations = ValueNotifier(null);
+
   final TextEditingController nameController = TextEditingController();
 
   FlutterLocalNotificationsPlugin batteryNotification =
@@ -104,6 +110,16 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+
+    macAddress1Notifier.addListener(() {
+      setState(
+          () => allDestinations.value[0].label = macAddress1Notifier.value);
+    });
+
+    macAddress2Notifier.addListener(() {
+      setState(
+          () => allDestinations.value[1].label = macAddress2Notifier.value);
+    });
 
     timer = Timer.periodic(Duration(seconds: 15), (Timer t) => print('timer'));
 
@@ -127,52 +143,83 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
         'LAST BATTERIES: ${batteryBit1Notifier.value}, ${batteryBit2Notifier.value}');
     getMACHistory();
     print('MAC HISTORY: ${historyMAC.value}');
+
+    allDestinations = ValueNotifier(<Destination>[
+      Destination(
+          macAddress1Notifier.value,
+          Icons.looks_one_outlined,
+          LightColors.kRed,
+          dataMAC1Notifier,
+          sensorsMAC1Notifier,
+          channelsMAC1Notifier),
+      Destination(
+          macAddress2Notifier.value,
+          Icons.looks_two_outlined,
+          LightColors.kBlue,
+          dataMAC2Notifier,
+          sensorsMAC2Notifier,
+          channelsMAC2Notifier),
+    ]);
   }
 
   Future<void> _wifiDialog() async {
     await Future.delayed(Duration.zero);
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: true,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            'Conexão wifi',
-            textAlign: TextAlign.start,
-          ),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.only(right: 15.0, left: 15.0),
-                  child: Text(
-                    'Verifique se se encontra conectado à rede "PreEpiSeizures". Caso contrário, por favor conectar com a password "preepiseizures"',
-                    textAlign: TextAlign.justify,
+    //var wifiBSSID = await WifiInfo().getWifiBSSID();
+    await WifiInfo().getWifiIP().then((value) {
+      //var wifiName = await WifiInfo().getWifiName();
+      //print('SSID $wifiBSSID | IP $wifiIP | NAME $wifiName');
+      if (value != '192.168.0.10') {
+        return showDialog<void>(
+          context: context,
+          barrierDismissible: true,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(
+                'Conexão wifi',
+                textAlign: TextAlign.start,
+              ),
+              content: SingleChildScrollView(
+                child: ListBody(children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.only(right: 15.0, left: 15.0),
+                    child: Text(
+                      'Verifique se se encontra conectado à rede "PreEpiSeizures". Caso contrário, por favor conectar com a password "preepiseizures"',
+                      textAlign: TextAlign.justify,
+                    ),
                   ),
-                ),
-                ButtonBar(
-                    alignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      RaisedButton(
-                        child: Text("Está conectado!"),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                      RaisedButton(
+                  /* ButtonBar(
+                        alignment: MainAxisAlignment.center,
+                        children: <Widget>[ */
+                  /* RaisedButton(
+                            child: Text("Está conectado!"),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ), */
+                  Padding(
+                    padding:
+                        EdgeInsets.only(right: 15.0, left: 15.0, top: 10.0),
+                    child: Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          primary: Colors.grey[200], // background
+                          onPrimary: Colors.grey[600], // foreground
+                        ),
                         child: Text("WIFI"),
                         onPressed: () {
                           AppSettings.openWIFISettings();
                           Navigator.of(context).pop();
                         },
                       ),
-                    ]),
-              ],
-            ),
-          ),
+                    ),
+                  ),
+                ]),
+              ),
+            );
+          },
         );
-      },
-    );
+      }
+    });
   }
 
   void getAnnotationTypes() async {
@@ -316,6 +363,7 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
         listDrives.removeAt(0);
         listDrives = listDrives.map((drive) => drive.split("'")[1]).toList();
         setState(() => driveListNotifier.value = listDrives);
+        print(driveListNotifier);
         mqttClientWrapper.publishMessage("['GO TO DEVICES']");
       } catch (e) {
         print(e);
@@ -498,6 +546,13 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    double vPadding = (MediaQuery.of(context).size.height -
+            100 -
+            86 -
+            (0.13 * MediaQuery.of(context).size.height + 2) * 3 -
+            0.13 * MediaQuery.of(context).size.height) /
+        2;
+
     return Scaffold(
       key: _scaffoldKey,
       drawer: ProfileDrawer(
@@ -506,146 +561,18 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
         annotationTypesD: annotationTypesD,
         historyMAC: historyMAC,
       ),
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(160),
-        child: AppBar(
-            //title: Padding(padding: EdgeInsets.only(top: 50), child:Text('cenas'),),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(
-                bottom: Radius.circular(30),
-              ),
-            ),
-            elevation: 4,
-            flexibleSpace: Padding(
-              padding: EdgeInsets.only(left: 20, top: 75, right: 20),
-              child: Container(
-                  child: Column(children: [
-                Row(
-                  mainAxisSize: MainAxisSize.max,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Servidor: ',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Expanded(
-                      child: Container(
-                        height: 40,
-                        // width: double.infinity,
-                        child: Card(
-                          child: Center(
-                            child: ServerState(
-                                connectionNotifier: connectionNotifier),
-                          ),
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.max,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Aquisição: ',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Expanded(
-                      child: Container(
-                        height: 40,
-                        // width: double.infinity,
-                        child: Card(
-                          child: Center(
-                            child: AcquisitionState(
-                              acquisitionNotifier: acquisitionNotifier,
-                            ),
-                          ),
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                )
-              ])),
-            ),
-            actions: <Widget>[
-              Column(children: [
-                ValueListenableBuilder(
-                  valueListenable: batteryBit1Notifier,
-                  builder:
-                      (BuildContext context, double battery, Widget child) {
-                    return battery != null
-                        ? Row(children: [
-                            Text('MAC 1: ',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 13)),
-                            SizedBox(
-                              width: 50.0,
-                              height: 27.0,
-                              child: new Center(
-                                child: BatteryIndicator(
-                                  style: BatteryIndicatorStyle.skeumorphism,
-                                  batteryLevel: battery,
-                                ),
-                              ),
-                            ),
-                          ])
-                        : SizedBox.shrink();
-                  },
-                ),
-                ValueListenableBuilder(
-                  valueListenable: batteryBit2Notifier,
-                  builder:
-                      (BuildContext context, double battery, Widget child) {
-                    return battery != null
-                        ? Row(children: [
-                            Text('MAC 2: ',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 13)),
-                            SizedBox(
-                              width: 50.0,
-                              height: 27.0,
-                              child: new Center(
-                                child: BatteryIndicator(
-                                  style: BatteryIndicatorStyle.skeumorphism,
-                                  batteryLevel: battery,
-                                ),
-                              ),
-                            ),
-                          ])
-                        : SizedBox.shrink();
-                  },
-                ),
-              ]),
-            ]),
+      appBar: ExpandedAppBar(
+        title: 'EpiBOX',
+        text1: 'Servidor: ',
+        state1: ServerState(connectionNotifier: connectionNotifier),
+        text2: 'Aquisição: ',
+        state2: AcquisitionState(acquisitionNotifier: acquisitionNotifier),
+        batteryBit1Notifier: batteryBit1Notifier,
+        batteryBit2Notifier: batteryBit2Notifier,
       ),
-      body: ListView(children: [
-        /* Padding(
-            padding: EdgeInsets.fromLTRB(15, 20, 0, 0),
-            child: Text(
-              'Tarefas',
-              style: TextStyle(
-                  color: Color(0xFF0D253F),
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.2),
-            )), */
+      body: Column(mainAxisAlignment: MainAxisAlignment.start, children: [
         Padding(
-          padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
+          padding: EdgeInsets.fromLTRB(20, vPadding, 20, 0),
           child: Container(
             height: MediaQuery.of(context).size.height * 0.13,
             child: Card(
@@ -664,16 +591,16 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
                       shape: BoxShape
                           .circle, // You can use like this way or like the below line
                       //borderRadius: new BorderRadius.circular(30.0),
-                      color: Color(0xFFF9BE7C),
+                      color: DefaultColors.mainLColor,
                     ),
                     child: Icon(Icons.wifi, color: Colors.white),
                   ),
                   title: Text(
                     'Conectividade',
-                    style: TextStyle(
+                    style: MyTextStyle(
+                      color: DefaultColors.textColorOnLight,
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
-                      letterSpacing: 1,
                     ),
                   ),
                   onTap: () async {
@@ -709,6 +636,7 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
                           annotationTypesD: annotationTypesD,
                           timedOut: timedOut,
                           startupError: startupError,
+                          allDestinations: allDestinations.value,
                         );
                       }),
                     );
@@ -738,16 +666,16 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
                       shape: BoxShape
                           .circle, // You can use like this way or like the below line
                       //borderRadius: new BorderRadius.circular(30.0),
-                      color: Color(0xFFE46472),
+                      color: DefaultColors.mainLColor,
                     ),
                     child: Icon(Icons.device_hub_rounded, color: Colors.white),
                   ),
                   title: Text(
                     'Selecionar dispositivos',
-                    style: TextStyle(
+                    style: MyTextStyle(
+                      color: DefaultColors.textColorOnLight,
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
-                      letterSpacing: 1,
                     ),
                   ),
                   //enabled: receivedMACNotifier.value == true,
@@ -807,19 +735,19 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
                       shape: BoxShape
                           .circle, // You can use like this way or like the below line
                       //borderRadius: new BorderRadius.circular(30.0),
-                      color: Color(0xFF6488E4),
+                      color: DefaultColors.mainLColor,
                     ),
                     child: Icon(Icons.settings, color: Colors.white),
                   ),
                   title: Text(
                     'Configurações',
-                    style: TextStyle(
+                    style: MyTextStyle(
+                      color: DefaultColors.textColorOnLight,
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
-                      letterSpacing: 1,
                     ),
                   ),
-                  enabled: receivedMACNotifier.value == true,
+                  //enabled: receivedMACNotifier.value == true,
                   onTap: () async {
                     Navigator.push(
                       context,
@@ -869,7 +797,7 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
                       shape: BoxShape
                           .circle, // You can use like this way or like the below line
                       //borderRadius: new BorderRadius.circular(30.0),
-                      color: Color(0xFF309397),
+                      color: DefaultColors.mainLColor,
                     ),
                     child: Image.asset(
                       "images/ecg.png",
@@ -879,11 +807,11 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
                     ),
                   ),
                   title: Text(
-                    'Visualização dos sinais',
-                    style: TextStyle(
+                    'Aquisição',
+                    style: MyTextStyle(
+                      color: DefaultColors.textColorOnLight,
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
-                      letterSpacing: 1,
                     ),
                   ),
                   //enabled: acquisitionNotifier.value == 'acquiring',
@@ -891,7 +819,7 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) {
-                        return RealtimePageMAC1(
+                        return VisualizationPage(
                           dataMAC1Notifier: dataMAC1Notifier,
                           dataMAC2Notifier: dataMAC2Notifier,
                           channelsMAC1Notifier: channelsMAC1Notifier,
@@ -907,6 +835,7 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
                           connectionNotifier: connectionNotifier,
                           timedOut: timedOut,
                           startupError: startupError,
+                          allDestinations: allDestinations.value,
                         );
                       }),
                     );
@@ -943,7 +872,8 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) {
-                        return RealtimePageMAC1(
+                        return VisualizationPage(
+                          //return RealtimePageMAC1(
                           dataMAC1Notifier: dataMAC1Notifier,
                           dataMAC2Notifier: dataMAC2Notifier,
                           channelsMAC1Notifier: channelsMAC1Notifier,
@@ -959,6 +889,7 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
                           connectionNotifier: connectionNotifier,
                           timedOut: timedOut,
                           startupError: startupError,
+                          allDestinations: allDestinations.value,
                         );
                       }),
                     );

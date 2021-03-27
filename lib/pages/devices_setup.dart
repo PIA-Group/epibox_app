@@ -2,13 +2,16 @@ import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:rPiInterface/hospital_pages/config_page.dart';
+import 'package:rPiInterface/appbars/condensed_appbar.dart';
+import 'package:rPiInterface/decor/text_styles.dart';
+import 'package:rPiInterface/pages/config_page.dart';
+import 'package:rPiInterface/decor/default_colors.dart';
 import 'package:rPiInterface/utils/masked_text.dart';
 import 'package:rPiInterface/utils/models.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:rPiInterface/utils/server_state.dart';
-import 'package:rPiInterface/utils/sent_devices_state.dart';
+import 'package:rPiInterface/states/server_state.dart';
+import 'package:rPiInterface/states/sent_devices_state.dart';
 
 // programar button "Usar default" e "Usar novo" para enviar MACAddress para RPi e voltar à HomePage
 // programar button "Definir novo default" para enviar MACAddress para RPi e mudar "defaultBIT"
@@ -144,85 +147,16 @@ class _DevicesPageState extends State<DevicesPage> {
         MediaQuery.of(context).viewInsets.right;
 
     return Scaffold(
-      appBar:
-        PreferredSize(
-        preferredSize: Size.fromHeight(120),
-        child: AppBar(
-            //title: Padding(padding: EdgeInsets.only(top: 50), child:Text('cenas'),),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(
-                bottom: Radius.circular(30),
-              ),
-            ),
-            elevation: 4,
-            flexibleSpace: Padding(
-              padding: EdgeInsets.only(left: 50, top: 32, right: 20),
-              child: Container(
-                  child: Column(children: [
-                Row(
-                  mainAxisSize: MainAxisSize.max,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Servidor: ',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    Expanded(
-                      child: Container(
-                        height: 40,
-                        // width: double.infinity,
-                        child: Card(
-                          child: Center(
-                            child: ServerState(
-                                connectionNotifier: widget.connectionNotifier, fontSize: 16),
-                          ),
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.max,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    
-                    Expanded(
-                      child: Container(
-                        height: 40,
-                        // width: double.infinity,
-                        child: Card(
-                          child: Center(
-                            child: SentMACState(
-                              sentMACNotifier: widget.sentMACNotifier,
-                              fontSize: 16,
-                            ),
-                          ),
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                )
-              ])),
-            ),
-            
-      ),
+      appBar: CondensedAppBar(
+        text1: 'Servidor: ',
+        state1: ServerState(
+            connectionNotifier: widget.connectionNotifier, fontSize: 16),
+        text2: '',
+        state2:
+            SentMACState(sentMACNotifier: widget.sentMACNotifier, fontSize: 16),
       ),
       body: Center(
         child: ListView(children: <Widget>[
-          
           Padding(
             padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
             child: Column(children: [
@@ -234,9 +168,9 @@ class _DevicesPageState extends State<DevicesPage> {
                     child: Text(
                       'Selecionar dispositivo(s) de aquisição',
                       textAlign: TextAlign.left,
-                      style: TextStyle(
+                      style: MyTextStyle(
+                        color: DefaultColors.textColorOnLight,
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
                       ),
                     ),
                   ),
@@ -318,9 +252,9 @@ class _DevicesPageState extends State<DevicesPage> {
                         child: Text(
                           'Histórico de dispositivos',
                           textAlign: TextAlign.left,
-                          style: TextStyle(
+                          style: MyTextStyle(
+                            color: DefaultColors.textColorOnLight,
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
                           ),
                         ),
                       ),
@@ -365,8 +299,9 @@ class _DevicesPageState extends State<DevicesPage> {
                                           value: value,
                                           child: Text(
                                             value,
-                                            style: TextStyle(
-                                                color: Colors.grey[600]),
+                                            style: MyTextStyle(
+                                                color: DefaultColors
+                                                    .textColorOnLight),
                                           ),
                                         );
                                       }).toList(),
@@ -400,8 +335,9 @@ class _DevicesPageState extends State<DevicesPage> {
                                           value: value,
                                           child: Text(
                                             value,
-                                            style: TextStyle(
-                                                color: Colors.grey[600]),
+                                            style: MyTextStyle(
+                                                color: DefaultColors
+                                                    .textColorOnLight),
                                           ),
                                         );
                                       }).toList(),
@@ -425,7 +361,11 @@ class _DevicesPageState extends State<DevicesPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    RaisedButton(
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        primary: DefaultColors.mainLColor, // background
+                        //onPrimary: Colors.white, // foreground
+                      ),
                       onPressed: () {
                         setState(() => widget.macAddress1Notifier.value =
                             _controller1.text
@@ -472,9 +412,16 @@ class _DevicesPageState extends State<DevicesPage> {
                           }),
                         );
                       },
-                      child: new Text("Selecionar"),
+                      child: new Text(
+                        "Selecionar",
+                        style: MyTextStyle(),
+                      ),
                     ),
-                    RaisedButton(
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        primary: DefaultColors.mainLColor, // background
+                        //onPrimary: Colors.white, // foreground
+                      ),
                       onPressed: () {
                         setState(() => widget.macAddress1Notifier.value =
                             _controller1.text
@@ -487,7 +434,10 @@ class _DevicesPageState extends State<DevicesPage> {
                         widget.mqttClientWrapper.publishMessage(
                             "['NEW MAC',{'MAC1':'${widget.macAddress1Notifier.value}','MAC2':'${widget.macAddress2Notifier.value}'}]");
                       },
-                      child: new Text("Definir novo default"),
+                      child: new Text(
+                        "Definir novo default",
+                        style: MyTextStyle(),
+                      ),
                     ),
                   ],
                 ),

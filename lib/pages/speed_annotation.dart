@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:rPiInterface/decor/default_colors.dart';
 import 'package:rPiInterface/utils/mqtt_wrapper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -51,7 +52,6 @@ class _SpeedAnnotationDialogState extends State<SpeedAnnotationDialog> {
           print(widget.annotationTypes);
           SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setStringList('annotationTypes', widget.annotationTypes);
-          
         }
       } catch (e) {
         print(e);
@@ -61,7 +61,10 @@ class _SpeedAnnotationDialogState extends State<SpeedAnnotationDialog> {
       String annotText = _controller.text.replaceAll('ç', 'c');
       annotText = annotText.replaceAll(' ', '_');
       if (!_isChecked) {
-        annot = ['"$annotText"', '"${timeStamp.hour}:${timeStamp.minute}:${timeStamp.second}"'];
+        annot = [
+          '"$annotText"',
+          '"${timeStamp.hour}:${timeStamp.minute}:${timeStamp.second}"'
+        ];
       } else {
         annot = ['"$annotText"', '"null"'];
       }
@@ -109,7 +112,6 @@ class _SpeedAnnotationDialogState extends State<SpeedAnnotationDialog> {
                       textAlign: TextAlign.left,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
                       ),
                     ),
                   ),
@@ -166,7 +168,6 @@ class _SpeedAnnotationDialogState extends State<SpeedAnnotationDialog> {
                       textAlign: TextAlign.left,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
                       ),
                     ),
                   ),
@@ -224,8 +225,7 @@ class _SpeedAnnotationDialogState extends State<SpeedAnnotationDialog> {
                         title: Text(
                           '(?) Não sei quando ocorreu',
                           style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey[600],
+                            color: DefaultColors.textColorOnLight,
                           ),
                         ),
                       ),

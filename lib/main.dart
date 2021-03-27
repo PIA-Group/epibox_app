@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:rPiInterface/utils/authentication.dart';
 import 'package:provider/provider.dart';
 import 'package:rPiInterface/utils/id_wrapper.dart';
-import 'package:rPiInterface/utils/default_colors.dart';
+import 'package:rPiInterface/decor/default_colors.dart';
 
 void main() => runApp(new InterfaceRPi());
 
@@ -10,18 +11,22 @@ class InterfaceRPi extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setSystemUIOverlayStyle(
+        SystemUiOverlayStyle(statusBarColor: Colors.white));
     // Provider allows to make available information (eg: Stream) to all of its descendents
     return StreamProvider<User>.value(
       value: Auth().user,
       child: MaterialApp(
         theme: ThemeData(
-            scaffoldBackgroundColor: LightColors.kLightYellow,
+            scaffoldBackgroundColor: DefaultColors.backgroundColor,
 
             // Define the default brightness and colors.
             brightness: Brightness.light,
-            primaryColor: LightColors.kDarkYellow,
-            accentColor: LightColors.kDarkYellow,
-
+            hintColor: DefaultColors.mainLColor,
+            primaryColor: DefaultColors.mainColor,
+            accentColor: DefaultColors.mainLColor,
+            primaryColorDark: DefaultColors.mainLColor,
+            //splashColor: Colors.white,
             // Define the default font family.
             fontFamily: 'Hind',
 
@@ -29,20 +34,26 @@ class InterfaceRPi extends StatelessWidget {
             // text styling for headlines, titles, bodies of text, and more.
             textTheme: TextTheme(
               headline1: TextStyle(
-                  fontSize: 72.0,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1,
-                  fontFamily: 'Hind'),
+                fontSize: 72.0,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1,
+                fontFamily: 'Hind',
+                //color: Colors.grey[800]),
+              ),
               headline6: TextStyle(
-                  fontSize: 36.0,
-                  fontStyle: FontStyle.italic,
-                  letterSpacing: 1,
-                  fontFamily: 'Hind'),
+                fontSize: 36.0,
+                fontStyle: FontStyle.italic,
+                letterSpacing: 1,
+                fontFamily: 'Hind',
+              ),
+              //color: Colors.grey[800]),
               bodyText2: TextStyle(
-                  //fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  letterSpacing: 1,
-                  fontFamily: 'Hind'),
+                //fontWeight: FontWeight.bold,
+                fontSize: 16,
+                letterSpacing: 1,
+                fontFamily: 'Hind',
+                //color: Colors.grey[800]
+              ),
             )),
         //showPerformanceOverlay: true,
         title: 'EpiBOX',

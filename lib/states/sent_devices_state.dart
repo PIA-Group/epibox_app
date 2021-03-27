@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:rPiInterface/utils/default_colors.dart';
+import 'package:rPiInterface/decor/default_colors.dart';
+import 'package:rPiInterface/decor/text_styles.dart';
 
 class SentMACState extends StatelessWidget {
   final ValueNotifier<bool> sentMACNotifier;
@@ -11,11 +12,10 @@ class SentMACState extends StatelessWidget {
     return ValueListenableBuilder(
         valueListenable: sentMACNotifier,
         builder: (BuildContext context, bool state, Widget child) {
-          return Text(
-              state ? 'Enviado' : 'Selecione dispositivos',
+          return Text(state ? 'Enviado' : 'Selecione dispositivos',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: fontSize,
+              style: MyTextStyle(
+                  fontSize: fontSize,
                   fontWeight: FontWeight.bold,
                   color: state ? LightColors.kGreen : LightColors.kDarkBlue));
         });
