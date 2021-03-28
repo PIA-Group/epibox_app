@@ -1,12 +1,13 @@
+import 'package:epibox/decor/default_colors.dart';
+import 'package:epibox/decor/text_styles.dart';
 import 'package:flutter/material.dart';
-import 'package:rPiInterface/appbars/expanded_appbar.dart';
-import 'package:rPiInterface/bottom_navbar/destinations.dart';
-import 'package:rPiInterface/pages/speed_annotation.dart';
-import 'package:rPiInterface/states/acquisition_state.dart';
-import 'package:rPiInterface/states/server_state.dart';
-import 'package:rPiInterface/utils/models.dart';
-import 'package:rPiInterface/utils/mqtt_wrapper.dart';
-import 'package:rPiInterface/utils/plot_data.dart';
+import 'package:epibox/appbars/expanded_appbar.dart';
+import 'package:epibox/bottom_navbar/destinations.dart';
+import 'package:epibox/states/acquisition_state.dart';
+import 'package:epibox/states/server_state.dart';
+import 'package:epibox/utils/models.dart';
+import 'package:epibox/utils/mqtt_wrapper.dart';
+import 'package:epibox/utils/plot_data.dart';
 
 class DestinationView extends StatefulWidget {
   DestinationView({
@@ -28,33 +29,36 @@ class DestinationView extends StatefulWidget {
     this.timedOut,
     this.startupError,
     this.connectionNotifier,
+    this.saveRaw,
   }) : super(key: key);
 
   final Destination destination;
-  ValueNotifier<String> macAddress1Notifier;
+  final ValueNotifier<String> macAddress1Notifier;
 
-  ValueNotifier<List<List>> dataMAC1Notifier;
-  ValueNotifier<List<List>> dataMAC2Notifier;
-  ValueNotifier<List<List>> channelsMAC1Notifier;
-  ValueNotifier<List<List>> channelsMAC2Notifier;
-  ValueNotifier<List> sensorsMAC1Notifier;
-  ValueNotifier<List> sensorsMAC2Notifier;
+  final ValueNotifier<List<List>> dataMAC1Notifier;
+  final ValueNotifier<List<List>> dataMAC2Notifier;
+  final ValueNotifier<List<List>> channelsMAC1Notifier;
+  final ValueNotifier<List<List>> channelsMAC2Notifier;
+  final ValueNotifier<List> sensorsMAC1Notifier;
+  final ValueNotifier<List> sensorsMAC2Notifier;
 
-  MQTTClientWrapper mqttClientWrapper;
+  final ValueNotifier<bool> saveRaw;
 
-  ValueNotifier<String> acquisitionNotifier;
+  final MQTTClientWrapper mqttClientWrapper;
 
-  ValueNotifier<double> batteryBit1Notifier;
-  ValueNotifier<double> batteryBit2Notifier;
+  final ValueNotifier<String> acquisitionNotifier;
 
-  ValueNotifier<String> patientNotifier;
+  final ValueNotifier<double> batteryBit1Notifier;
+  final ValueNotifier<double> batteryBit2Notifier;
 
-  ValueNotifier<List> annotationTypesD;
+  final ValueNotifier<String> patientNotifier;
 
-  ValueNotifier<String> timedOut;
-  ValueNotifier<bool> startupError;
+  final ValueNotifier<List> annotationTypesD;
 
-  ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
+  final ValueNotifier<String> timedOut;
+  final ValueNotifier<bool> startupError;
+
+  final ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
 
   @override
   _DestinationViewState createState() => _DestinationViewState();
@@ -80,7 +84,8 @@ class _DestinationViewState extends State<DestinationView> {
   var f;
 
   List<double> _getRangeFromSensor(sensor) {
-    List<double> yRange;
+    List<double> yRange; 
+    // the last value sets if the range should be updated throughout the acquisition
     if (sensor == 'ECG') {
       yRange = [-1.5, 1.5, 1];
     } else if (sensor == 'EEG') {
@@ -101,7 +106,12 @@ class _DestinationViewState extends State<DestinationView> {
 
   void _initRange(sensorsMAC) {
     for (int i = 0; i < sensorsMAC.length; i++) {
-      List<double> auxList = _getRangeFromSensor(sensorsMAC[i]);
+      List<double> auxList;
+      if (widget.saveRaw.value) {
+        auxList = [-1, 10, 0];
+      } else {
+        auxList = _getRangeFromSensor(sensorsMAC[i]);
+      }
       setState(() => rangesList[i] = auxList);
     }
     setState(() => _rangeInitiated = true);
@@ -109,9 +119,6 @@ class _DestinationViewState extends State<DestinationView> {
 
   bool _rangeUpdateNeeded(List data, List currentRange) {
     bool update = false;
-    //List<double> dataL =  List<double>.from(data);
-    //final stats = Stats.fromData(dataL).toJson();
-    //final std = stats['standardDeviation'];
     int std = 5;
     if (data.first < currentRange[0] ||
         currentRange[0] < data.first - 3 * std) {
@@ -145,17 +152,6 @@ class _DestinationViewState extends State<DestinationView> {
     return [min, max, 0];
   }
 
-  /* void _showSnackBar(String _message) {
-    try {
-      _scaffoldRealTime.currentState.showSnackBar(new SnackBar(
-        content: new Text(_message),
-        backgroundColor: Colors.blue,
-      ));
-    } catch (e) {
-      print(e);
-    }
-  } */
-
   Future<void> _timedOutDialog(device) async {
     await Future.delayed(Duration.zero);
     if (!_isTimedOutOpen) {
@@ -179,6 +175,8 @@ class _DestinationViewState extends State<DestinationView> {
           title: Text(
             'Dificuldade em conectar',
             textAlign: TextAlign.start,
+            style: MyTextStyle(
+                color: DefaultColors.textColorOnLight, fontSize: 22),
           ),
           content: SingleChildScrollView(
             child: ListBody(
@@ -193,7 +191,7 @@ class _DestinationViewState extends State<DestinationView> {
                 ButtonBar(
                     alignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      RaisedButton(
+                      ElevatedButton(
                         child: Text("OK"),
                         onPressed: () {
                           widget.destination.dataMACNotifier.removeListener(f);
@@ -220,6 +218,7 @@ class _DestinationViewState extends State<DestinationView> {
           title: Text(
             'Erro ao iniciar',
             textAlign: TextAlign.start,
+            style: MyTextStyle(color: DefaultColors.textColorOnLight, fontSize: 22),
           ),
           content: SingleChildScrollView(
             child: ListBody(
@@ -234,7 +233,7 @@ class _DestinationViewState extends State<DestinationView> {
                 ButtonBar(
                     alignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      RaisedButton(
+                      ElevatedButton(
                         child: Text("OK"),
                         onPressed: () {
                           Navigator.of(context, rootNavigator: true).pop();

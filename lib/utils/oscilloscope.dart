@@ -28,8 +28,8 @@ import 'package:flutter/material.dart';
 class Oscilloscope extends StatefulWidget {
 
   final List<double> dataSet;
-  double yAxisMin;
-  double yAxisMax;
+  final double yAxisMin;
+  final double yAxisMax;
   final double padding;
   final Color backgroundColor;
   final Color traceColor;

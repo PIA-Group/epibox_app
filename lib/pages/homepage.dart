@@ -4,20 +4,20 @@ import 'package:app_settings/app_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:mqtt_client/mqtt_client.dart';
-import 'package:rPiInterface/appbars/expanded_appbar.dart';
-import 'package:rPiInterface/bottom_navbar/destinations.dart';
-import 'package:rPiInterface/bottom_navbar/visualization_page.dart';
-import 'package:rPiInterface/decor/text_styles.dart';
-import 'package:rPiInterface/pages/config_page.dart';
-import 'package:rPiInterface/pages/devices_setup.dart';
-import 'package:rPiInterface/pages/instructions_H.dart';
-import 'package:rPiInterface/pages/profile_drawer.dart';
-import 'package:rPiInterface/pages/rpi_setup.dart';
-import 'package:rPiInterface/decor/default_colors.dart';
-import 'package:rPiInterface/utils/models.dart';
-import 'package:rPiInterface/utils/mqtt_wrapper.dart';
-import 'package:rPiInterface/states/server_state.dart';
-import 'package:rPiInterface/states/acquisition_state.dart';
+import 'package:epibox/appbars/expanded_appbar.dart';
+import 'package:epibox/bottom_navbar/destinations.dart';
+import 'package:epibox/bottom_navbar/visualization_page.dart';
+import 'package:epibox/decor/text_styles.dart';
+import 'package:epibox/pages/config_page.dart';
+import 'package:epibox/pages/devices_setup.dart';
+import 'package:epibox/pages/instructions_H.dart';
+import 'package:epibox/pages/profile_drawer.dart';
+import 'package:epibox/pages/rpi_setup.dart';
+import 'package:epibox/decor/default_colors.dart';
+import 'package:epibox/utils/models.dart';
+import 'package:epibox/utils/mqtt_wrapper.dart';
+import 'package:epibox/states/server_state.dart';
+import 'package:epibox/states/acquisition_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wifi_info_flutter/wifi_info_flutter.dart';
 
@@ -71,6 +71,7 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
       ValueNotifier(List.generate(12, (i) => TextEditingController()));
   ValueNotifier<TextEditingController> controllerFreq =
       ValueNotifier(TextEditingController());
+  ValueNotifier<bool> saveRaw = ValueNotifier(true);
 
   String message;
   Timer timer;
@@ -164,11 +165,9 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
 
   Future<void> _wifiDialog() async {
     await Future.delayed(Duration.zero);
-    //var wifiBSSID = await WifiInfo().getWifiBSSID();
-    await WifiInfo().getWifiIP().then((value) {
-      //var wifiName = await WifiInfo().getWifiName();
-      //print('SSID $wifiBSSID | IP $wifiIP | NAME $wifiName');
-      if (value != '192.168.0.10') {
+    await WifiInfo().getWifiName().then((wifiName) {
+      print('WIFI NAME: $wifiName');
+      if (wifiName != 'PreEpiSeizures') {
         return showDialog<void>(
           context: context,
           barrierDismissible: true,
@@ -177,6 +176,8 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
               title: Text(
                 'Conexão wifi',
                 textAlign: TextAlign.start,
+                style: MyTextStyle(
+                    color: DefaultColors.textColorOnLight, fontSize: 22),
               ),
               content: SingleChildScrollView(
                 child: ListBody(children: <Widget>[
@@ -185,32 +186,25 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
                     child: Text(
                       'Verifique se se encontra conectado à rede "PreEpiSeizures". Caso contrário, por favor conectar com a password "preepiseizures"',
                       textAlign: TextAlign.justify,
+                      style: MyTextStyle(color: DefaultColors.textColorOnLight),
                     ),
                   ),
-                  /* ButtonBar(
-                        alignment: MainAxisAlignment.center,
-                        children: <Widget>[ */
-                  /* RaisedButton(
-                            child: Text("Está conectado!"),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                          ), */
                   Padding(
                     padding:
                         EdgeInsets.only(right: 15.0, left: 15.0, top: 10.0),
-                    child: Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          primary: Colors.grey[200], // background
-                          onPrimary: Colors.grey[600], // foreground
-                        ),
-                        child: Text("WIFI"),
-                        onPressed: () {
-                          AppSettings.openWIFISettings();
-                          Navigator.of(context).pop();
-                        },
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        primary: DefaultColors.mainLColor, // background
+                        onPrimary: DefaultColors.textColorOnDark, // foreground
                       ),
+                      child: Text(
+                        "WIFI",
+                        style: MyTextStyle(),
+                      ),
+                      onPressed: () {
+                        AppSettings.openWIFISettings();
+                        Navigator.of(context).pop();
+                      },
                     ),
                   ),
                 ]),
@@ -248,7 +242,7 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
   Future<void> saveMAC(mac1, mac2) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     try {
-      setState(() => prefs.setStringList('lastMAC', [mac1, mac2]));
+      await prefs.setStringList('lastMAC', [mac1, mac2]);
     } catch (e) {
       print(e);
     }
@@ -277,10 +271,10 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
   Future<void> saveBatteries(battery1, battery2) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     try {
-      setState(() => prefs.setStringList('lastBatteries', [
+      await prefs.setStringList('lastBatteries', [
             battery1,
             battery2,
-          ]));
+          ]);
     } catch (e) {
       print(e);
     }
@@ -333,7 +327,6 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
   }
 
   void updatedConnection(MqttCurrentConnectionState newConnectionState) {
-    setState(() => connectionState = newConnectionState);
     connectionNotifier.value = newConnectionState;
     if (newConnectionState == MqttCurrentConnectionState.DISCONNECTED) {
       receivedMACNotifier.value = false;
@@ -534,7 +527,7 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
 
   void _showSnackBar(String _message) {
     try {
-      _scaffoldKey.currentState.showSnackBar(new SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
         duration: Duration(seconds: 3),
         content: new Text(_message),
         //backgroundColor: Colors.blue,
@@ -557,7 +550,6 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
       key: _scaffoldKey,
       drawer: ProfileDrawer(
         patientNotifier: widget.patientNotifier,
-        nameController: nameController,
         annotationTypesD: annotationTypesD,
         historyMAC: historyMAC,
       ),
@@ -570,7 +562,7 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
         batteryBit1Notifier: batteryBit1Notifier,
         batteryBit2Notifier: batteryBit2Notifier,
       ),
-      body: Column(mainAxisAlignment: MainAxisAlignment.start, children: [
+      body: ListView(/* mainAxisAlignment: MainAxisAlignment.start, */ children: [
         Padding(
           padding: EdgeInsets.fromLTRB(20, vPadding, 20, 0),
           child: Container(
@@ -637,6 +629,7 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
                           timedOut: timedOut,
                           startupError: startupError,
                           allDestinations: allDestinations.value,
+                          saveRaw: saveRaw,
                         );
                       }),
                     );
@@ -706,6 +699,7 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
                           controllerSensors: controllerSensors,
                           controllerFreq: controllerFreq,
                           historyMAC: historyMAC,
+                          saveRaw: saveRaw,
                         );
                       }),
                     );
@@ -767,6 +761,7 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
                           bit2Selections: bit2Selections,
                           controllerSensors: controllerSensors,
                           controllerFreq: controllerFreq,
+                          saveRaw: saveRaw,
                         );
                       }),
                     );
@@ -836,6 +831,7 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
                           timedOut: timedOut,
                           startupError: startupError,
                           allDestinations: allDestinations.value,
+                          saveRaw: saveRaw,
                         );
                       }),
                     );
@@ -890,6 +886,7 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
                           timedOut: timedOut,
                           startupError: startupError,
                           allDestinations: allDestinations.value,
+                          saveRaw: saveRaw,
                         );
                       }),
                     );

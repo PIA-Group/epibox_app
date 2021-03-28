@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:rPiInterface/states/battery_state.dart';
+import 'package:epibox/states/battery_state.dart';
 
 class ExpandedAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -7,8 +7,8 @@ class ExpandedAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Widget state1;
   final String text2;
   final Widget state2;
-  ValueNotifier<double> batteryBit1Notifier;
-  ValueNotifier<double> batteryBit2Notifier;
+  final ValueNotifier<double> batteryBit1Notifier;
+  final ValueNotifier<double> batteryBit2Notifier;
 
   ExpandedAppBar(
       {this.title,
@@ -27,7 +27,7 @@ class ExpandedAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
-          bottom: Radius.circular(30),
+          bottom: Radius.circular(10),
         ),
       ),
       elevation: 4,
@@ -74,35 +74,6 @@ class ExpandedAppBar extends StatelessWidget implements PreferredSizeWidget {
                     ),
                   ),
                 ),
-
-                /* Row(
-                  mainAxisSize: MainAxisSize.max,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      text2,
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: DefaultColors.textColorOnDark),
-                    ),
-                    Expanded(
-                      child: Container(
-                        height: 40,
-                        // width: double.infinity,
-                        child: Card(
-                          child: Center(
-                            child: state2,
-                          ),
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ]
-                ), */
               ),
             ),
             BatteryState(mac: '2', batteryNotifier: batteryBit2Notifier),

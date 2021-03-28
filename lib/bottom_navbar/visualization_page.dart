@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:rPiInterface/bottom_navbar/destinations.dart';
+import 'package:epibox/bottom_navbar/destinations.dart';
 
-import 'package:rPiInterface/pages/speed_annotation.dart';
-import 'package:rPiInterface/pages/visualization_destination.dart';
-import 'package:rPiInterface/decor/default_colors.dart';
-import 'package:rPiInterface/utils/models.dart';
-import 'package:rPiInterface/utils/mqtt_wrapper.dart';
+import 'package:epibox/pages/speed_annotation.dart';
+import 'package:epibox/pages/visualization_destination.dart';
+import 'package:epibox/decor/default_colors.dart';
+import 'package:epibox/utils/models.dart';
+import 'package:epibox/utils/mqtt_wrapper.dart';
 
 class VisualizationPage extends StatefulWidget {
   VisualizationPage({
@@ -27,34 +27,37 @@ class VisualizationPage extends StatefulWidget {
     this.startupError,
     this.macAddress1Notifier,
     this.allDestinations,
+    this.saveRaw,
   });
 
-  ValueNotifier<String> macAddress1Notifier;
+  final ValueNotifier<String> macAddress1Notifier;
 
-  ValueNotifier<List<List>> dataMAC1Notifier;
-  ValueNotifier<List<List>> dataMAC2Notifier;
-  ValueNotifier<List<List>> channelsMAC1Notifier;
-  ValueNotifier<List<List>> channelsMAC2Notifier;
-  ValueNotifier<List> sensorsMAC1Notifier;
-  ValueNotifier<List> sensorsMAC2Notifier;
+  final ValueNotifier<List<List>> dataMAC1Notifier;
+  final ValueNotifier<List<List>> dataMAC2Notifier;
+  final ValueNotifier<List<List>> channelsMAC1Notifier;
+  final ValueNotifier<List<List>> channelsMAC2Notifier;
+  final ValueNotifier<List> sensorsMAC1Notifier;
+  final ValueNotifier<List> sensorsMAC2Notifier;
 
-  MQTTClientWrapper mqttClientWrapper;
+  final MQTTClientWrapper mqttClientWrapper;
 
-  ValueNotifier<String> acquisitionNotifier;
+  final ValueNotifier<String> acquisitionNotifier;
 
-  ValueNotifier<double> batteryBit1Notifier;
-  ValueNotifier<double> batteryBit2Notifier;
+  final ValueNotifier<double> batteryBit1Notifier;
+  final ValueNotifier<double> batteryBit2Notifier;
 
-  ValueNotifier<String> patientNotifier;
+  final ValueNotifier<String> patientNotifier;
 
-  ValueNotifier<List> annotationTypesD;
+  final ValueNotifier<List> annotationTypesD;
 
-  ValueNotifier<String> timedOut;
-  ValueNotifier<bool> startupError;
+  final ValueNotifier<String> timedOut;
+  final ValueNotifier<bool> startupError;
 
-  List<Destination> allDestinations;
+  final List<Destination> allDestinations;
 
-  ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
+  final ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
+
+  final ValueNotifier<bool> saveRaw;
 
   @override
   _VisualizationPageState createState() => _VisualizationPageState();
@@ -64,8 +67,6 @@ class _VisualizationPageState extends State<VisualizationPage>
     with TickerProviderStateMixin<VisualizationPage> {
   int _currentIndex = 0;
   ValueNotifier<bool> newAnnotation = ValueNotifier(false);
-  final GlobalKey<ScaffoldState> _scaffoldRealTime =
-      new GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -94,7 +95,7 @@ class _VisualizationPageState extends State<VisualizationPage>
 
   void _showSnackBar(String _message) {
     try {
-      _scaffoldRealTime.currentState.showSnackBar(new SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
         content: new Text(_message),
         backgroundColor: Colors.blue,
       ));
@@ -128,7 +129,8 @@ class _VisualizationPageState extends State<VisualizationPage>
         top: false,
         child: IndexedStack(
           index: _currentIndex,
-          children: widget.allDestinations.map<Widget>((Destination destination) {
+          children:
+              widget.allDestinations.map<Widget>((Destination destination) {
             return DestinationView(
               destination: destination,
               dataMAC1Notifier: widget.dataMAC1Notifier,
@@ -146,6 +148,7 @@ class _VisualizationPageState extends State<VisualizationPage>
               connectionNotifier: widget.connectionNotifier,
               timedOut: widget.timedOut,
               startupError: widget.startupError,
+              saveRaw: widget.saveRaw,
             );
           }).toList(),
         ),
@@ -161,10 +164,12 @@ class _VisualizationPageState extends State<VisualizationPage>
           return BottomNavigationBarItem(
             icon: Icon(
               destination.icon,
-              color: _currentIndex==widget.allDestinations.indexOf(destination) ? DefaultColors.mainLColor : Colors.grey[800],
+              color:
+                  _currentIndex == widget.allDestinations.indexOf(destination)
+                      ? DefaultColors.mainLColor
+                      : Colors.grey[800],
             ),
             label: destination.label,
-            
           );
         }).toList(),
       ),

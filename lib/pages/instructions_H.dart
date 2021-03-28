@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:rPiInterface/decor/default_colors.dart';
-import 'package:rPiInterface/decor/text_styles.dart';
+import 'package:epibox/decor/default_colors.dart';
+import 'package:epibox/decor/text_styles.dart';
 
 class InstructionsHPage extends StatefulWidget {
   @override
@@ -24,9 +24,8 @@ class _InstructionsHPageState extends State<InstructionsHPage> {
             child: Text(
               'AO INICIAR, VERIFIQUE SE ...',
               style: MyTextStyle(
-                  fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.grey[600]),
+                  color: DefaultColors.textColorOnLight,),
             ),
           ),
           Padding(
@@ -91,7 +90,7 @@ class _InstructionsHPageState extends State<InstructionsHPage> {
               style: MyTextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.grey[600]),
+                  color: DefaultColors.textColorOnLight,),
             ),
           ),
           Padding(
@@ -132,8 +131,7 @@ class _InstructionsHPageState extends State<InstructionsHPage> {
                           TextSpan(
                               text: 'Conectividade',
                               style: MyTextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
+                                  color: DefaultColors.textColorOnLight,
                                   fontWeight: FontWeight.bold)),
                           TextSpan(
                               text:
@@ -155,8 +153,7 @@ class _InstructionsHPageState extends State<InstructionsHPage> {
                           TextSpan(
                               text: 'Selecionar dispositivos',
                               style: MyTextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
+                                  color: DefaultColors.textColorOnLight,
                                   fontWeight: FontWeight.bold)),
                           TextSpan(
                               text:
@@ -166,8 +163,7 @@ class _InstructionsHPageState extends State<InstructionsHPage> {
                           TextSpan(
                               text: '"Definir novo default" ',
                               style: MyTextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
+                                  color: DefaultColors.textColorOnLight,
                                   fontWeight: FontWeight.bold)),
                           TextSpan(
                               text: 'antes de pressionar ',
@@ -176,8 +172,7 @@ class _InstructionsHPageState extends State<InstructionsHPage> {
                           TextSpan(
                               text: '"Selecionar".',
                               style: MyTextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
+                                  color: DefaultColors.textColorOnLight,
                                   fontWeight: FontWeight.bold)),
                         ]),
                       ),
@@ -194,8 +189,7 @@ class _InstructionsHPageState extends State<InstructionsHPage> {
                           TextSpan(
                               text: 'Configurações',
                               style: MyTextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
+                                  color: DefaultColors.textColorOnLight,
                                   fontWeight: FontWeight.bold)),
                           TextSpan(
                               text:
@@ -217,8 +211,7 @@ class _InstructionsHPageState extends State<InstructionsHPage> {
                           TextSpan(
                               text: '"Iniciar" ',
                               style: MyTextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
+                                  color: DefaultColors.textColorOnLight,
                                   fontWeight: FontWeight.bold)),
                           TextSpan(
                               text:
@@ -245,7 +238,7 @@ class _InstructionsHPageState extends State<InstructionsHPage> {
                                   color: DefaultColors.textColorOnLight)),
                           WidgetSpan(
                               child: Icon(Icons.arrow_drop_down,
-                                  color: Colors.grey[600])),
+                                  color: DefaultColors.textColorOnLight,)),
                           TextSpan(
                               text:
                                   ') ou adicionar uma nova (por escrita). Poderá também retificar o instante de ocorrência ou, caso não seja possível, selecionar a caixa ( ',
@@ -253,7 +246,7 @@ class _InstructionsHPageState extends State<InstructionsHPage> {
                                   color: DefaultColors.textColorOnLight)),
                           WidgetSpan(
                               child: Icon(Icons.check_box_outline_blank,
-                                  color: Colors.grey[600])),
+                                  color: DefaultColors.textColorOnLight,)),
                           TextSpan(
                               text: ').',
                               style: MyTextStyle(
@@ -274,8 +267,7 @@ class _InstructionsHPageState extends State<InstructionsHPage> {
                           TextSpan(
                               text: '"Parar"',
                               style: MyTextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
+                                  color: DefaultColors.textColorOnLight,
                                   fontWeight: FontWeight.bold)),
                           TextSpan(
                               text: '.',

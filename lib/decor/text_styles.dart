@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:rPiInterface/decor/default_colors.dart';
+import 'package:epibox/decor/default_colors.dart';
 
 class MyTextStyle extends TextStyle {
   final Color color;

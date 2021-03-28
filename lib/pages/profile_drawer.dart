@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:rPiInterface/decor/default_colors.dart';
+import 'package:epibox/decor/default_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:rPiInterface/decor/text_styles.dart';
+import 'package:epibox/decor/text_styles.dart';
 
 class ProfileDrawer extends StatefulWidget {
-  ValueNotifier<String> patientNotifier;
-  TextEditingController nameController;
-  ValueNotifier<List> annotationTypesD;
-  ValueNotifier<List<String>> historyMAC;
+  final ValueNotifier<String> patientNotifier;
+  final ValueNotifier<List> annotationTypesD;
+  final ValueNotifier<List<String>> historyMAC;
 
   ProfileDrawer({
     this.patientNotifier,
-    this.nameController,
     this.annotationTypesD,
     this.historyMAC,
   });
@@ -22,9 +20,12 @@ class ProfileDrawer extends StatefulWidget {
 
 class _ProfileDrawerState extends State<ProfileDrawer> {
   List<String> annotationTypesS;
+  //TextEditingController _idTemplateController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
+    //_getIdTemplate();
     annotationTypesS = List<String>.from(widget.annotationTypesD.value);
   }
 
@@ -148,6 +149,40 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                 },
               ),
             ),
+            /* Padding(
+                padding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: ValueListenableBuilder(
+                        builder: (BuildContext context, _value, _) {
+                          return TextField(
+                              style: MyTextStyle(
+                                color: DefaultColors.textColorOnLight,
+                              ),
+                              controller: _idTemplateController,
+                              decoration: InputDecoration(
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  border: OutlineInputBorder(),
+                                  labelText: 'ID template',
+                                  isDense: true,
+                                  contentPadding: EdgeInsets.all(10)),
+                              onChanged: null);
+                        },
+                        valueListenable: _idTemplateController,
+                      ),
+                    ),
+                    IconButton(
+                        icon: Icon(
+                          Icons.save_outlined,
+                          color: DefaultColors.mainLColor,
+                          size: 25,
+                        ),
+                        onPressed: () => _updateIdTemplate())
+                  ],
+                )), */
             Padding(
               padding: EdgeInsets.fromLTRB(
                   width - 0.9 * width, 20.0, width - 0.9 * width, 0.0),

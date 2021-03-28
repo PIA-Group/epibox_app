@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:rPiInterface/utils/authentication.dart';
+import 'package:epibox/utils/authentication.dart';
 import 'package:provider/provider.dart';
-import 'package:rPiInterface/utils/id_wrapper.dart';
-import 'package:rPiInterface/decor/default_colors.dart';
+import 'package:epibox/utils/id_wrapper.dart';
+import 'package:epibox/decor/default_colors.dart';
 
 void main() => runApp(new InterfaceRPi());
 
@@ -18,6 +18,7 @@ class InterfaceRPi extends StatelessWidget {
       value: Auth().user,
       child: MaterialApp(
         theme: ThemeData(
+            canvasColor: DefaultColors.backgroundColor,
             scaffoldBackgroundColor: DefaultColors.backgroundColor,
 
             // Define the default brightness and colors.

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:rPiInterface/decor/text_styles.dart';
-import 'package:rPiInterface/utils/models.dart';
-import 'package:rPiInterface/decor/default_colors.dart';
+import 'package:epibox/decor/text_styles.dart';
+import 'package:epibox/utils/models.dart';
+import 'package:epibox/decor/default_colors.dart';
 
 class ServerState extends StatelessWidget {
   final ValueNotifier<MqttCurrentConnectionState> connectionNotifier;

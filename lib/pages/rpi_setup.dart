@@ -1,55 +1,57 @@
 import 'package:flutter/material.dart';
-import 'package:rPiInterface/appbars/condensed_appbar.dart';
-import 'package:rPiInterface/bottom_navbar/destinations.dart';
-import 'package:rPiInterface/bottom_navbar/visualization_page.dart';
-import 'package:rPiInterface/decor/default_colors.dart';
-import 'package:rPiInterface/decor/text_styles.dart';
-import 'package:rPiInterface/utils/models.dart';
-import 'package:rPiInterface/utils/mqtt_wrapper.dart';
+import 'package:epibox/appbars/condensed_appbar.dart';
+import 'package:epibox/bottom_navbar/destinations.dart';
+import 'package:epibox/bottom_navbar/visualization_page.dart';
+import 'package:epibox/decor/default_colors.dart';
+import 'package:epibox/decor/text_styles.dart';
+import 'package:epibox/utils/models.dart';
+import 'package:epibox/utils/mqtt_wrapper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:rPiInterface/states/server_state.dart';
-import 'package:rPiInterface/states/process_state.dart';
+import 'package:epibox/states/server_state.dart';
+import 'package:epibox/states/process_state.dart';
 
 class RPiPage extends StatefulWidget {
-  ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
-  MQTTClientWrapper mqttClientWrapper;
+  final ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
+  final MQTTClientWrapper mqttClientWrapper;
 
-  ValueNotifier<String> defaultMacAddress1Notifier;
-  ValueNotifier<String> defaultMacAddress2Notifier;
+  final ValueNotifier<String> defaultMacAddress1Notifier;
+  final ValueNotifier<String> defaultMacAddress2Notifier;
 
-  ValueNotifier<String> macAddress1Notifier;
-  ValueNotifier<String> macAddress2Notifier;
+  final ValueNotifier<String> macAddress1Notifier;
+  final ValueNotifier<String> macAddress2Notifier;
 
-  ValueNotifier<List<String>> driveListNotifier;
+  final ValueNotifier<List<String>> driveListNotifier;
 
-  ValueNotifier<bool> receivedMACNotifier;
-  ValueNotifier<String> acquisitionNotifier;
-  ValueNotifier<String> hostnameNotifier;
+  final ValueNotifier<bool> receivedMACNotifier;
+  final ValueNotifier<String> acquisitionNotifier;
+  final ValueNotifier<String> hostnameNotifier;
 
-  ValueNotifier<bool> sentMACNotifier;
-  ValueNotifier<bool> sentConfigNotifier;
+  final ValueNotifier<bool> sentMACNotifier;
+  final ValueNotifier<bool> sentConfigNotifier;
 
-  ValueNotifier<double> batteryBit1Notifier;
-  ValueNotifier<double> batteryBit2Notifier;
+  final ValueNotifier<double> batteryBit1Notifier;
+  final ValueNotifier<double> batteryBit2Notifier;
 
-  ValueNotifier<bool> isBit1Enabled;
-  ValueNotifier<bool> isBit2Enabled;
+  final ValueNotifier<bool> isBit1Enabled;
+  final ValueNotifier<bool> isBit2Enabled;
 
-  ValueNotifier<List<List>> dataMAC1Notifier;
-  ValueNotifier<List<List>> dataMAC2Notifier;
-  ValueNotifier<List<List>> channelsMAC1Notifier;
-  ValueNotifier<List<List>> channelsMAC2Notifier;
-  ValueNotifier<List> sensorsMAC1Notifier;
-  ValueNotifier<List> sensorsMAC2Notifier;
+  final ValueNotifier<List<List>> dataMAC1Notifier;
+  final ValueNotifier<List<List>> dataMAC2Notifier;
+  final ValueNotifier<List<List>> channelsMAC1Notifier;
+  final ValueNotifier<List<List>> channelsMAC2Notifier;
+  final ValueNotifier<List> sensorsMAC1Notifier;
+  final ValueNotifier<List> sensorsMAC2Notifier;
 
-  ValueNotifier<String> patientNotifier;
+  final ValueNotifier<String> patientNotifier;
 
-  ValueNotifier<List> annotationTypesD;
+  final ValueNotifier<List> annotationTypesD;
 
-  ValueNotifier<String> timedOut;
-  ValueNotifier<bool> startupError;
+  final ValueNotifier<String> timedOut;
+  final ValueNotifier<bool> startupError;
 
-  List<Destination> allDestinations;
+  final List<Destination> allDestinations;
+
+  final ValueNotifier<bool> saveRaw;
 
   RPiPage({
     this.mqttClientWrapper,
@@ -79,6 +81,7 @@ class RPiPage extends StatefulWidget {
     this.timedOut,
     this.startupError,
     this.allDestinations,
+    this.saveRaw,
   });
 
   @override
@@ -87,6 +90,19 @@ class RPiPage extends StatefulWidget {
 
 class _RPiPageState extends State<RPiPage> {
   String message;
+
+  @override
+  void initState() {
+    super.initState();
+    print('SAVE RAW: ${widget.saveRaw}');
+    widget.receivedMACNotifier.addListener(() {
+      if (widget.connectionNotifier.value ==
+              MqttCurrentConnectionState.CONNECTED &&
+          widget.receivedMACNotifier.value) {
+        Future.delayed(Duration.zero).then((value) => Navigator.pop(context));
+      }
+    });
+  }
 
   Future<void> _restart(String method) async {
     if (method == 'all') {
@@ -115,6 +131,8 @@ class _RPiPageState extends State<RPiPage> {
       widget.isBit1Enabled.value = false;
     });
 
+    print('SAVE RAW: ${widget.saveRaw}');
+
     saveBatteries(null, null);
     saveMAC('Endereço MAC', 'Endereço MAC');
   }
@@ -142,6 +160,7 @@ class _RPiPageState extends State<RPiPage> {
 
   Future<void> _setup() async {
     //_restart('');
+    setState(() => widget.saveRaw.value = true);
     await widget.mqttClientWrapper
         .prepareMqttClient(widget.hostnameNotifier.value);
     var timeStamp = DateTime.now();
@@ -186,6 +205,7 @@ class _RPiPageState extends State<RPiPage> {
                             TextSpan(
                                 text: '"Conectar"',
                                 style: MyTextStyle(
+                                    fontWeight: FontWeight.bold,
                                     color: DefaultColors.textColorOnLight)),
                             TextSpan(
                                 text:
@@ -212,11 +232,8 @@ class _RPiPageState extends State<RPiPage> {
                             TextSpan(
                                 text: '"Reiniciar" ',
                                 style: MyTextStyle(
-                                  fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.grey[600],
-                                  letterSpacing: 1,
-                                  fontFamily: 'Hind',
+                                  color: DefaultColors.textColorOnLight,
                                 )),
                           ])),
                     ),
@@ -239,8 +256,6 @@ class _RPiPageState extends State<RPiPage> {
                           "Conectar",
                           style: MyTextStyle(
                             color: DefaultColors.textColorOnDark,
-                            letterSpacing: 1,
-                            fontFamily: 'Hind',
                           ),
                         ),
                       ),
@@ -257,8 +272,6 @@ class _RPiPageState extends State<RPiPage> {
                           "Reiniciar",
                           style: MyTextStyle(
                             color: DefaultColors.textColorOnDark,
-                            letterSpacing: 1,
-                            fontFamily: 'Hind',
                           ),
                         ),
                       ),
@@ -310,7 +323,7 @@ class _RPiPageState extends State<RPiPage> {
                       builder:
                           (BuildContext context, String state, Widget child) {
                         return RaisedButton(
-                          textColor: Colors.grey[600],
+                          textColor: DefaultColors.textColorOnLight,
                           disabledTextColor: Colors.transparent,
                           disabledColor: Colors.transparent,
                           elevation: state == 'acquiring' ? 2 : 0,
@@ -349,6 +362,7 @@ class _RPiPageState extends State<RPiPage> {
                                         timedOut: widget.timedOut,
                                         startupError: widget.startupError,
                                         allDestinations: widget.allDestinations,
+                                        saveRaw: widget.saveRaw,
                                       );
                                     }),
                                   );

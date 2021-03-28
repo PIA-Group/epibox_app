@@ -4,12 +4,13 @@ import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:rPiInterface/decor/text_styles.dart';
-import 'package:rPiInterface/pages/instructions_H.dart';
-import 'package:rPiInterface/decor/default_colors.dart';
+import 'package:epibox/decor/text_styles.dart';
+import 'package:epibox/pages/instructions_H.dart';
+import 'package:epibox/decor/default_colors.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ScanPage extends StatefulWidget {
-  ValueNotifier<String> patientNotifier;
+  final ValueNotifier<String> patientNotifier;
   ScanPage({this.patientNotifier});
 
   @override
@@ -18,14 +19,32 @@ class ScanPage extends StatefulWidget {
 
 class _ScanPageState extends State<ScanPage> {
   final TextEditingController _idController = TextEditingController();
-  String barcode = "";
+  String barcodeError = "";
 
   @override
   initState() {
     super.initState();
-    var timeStamp = DateTime.now();
-    _idController.text =
-        '${timeStamp.day}_${timeStamp.month}_${timeStamp.year}';
+    //var timeStamp = DateTime.now();
+    _getIdTemplate();
+    /* _idController.text =
+        '${timeStamp.day}_${timeStamp.month}_${timeStamp.year}'; */
+  }
+
+  void _getIdTemplate() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String _idTemplate;
+    try {
+      _idTemplate = prefs.getString('id_template').toString() ?? '';
+      setState(() => _idController.text = _idTemplate);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> _updateIdTemplate() async {
+    await SharedPreferences.getInstance().then((prefs) async {
+      await prefs.setString('id_template', _idController.text);
+    });
   }
 
   @override
@@ -41,12 +60,13 @@ class _ScanPageState extends State<ScanPage> {
         centerTitle: true,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(30),
+            bottom: Radius.circular(10),
           ),
         ),
         title: new Text(
           'Bem vindo ao EpiBOX!',
           style: MyTextStyle(
+            fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -77,16 +97,18 @@ class _ScanPageState extends State<ScanPage> {
                   icon: Icon(
                     MdiIcons.qrcode,
                   ),
-                  label: const Text('INICIAR SCAN')),
+                  label: const Text(
+                    'INICIAR SCAN',
+                    style: MyTextStyle(fontSize: 14),
+                  )),
             ),
             Padding(
               padding: EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 0.0),
               child: Align(
                 alignment: Alignment.center,
                 child: Container(
-                    child: Text(barcode,
-                        style:
-                            MyTextStyle(color: DefaultColors.textColorOnLight),
+                    child: Text(barcodeError,
+                        style: MyTextStyle(color: Colors.grey[500]),
                         textAlign: TextAlign.center)),
               ),
             ),
@@ -106,7 +128,6 @@ class _ScanPageState extends State<ScanPage> {
                               fillColor: Colors.white,
                               border: OutlineInputBorder(),
                               labelText: 'ID do paciente',
-                              isDense: true,
                               contentPadding: EdgeInsets.all(10)),
                           onChanged: null),
                     ),
@@ -116,8 +137,11 @@ class _ScanPageState extends State<ScanPage> {
                           color: DefaultColors.mainLColor,
                           size: 30,
                         ),
-                        onPressed: () => setState(() => widget
-                            .patientNotifier.value = _idController.text.trim()))
+                        onPressed: () {
+                          setState(() => widget.patientNotifier.value =
+                              _idController.text.trim());
+                          _updateIdTemplate();
+                        })
                   ],
                 )),
           ],
@@ -125,7 +149,10 @@ class _ScanPageState extends State<ScanPage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
           //mini: true,
-          label: Text('Instruções'),
+          label: Text(
+            'Instruções',
+            style: MyTextStyle(fontSize: 14),
+          ),
           icon: Icon(Icons.list),
           onPressed: () async {
             Navigator.push(
@@ -144,23 +171,24 @@ class _ScanPageState extends State<ScanPage> {
       String scanString = scan.rawContent;
       if (scan.format != BarcodeFormat.unknown) {
         setState(() => notifier.value = scanString);
-        setState(() => this.barcode = 'ID: ${widget.patientNotifier.value}');
+        setState(
+            () => this.barcodeError = 'ID: ${widget.patientNotifier.value}');
       }
       print('HERE: ${notifier.value}');
     } on PlatformException catch (e) {
       if (e.code == BarcodeScanner.cameraAccessDenied) {
         setState(() {
-          this.barcode = 'É necessário permissão para aceder à camera!';
+          this.barcodeError = 'É necessário permissão para aceder à camera!';
         });
       } else {
-        setState(() => this.barcode = 'Unknown error: $e');
+        setState(() => this.barcodeError = 'Unknown error: $e');
       }
     } on FormatException {
       print('HERE: ${notifier.value}');
       setState(() => notifier.value = null);
-      setState(() => this.barcode = 'Scan não completo.');
+      setState(() => this.barcodeError = 'Scan não completo.');
     } catch (e) {
-      setState(() => this.barcode = 'Unknown error: $e');
+      setState(() => this.barcodeError = 'Unknown error: $e');
     }
   }
 }

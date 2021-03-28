@@ -1,15 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:rPiInterface/decor/default_colors.dart';
-import 'package:rPiInterface/utils/mqtt_wrapper.dart';
+import 'package:epibox/decor/default_colors.dart';
+import 'package:epibox/utils/mqtt_wrapper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SpeedAnnotationDialog extends StatefulWidget {
-  ValueNotifier<List> annotationTypesD;
-  List<String> annotationTypes;
-  ValueNotifier<String> patientNotifier;
-  ValueNotifier<bool> newAnnotation;
-  MQTTClientWrapper mqttClientWrapper;
+  final ValueNotifier<List> annotationTypesD;
+  final List<String> annotationTypes;
+  final ValueNotifier<String> patientNotifier;
+  final ValueNotifier<bool> newAnnotation;
+  final MQTTClientWrapper mqttClientWrapper;
 
   SpeedAnnotationDialog({
     this.annotationTypesD,
@@ -91,7 +91,7 @@ class _SpeedAnnotationDialogState extends State<SpeedAnnotationDialog> {
         actions: [
           IconButton(
               icon: Icon(
-                Icons.save_alt,
+                Icons.save_outlined,
                 color: Colors.white,
               ),
               onPressed: _saveAnnotation)

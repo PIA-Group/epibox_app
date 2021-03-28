@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:rPiInterface/decor/default_colors.dart';
-import 'package:rPiInterface/decor/text_styles.dart';
+import 'package:epibox/decor/default_colors.dart';
+import 'package:epibox/decor/text_styles.dart';
 
 class ConfigSentState extends StatelessWidget {
   final ValueNotifier<bool> sentConfigNotifier;

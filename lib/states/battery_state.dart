@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:rPiInterface/decor/text_styles.dart';
-import 'package:rPiInterface/utils/battery_indicator.dart';
+import 'package:epibox/decor/text_styles.dart';
+import 'package:epibox/utils/battery_indicator.dart';
 
 class BatteryState extends StatelessWidget {
   final String mac;
-  ValueNotifier<double> batteryNotifier;
+  final ValueNotifier<double> batteryNotifier;
   BatteryState({this.mac, this.batteryNotifier});
 
   @override
