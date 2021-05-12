@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:epibox/decor/default_colors.dart';
+import 'package:epibox/decor/text_styles.dart';
 
 import 'oscilloscope.dart';
 
 class PlotData extends StatefulWidget {
-  List<double> yRange;
-  List<double> data;
+  final List<double> yRange;
+  final List<double> data;
 
   PlotData({
     this.yRange,
@@ -47,8 +49,8 @@ class _PlotDataState extends State<PlotData> {
 }
 
 class PlotDataTitle extends StatefulWidget {
-  List channels;
-  String sensor;
+  final List channels;
+  final String sensor;
 
   PlotDataTitle({
     this.channels,
@@ -67,9 +69,9 @@ class _PlotDataTitleState extends State<PlotDataTitle> {
       padding: EdgeInsets.only(top: 10.0,), */
       child: Text(
         'Canal: A${widget.channels[1]} | ${widget.sensor}',
-        style: TextStyle(
+        style: MyTextStyle(
           fontWeight: FontWeight.bold,
-          fontSize: 16,
+          color: DefaultColors.textColorOnLight
         ),
       ),
     );

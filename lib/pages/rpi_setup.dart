@@ -1,47 +1,57 @@
 import 'package:flutter/material.dart';
-import 'package:rPiInterface/common_pages/real_time_MAC1.dart';
-import 'package:rPiInterface/utils/models.dart';
-import 'package:rPiInterface/utils/mqtt_wrapper.dart';
+import 'package:epibox/appbars/condensed_appbar.dart';
+import 'package:epibox/bottom_navbar/destinations.dart';
+import 'package:epibox/bottom_navbar/visualization_page.dart';
+import 'package:epibox/decor/default_colors.dart';
+import 'package:epibox/decor/text_styles.dart';
+import 'package:epibox/utils/models.dart';
+import 'package:epibox/utils/mqtt_wrapper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:epibox/states/server_state.dart';
+import 'package:epibox/states/process_state.dart';
 
 class RPiPage extends StatefulWidget {
-  ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
-  MQTTClientWrapper mqttClientWrapper;
+  final ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
+  final MQTTClientWrapper mqttClientWrapper;
 
-  ValueNotifier<String> defaultMacAddress1Notifier;
-  ValueNotifier<String> defaultMacAddress2Notifier;
+  final ValueNotifier<String> defaultMacAddress1Notifier;
+  final ValueNotifier<String> defaultMacAddress2Notifier;
 
-  ValueNotifier<String> macAddress1Notifier;
-  ValueNotifier<String> macAddress2Notifier;
+  final ValueNotifier<String> macAddress1Notifier;
+  final ValueNotifier<String> macAddress2Notifier;
 
-  ValueNotifier<List<String>> driveListNotifier;
+  final ValueNotifier<List<String>> driveListNotifier;
 
-  ValueNotifier<bool> receivedMACNotifier;
-  ValueNotifier<String> acquisitionNotifier;
-  ValueNotifier<String> hostnameNotifier;
+  final ValueNotifier<bool> receivedMACNotifier;
+  final ValueNotifier<String> acquisitionNotifier;
+  final ValueNotifier<String> hostnameNotifier;
 
-  ValueNotifier<bool> sentMACNotifier;
-  ValueNotifier<bool> sentConfigNotifier;
+  final ValueNotifier<bool> sentMACNotifier;
+  final ValueNotifier<bool> sentConfigNotifier;
 
-  ValueNotifier<double> batteryBit1Notifier;
-  ValueNotifier<double> batteryBit2Notifier;
+  final ValueNotifier<double> batteryBit1Notifier;
+  final ValueNotifier<double> batteryBit2Notifier;
 
-  ValueNotifier<bool> isBit1Enabled;
-  ValueNotifier<bool> isBit2Enabled;
+  final ValueNotifier<bool> isBit1Enabled;
+  final ValueNotifier<bool> isBit2Enabled;
 
-  ValueNotifier<List<List>> dataMAC1Notifier;
-  ValueNotifier<List<List>> dataMAC2Notifier;
-  ValueNotifier<List<List>> channelsMAC1Notifier;
-  ValueNotifier<List<List>> channelsMAC2Notifier;
-  ValueNotifier<List> sensorsMAC1Notifier;
-  ValueNotifier<List> sensorsMAC2Notifier;
+  final ValueNotifier<List<List>> dataMAC1Notifier;
+  final ValueNotifier<List<List>> dataMAC2Notifier;
+  final ValueNotifier<List<List>> channelsMAC1Notifier;
+  final ValueNotifier<List<List>> channelsMAC2Notifier;
+  final ValueNotifier<List> sensorsMAC1Notifier;
+  final ValueNotifier<List> sensorsMAC2Notifier;
 
-  ValueNotifier<String> patientNotifier;
+  final ValueNotifier<String> patientNotifier;
 
-  ValueNotifier<List> annotationTypesD;
+  final ValueNotifier<List> annotationTypesD;
 
-  ValueNotifier<String> timedOut;
-  ValueNotifier<bool> startupError;
+  final ValueNotifier<String> timedOut;
+  final ValueNotifier<bool> startupError;
+
+  final List<Destination> allDestinations;
+
+  final ValueNotifier<bool> saveRaw;
 
   RPiPage({
     this.mqttClientWrapper,
@@ -70,6 +80,8 @@ class RPiPage extends StatefulWidget {
     this.annotationTypesD,
     this.timedOut,
     this.startupError,
+    this.allDestinations,
+    this.saveRaw,
   });
 
   @override
@@ -78,6 +90,19 @@ class RPiPage extends StatefulWidget {
 
 class _RPiPageState extends State<RPiPage> {
   String message;
+
+  @override
+  void initState() {
+    super.initState();
+    print('SAVE RAW: ${widget.saveRaw}');
+    widget.receivedMACNotifier.addListener(() {
+      if (widget.connectionNotifier.value ==
+              MqttCurrentConnectionState.CONNECTED &&
+          widget.receivedMACNotifier.value) {
+        Future.delayed(Duration.zero).then((value) {if (this.mounted) {Navigator.pop(context);}});
+      }
+    });
+  }
 
   Future<void> _restart(String method) async {
     if (method == 'all') {
@@ -106,6 +131,8 @@ class _RPiPageState extends State<RPiPage> {
       widget.isBit1Enabled.value = false;
     });
 
+    print('SAVE RAW: ${widget.saveRaw}');
+
     saveBatteries(null, null);
     saveMAC('Endereço MAC', 'Endereço MAC');
   }
@@ -133,6 +160,7 @@ class _RPiPageState extends State<RPiPage> {
 
   Future<void> _setup() async {
     //_restart('');
+    setState(() => widget.saveRaw.value = true);
     await widget.mqttClientWrapper
         .prepareMqttClient(widget.hostnameNotifier.value);
     var timeStamp = DateTime.now();
@@ -147,68 +175,19 @@ class _RPiPageState extends State<RPiPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: new Text('Conectividade'),
+      appBar: CondensedAppBar(
+        text1: 'Servidor: ',
+        state1: ServerState(
+            connectionNotifier: widget.connectionNotifier, fontSize: 16),
+        text2: 'Processo: ',
+        state2: ProcessState(
+            receivedMACNotifier: widget.receivedMACNotifier, fontSize: 16),
       ),
       body: Center(
         child: ListView(
           children: <Widget>[
-            ValueListenableBuilder(
-                valueListenable: widget.connectionNotifier,
-                builder: (BuildContext context,
-                    MqttCurrentConnectionState state, Widget child) {
-                  return Container(
-                    height: 20,
-                    color: state == MqttCurrentConnectionState.CONNECTED
-                        ? Colors.green[50]
-                        : state == MqttCurrentConnectionState.CONNECTING
-                            ? Colors.yellow[50]
-                            : Colors.red[50],
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Container(
-                        child: Text(
-                          state == MqttCurrentConnectionState.CONNECTED
-                              ? 'Conectado ao servidor'
-                              : state == MqttCurrentConnectionState.CONNECTING
-                                  ? 'A conectar...'
-                                  : 'Disconectado do servidor',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            //fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-            ValueListenableBuilder(
-                valueListenable: widget.receivedMACNotifier,
-                builder: (BuildContext context, bool state, Widget child) {
-                  return Container(
-                    height: 20,
-                    color: state ? Colors.green[50] : Colors.red[50],
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Container(
-                        child: Text(
-                          state
-                              // && _conn == MqttCurrentConnectionState.CONNECTED)
-                              ? 'Processo iniciado'
-                              : 'Processo não iniciado',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            //fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }),
             Padding(
-              padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
+              padding: EdgeInsets.only(top: 50.0),
               child: Column(children: [
                 Padding(
                   padding: EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 0.0),
@@ -221,19 +200,18 @@ class _RPiPageState extends State<RPiPage> {
                             TextSpan(
                                 text:
                                     'Para conectar ao servidor e iniciar processo, clicar em ',
-                                style: TextStyle(
-                                    fontSize: 16, color: Colors.grey[600])),
+                                style: MyTextStyle(
+                                    color: DefaultColors.textColorOnLight)),
                             TextSpan(
                                 text: '"Conectar"',
-                                style: TextStyle(
-                                    fontSize: 16,
+                                style: MyTextStyle(
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.grey[600])),
+                                    color: DefaultColors.textColorOnLight)),
                             TextSpan(
                                 text:
                                     '. Isto irá colocar em marcha os procedimentos necessários para iniciar a aquisição de dados! ',
-                                style: TextStyle(
-                                    fontSize: 16, color: Colors.grey[600])),
+                                style: MyTextStyle(
+                                    color: DefaultColors.textColorOnLight)),
                           ])),
                     ),
                   ),
@@ -249,14 +227,14 @@ class _RPiPageState extends State<RPiPage> {
                             TextSpan(
                                 text:
                                     'Caso queira fazer uma nova aquisição ou caso seja necessário reiniciar o processo, clicar em ',
-                                style: TextStyle(
-                                    fontSize: 16, color: Colors.grey[600])),
+                                style: MyTextStyle(
+                                    color: DefaultColors.textColorOnLight)),
                             TextSpan(
                                 text: '"Reiniciar" ',
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.grey[600])),
+                                style: MyTextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: DefaultColors.textColorOnLight,
+                                )),
                           ])),
                     ),
                   ),
@@ -266,17 +244,36 @@ class _RPiPageState extends State<RPiPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      RaisedButton(
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          primary: DefaultColors.mainLColor, // background
+                          //onPrimary: Colors.white, // foreground
+                        ),
                         onPressed: () {
                           _setup();
                         },
-                        child: new Text("Conectar"),
+                        child: new Text(
+                          "Conectar",
+                          style: MyTextStyle(
+                            color: DefaultColors.textColorOnDark,
+                          ),
+                        ),
                       ),
-                      RaisedButton(
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          primary: DefaultColors.mainLColor, // background
+                          //onPrimary: Colors.white, // foreground
+                        ),
                         onPressed: () {
                           _restart('all');
+                          _setup();
                         },
-                        child: new Text("Reiniciar"),
+                        child: new Text(
+                          "Reiniciar",
+                          style: MyTextStyle(
+                            color: DefaultColors.textColorOnDark,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -292,29 +289,27 @@ class _RPiPageState extends State<RPiPage> {
                           children: [
                             TextSpan(
                                 text: 'Caso esteja ',
-                                style: TextStyle(
-                                    fontSize: 16, color: Colors.grey[600])),
+                                style: MyTextStyle(
+                                    color: DefaultColors.textColorOnLight)),
                             TextSpan(
                                 text: 'conectado ao servidor ',
-                                style: TextStyle(
-                                    fontSize: 16,
+                                style: MyTextStyle(
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.grey[600])),
+                                    color: DefaultColors.textColorOnLight)),
                             TextSpan(
                                 text: 'mas o processo ',
-                                style: TextStyle(
-                                    fontSize: 16, color: Colors.grey[600])),
+                                style: MyTextStyle(
+                                  color: DefaultColors.textColorOnLight,
+                                )),
                             TextSpan(
                                 text: 'não ',
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.grey[600])),
+                                style: MyTextStyle(
+                                    color: DefaultColors.textColorOnLight)),
                             TextSpan(
                                 text:
                                     'tenha sido iniciado, reinincie e tente conectar novamente. Em último caso, desligue e volte a ligar o dispositivo.',
-                                style: TextStyle(
-                                    fontSize: 16, color: Colors.grey[600])),
+                                style: MyTextStyle(
+                                    color: DefaultColors.textColorOnLight)),
                           ],
                         ),
                       ),
@@ -328,7 +323,7 @@ class _RPiPageState extends State<RPiPage> {
                       builder:
                           (BuildContext context, String state, Widget child) {
                         return RaisedButton(
-                          textColor: Colors.grey[600],
+                          textColor: DefaultColors.textColorOnLight,
                           disabledTextColor: Colors.transparent,
                           disabledColor: Colors.transparent,
                           elevation: state == 'acquiring' ? 2 : 0,
@@ -338,7 +333,7 @@ class _RPiPageState extends State<RPiPage> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(builder: (context) {
-                                      return RealtimePageMAC1(
+                                      return VisualizationPage(
                                         dataMAC1Notifier:
                                             widget.dataMAC1Notifier,
                                         dataMAC2Notifier:
@@ -366,12 +361,16 @@ class _RPiPageState extends State<RPiPage> {
                                             widget.connectionNotifier,
                                         timedOut: widget.timedOut,
                                         startupError: widget.startupError,
+                                        allDestinations: widget.allDestinations,
+                                        saveRaw: widget.saveRaw,
                                       );
                                     }),
                                   );
                                 }
                               : null,
-                          child: new Text("Aquisição a decorrer!"),
+                          child: new Text(
+                            "Aquisição a decorrer!",
+                          ),
                         );
                       }),
                 ),

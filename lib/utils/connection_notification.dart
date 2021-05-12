@@ -1,6 +1,6 @@
 
 import 'package:flutter/material.dart';
-import 'package:rPiInterface/utils/models.dart';
+import 'package:epibox/utils/models.dart';
 
 class NewConnectionNotification extends Notification {
   final MqttCurrentConnectionState newConnection;

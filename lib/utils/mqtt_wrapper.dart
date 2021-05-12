@@ -97,17 +97,6 @@ class MQTTClientWrapper {
     client.resubscribe();
     print('RESUBSCRIPTION DONE TO TOPIC $topicName');
 
-    /* await publishMessage("['Send MAC Addresses']");
-    await publishMessage("['Send drives']"); */
-
-    /* client.updates.listen((List<MqttReceivedMessage<MqttMessage>> c) {
-      final MqttPublishMessage recMess = c[0].payload;
-      final String newMessage =
-      MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
-      //print("MQTTClientWrapper::GOT A NEW MESSAGE $newMessage");
-      onNewMessage(newMessage);
-    }); */
-
   }
 
 
@@ -126,9 +115,7 @@ class MQTTClientWrapper {
 
   void _onDisconnected() {
     print('MQTTClientWrapper::OnDisconnected client callback - Client disconnection');
-    /* if (client.connectionStatus.returnCode == MqttConnectReturnCode.solicited) {
-      print('MQTTClientWrapper::OnDisconnected callback is solicited, this is correct');
-    } */
+    
     connectionState = MqttCurrentConnectionState.DISCONNECTED;
     onNewConnection(connectionState);
   }

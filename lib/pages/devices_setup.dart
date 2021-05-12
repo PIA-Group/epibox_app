@@ -2,44 +2,52 @@ import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:rPiInterface/hospital_pages/config_page.dart';
-import 'package:rPiInterface/utils/masked_text.dart';
-import 'package:rPiInterface/utils/models.dart';
-import 'package:rPiInterface/utils/mqtt_wrapper.dart';
+import 'package:epibox/appbars/condensed_appbar.dart';
+import 'package:epibox/decor/text_styles.dart';
+import 'package:epibox/pages/config_page.dart';
+import 'package:epibox/decor/default_colors.dart';
+import 'package:epibox/utils/masked_text.dart';
+import 'package:epibox/utils/models.dart';
+import 'package:epibox/utils/mqtt_wrapper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:epibox/states/server_state.dart';
+import 'package:epibox/states/sent_devices_state.dart';
 
 // programar button "Usar default" e "Usar novo" para enviar MACAddress para RPi e voltar à HomePage
 // programar button "Definir novo default" para enviar MACAddress para RPi e mudar "defaultBIT"
 
 class DevicesPage extends StatefulWidget {
-  ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
-  MQTTClientWrapper mqttClientWrapper;
+  final ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
+  final MQTTClientWrapper mqttClientWrapper;
   MqttCurrentConnectionState connectionState;
 
-  ValueNotifier<String> defaultMacAddress1Notifier;
-  ValueNotifier<String> defaultMacAddress2Notifier;
+  final ValueNotifier<String> defaultMacAddress1Notifier;
+  final ValueNotifier<String> defaultMacAddress2Notifier;
 
-  ValueNotifier<String> macAddress1Notifier;
-  ValueNotifier<String> macAddress2Notifier;
+  final ValueNotifier<String> macAddress1Notifier;
+  final ValueNotifier<String> macAddress2Notifier;
 
-  ValueNotifier<String> patientNotifier;
+  final ValueNotifier<String> patientNotifier;
 
-  ValueNotifier<bool> isBit1Enabled;
-  ValueNotifier<bool> isBit2Enabled;
+  final ValueNotifier<bool> isBit1Enabled;
+  final ValueNotifier<bool> isBit2Enabled;
 
-  ValueNotifier<bool> receivedMACNotifier;
-  ValueNotifier<bool> sentMACNotifier;
+  final ValueNotifier<bool> receivedMACNotifier;
+  final ValueNotifier<bool> sentMACNotifier;
 
-  ValueNotifier<List<String>> historyMAC;
+  final ValueNotifier<List<String>> historyMAC;
 
-  ValueNotifier<List<String>> driveListNotifier;
-  ValueNotifier<bool> sentConfigNotifier;
-  ValueNotifier<List> configDefault;
-  ValueNotifier<String> chosenDrive;
-  ValueNotifier<List<bool>> bit1Selections;
-  ValueNotifier<List<bool>> bit2Selections;
-  ValueNotifier<List<TextEditingController>> controllerSensors;
-  ValueNotifier<TextEditingController> controllerFreq;
+  final ValueNotifier<List<String>> driveListNotifier;
+  final ValueNotifier<bool> sentConfigNotifier;
+  final ValueNotifier<List> configDefault;
+  final ValueNotifier<String> chosenDrive;
+  final ValueNotifier<List<bool>> bit1Selections;
+  final ValueNotifier<List<bool>> bit2Selections;
+  final ValueNotifier<List<TextEditingController>> controllerSensors;
+  final ValueNotifier<TextEditingController> controllerFreq;
+  final ValueNotifier<bool> saveRaw;
+  final ValueNotifier<String> isBitalino;
+  
 
   DevicesPage({
     this.mqttClientWrapper,
@@ -62,6 +70,8 @@ class DevicesPage extends StatefulWidget {
     this.controllerSensors,
     this.controllerFreq,
     this.historyMAC,
+    this.saveRaw,
+    this.isBitalino,
   });
 
   @override
@@ -85,8 +95,16 @@ class _DevicesPageState extends State<DevicesPage> {
   void initState() {
     super.initState();
     if (widget.macAddress1Notifier.value == 'Endereço MAC') {
-      _controller1.text = widget.defaultMacAddress1Notifier.value;
-      _controller2.text = widget.defaultMacAddress2Notifier.value;
+      if (widget.defaultMacAddress1Notifier.value == '') {
+        _controller1.text = ' ';
+      } else {
+        _controller1.text = widget.defaultMacAddress1Notifier.value;
+      }
+      if (widget.defaultMacAddress2Notifier.value == '') {
+        _controller2.text = ' ';
+      } else {
+        _controller2.text = widget.defaultMacAddress2Notifier.value;
+      }
     } else {
       _controller1.text = widget.macAddress1Notifier.value;
       _controller2.text = widget.macAddress2Notifier.value;
@@ -142,64 +160,16 @@ class _DevicesPageState extends State<DevicesPage> {
         MediaQuery.of(context).viewInsets.right;
 
     return Scaffold(
-      appBar: new AppBar(
-        title: new Text('BITalino(s)'),
+      appBar: CondensedAppBar(
+        text1: 'Servidor: ',
+        state1: ServerState(
+            connectionNotifier: widget.connectionNotifier, fontSize: 16),
+        text2: '',
+        state2:
+            SentMACState(sentMACNotifier: widget.sentMACNotifier, fontSize: 16),
       ),
       body: Center(
         child: ListView(children: <Widget>[
-          ValueListenableBuilder(
-              valueListenable: widget.connectionNotifier,
-              builder: (BuildContext context, MqttCurrentConnectionState state,
-                  Widget child) {
-                return Container(
-                  height: 20,
-                  color: state == MqttCurrentConnectionState.CONNECTED
-                      ? Colors.green[50]
-                      : state == MqttCurrentConnectionState.CONNECTING
-                          ? Colors.yellow[50]
-                          : Colors.red[50],
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: Container(
-                      child: Text(
-                        state == MqttCurrentConnectionState.CONNECTED
-                            ? 'Conectado ao servidor'
-                            : state == MqttCurrentConnectionState.CONNECTING
-                                ? 'A conectar...'
-                                : 'Disconectado do servidor',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          //fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }),
-          ValueListenableBuilder(
-              valueListenable: widget.sentMACNotifier,
-              builder: (BuildContext context, bool state, Widget child) {
-                return Container(
-                  height: 20,
-                  color: state ? Colors.green[50] : Colors.red[50],
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: Container(
-                      child: Text(
-                        state
-                            ? 'Enviado'
-                            : 'Selecione dispositivos para proceder',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          //fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }),
           Padding(
             padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
             child: Column(children: [
@@ -211,9 +181,9 @@ class _DevicesPageState extends State<DevicesPage> {
                     child: Text(
                       'Selecionar dispositivo(s) de aquisição',
                       textAlign: TextAlign.left,
-                      style: TextStyle(
+                      style: MyTextStyle(
+                        color: DefaultColors.textColorOnLight,
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
                       ),
                     ),
                   ),
@@ -295,9 +265,9 @@ class _DevicesPageState extends State<DevicesPage> {
                         child: Text(
                           'Histórico de dispositivos',
                           textAlign: TextAlign.left,
-                          style: TextStyle(
+                          style: MyTextStyle(
+                            color: DefaultColors.textColorOnLight,
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
                           ),
                         ),
                       ),
@@ -342,8 +312,9 @@ class _DevicesPageState extends State<DevicesPage> {
                                           value: value,
                                           child: Text(
                                             value,
-                                            style: TextStyle(
-                                                color: Colors.grey[600]),
+                                            style: MyTextStyle(
+                                                color: DefaultColors
+                                                    .textColorOnLight),
                                           ),
                                         );
                                       }).toList(),
@@ -377,8 +348,9 @@ class _DevicesPageState extends State<DevicesPage> {
                                           value: value,
                                           child: Text(
                                             value,
-                                            style: TextStyle(
-                                                color: Colors.grey[600]),
+                                            style: MyTextStyle(
+                                                color: DefaultColors
+                                                    .textColorOnLight),
                                           ),
                                         );
                                       }).toList(),
@@ -402,7 +374,11 @@ class _DevicesPageState extends State<DevicesPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    RaisedButton(
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        primary: DefaultColors.mainLColor, // background
+                        //onPrimary: Colors.white, // foreground
+                      ),
                       onPressed: () {
                         setState(() => widget.macAddress1Notifier.value =
                             _controller1.text
@@ -445,13 +421,22 @@ class _DevicesPageState extends State<DevicesPage> {
                               bit2Selections: widget.bit2Selections,
                               controllerSensors: widget.controllerSensors,
                               controllerFreq: widget.controllerFreq,
+                              saveRaw: widget.saveRaw,
+                              isBitalino: widget.isBitalino,
                             );
                           }),
                         );
                       },
-                      child: new Text("Selecionar"),
+                      child: new Text(
+                        "Selecionar",
+                        style: MyTextStyle(),
+                      ),
                     ),
-                    RaisedButton(
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        primary: DefaultColors.mainLColor, // background
+                        //onPrimary: Colors.white, // foreground
+                      ),
                       onPressed: () {
                         setState(() => widget.macAddress1Notifier.value =
                             _controller1.text
@@ -464,7 +449,10 @@ class _DevicesPageState extends State<DevicesPage> {
                         widget.mqttClientWrapper.publishMessage(
                             "['NEW MAC',{'MAC1':'${widget.macAddress1Notifier.value}','MAC2':'${widget.macAddress2Notifier.value}'}]");
                       },
-                      child: new Text("Definir novo default"),
+                      child: new Text(
+                        "Definir novo default",
+                        style: MyTextStyle(),
+                      ),
                     ),
                   ],
                 ),
