@@ -46,6 +46,7 @@ dependencies:
   app_settings: ^4.0.4
   xrange: ^1.0.0
   wifi_info_flutter: ^2.0.0
+  list_tile_switch: ^1.0.0 
   # wifi_flutter: ^0.1.0+1
   
   # The following adds the Cupertino Icons font to your application.

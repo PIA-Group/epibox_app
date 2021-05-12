@@ -46,6 +46,8 @@ class DevicesPage extends StatefulWidget {
   final ValueNotifier<List<TextEditingController>> controllerSensors;
   final ValueNotifier<TextEditingController> controllerFreq;
   final ValueNotifier<bool> saveRaw;
+  final ValueNotifier<String> isBitalino;
+  
 
   DevicesPage({
     this.mqttClientWrapper,
@@ -69,6 +71,7 @@ class DevicesPage extends StatefulWidget {
     this.controllerFreq,
     this.historyMAC,
     this.saveRaw,
+    this.isBitalino,
   });
 
   @override
@@ -419,6 +422,7 @@ class _DevicesPageState extends State<DevicesPage> {
                               controllerSensors: widget.controllerSensors,
                               controllerFreq: widget.controllerFreq,
                               saveRaw: widget.saveRaw,
+                              isBitalino: widget.isBitalino,
                             );
                           }),
                         );

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:epibox/appbars/condensed_appbar.dart';
 import 'package:epibox/decor/default_colors.dart';
@@ -30,6 +29,7 @@ class ConfigPage extends StatefulWidget {
   final ValueNotifier<TextEditingController> controllerFreq;
 
   final ValueNotifier<bool> saveRaw;
+  final ValueNotifier<String> isBitalino;
 
   ConfigPage({
     this.mqttClientWrapper,
@@ -47,6 +47,7 @@ class ConfigPage extends StatefulWidget {
     this.controllerSensors,
     this.controllerFreq,
     this.saveRaw,
+    this.isBitalino,
   });
 
   @override
@@ -54,7 +55,6 @@ class ConfigPage extends StatefulWidget {
 }
 
 class _ConfigPageState extends State<ConfigPage> {
-
   List<DropdownMenuItem<String>> sensorItems = [
     '-',
     'ECG',
@@ -209,8 +209,10 @@ class _ConfigPageState extends State<ConfigPage> {
     widget.mqttClientWrapper
         .publishMessage("['FS', ${widget.controllerFreq.value.text}]");
 
-     widget.mqttClientWrapper
+    widget.mqttClientWrapper
         .publishMessage("['SAVE RAW', '${widget.saveRaw.value}']");
+    widget.mqttClientWrapper
+        .publishMessage("['EPI SERVICE', '${widget.isBitalino.value}']");
 
     List<List<String>> _channels2Send = _getChannels2Send();
     widget.mqttClientWrapper.publishMessage("['CHANNELS', $_channels2Send]");

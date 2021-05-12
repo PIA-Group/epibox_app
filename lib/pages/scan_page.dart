@@ -58,11 +58,11 @@ class _ScanPageState extends State<ScanPage> {
     return Scaffold(
       appBar: new AppBar(
         centerTitle: true,
-        shape: RoundedRectangleBorder(
+        /* shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
             bottom: Radius.circular(10),
           ),
-        ),
+        ), */
         title: new Text(
           'Bem vindo ao EpiBOX!',
           style: MyTextStyle(

@@ -99,7 +99,7 @@ class _RPiPageState extends State<RPiPage> {
       if (widget.connectionNotifier.value ==
               MqttCurrentConnectionState.CONNECTED &&
           widget.receivedMACNotifier.value) {
-        Future.delayed(Duration.zero).then((value) => Navigator.pop(context));
+        Future.delayed(Duration.zero).then((value) {if (this.mounted) {Navigator.pop(context);}});
       }
     });
   }

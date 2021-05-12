@@ -14,11 +14,11 @@ class CondensedAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       //title: Padding(padding: EdgeInsets.only(top: 50), child:Text('cenas'),),
-      shape: RoundedRectangleBorder(
+      /* shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           bottom: Radius.circular(10),
         ),
-      ),
+      ), */
       elevation: 4,
       flexibleSpace: Padding(
         padding: EdgeInsets.only(top: 32, right: 20),

@@ -19,10 +19,11 @@ import 'package:epibox/utils/mqtt_wrapper.dart';
 import 'package:epibox/states/server_state.dart';
 import 'package:epibox/states/acquisition_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:wifi_info_flutter/wifi_info_flutter.dart';
 
 class HomeHPage extends StatefulWidget {
-  ValueNotifier<String> patientNotifier;
+  final ValueNotifier<String> patientNotifier;
   HomeHPage({this.patientNotifier});
 
   @override
@@ -86,6 +87,8 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
   ValueNotifier<List> sensorsMAC1Notifier = ValueNotifier([]);
   ValueNotifier<List> sensorsMAC2Notifier = ValueNotifier([]);
 
+  bool _isDialogOpen = false;
+
   MqttCurrentConnectionState connectionState;
   MQTTClientWrapper mqttClientWrapper;
   MqttClient client;
@@ -94,10 +97,15 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
 
   final TextEditingController nameController = TextEditingController();
 
+  final ValueNotifier<String> isBitalino = ValueNotifier('');
+
   FlutterLocalNotificationsPlugin batteryNotification =
       FlutterLocalNotificationsPlugin();
 
   ValueNotifier<List> annotationTypesD = ValueNotifier([]);
+
+  StreamSubscription<ConnectivityResult> subscription;
+  String _connectionStatus = 'Unknown';
 
   void setupHome() {
     mqttClientWrapper = MQTTClientWrapper(
@@ -111,6 +119,9 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+
+    subscription =
+        Connectivity().onConnectivityChanged.listen(_updateConnectionStatus);
 
     macAddress1Notifier.addListener(() {
       setState(
@@ -134,8 +145,9 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
     acquisitionNotifier.value = 'off';
     setupHome();
     nameController.text = " ";
-    _wifiDialog();
+    //_wifiDialog();
     getAnnotationTypes();
+    getPreviousDevice();
     getLastMAC();
     print(
         'LAST MAC: ${macAddress1Notifier.value}, ${macAddress2Notifier.value}');
@@ -164,51 +176,66 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
   }
 
   Future<void> _wifiDialog() async {
+    if (_isDialogOpen) Navigator.of(context, rootNavigator: true).pop();
     await Future.delayed(Duration.zero);
     await WifiInfo().getWifiName().then((wifiName) {
       print('WIFI NAME: $wifiName');
       if (wifiName != 'PreEpiSeizures') {
+        _isDialogOpen = true;
+        print('isDialog: $_isDialogOpen');
         return showDialog<void>(
           context: context,
           barrierDismissible: true,
           builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text(
-                'Conexão wifi',
-                textAlign: TextAlign.start,
-                style: MyTextStyle(
-                    color: DefaultColors.textColorOnLight, fontSize: 22),
-              ),
-              content: SingleChildScrollView(
-                child: ListBody(children: <Widget>[
-                  Padding(
-                    padding: EdgeInsets.only(right: 15.0, left: 15.0),
-                    child: Text(
-                      'Verifique se se encontra conectado à rede "PreEpiSeizures". Caso contrário, por favor conectar com a password "preepiseizures"',
-                      textAlign: TextAlign.justify,
-                      style: MyTextStyle(color: DefaultColors.textColorOnLight),
-                    ),
-                  ),
-                  Padding(
-                    padding:
-                        EdgeInsets.only(right: 15.0, left: 15.0, top: 10.0),
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        primary: DefaultColors.mainLColor, // background
-                        onPrimary: DefaultColors.textColorOnDark, // foreground
-                      ),
+            return WillPopScope(
+              child: AlertDialog(
+                title: Text(
+                  'Conexão wifi',
+                  textAlign: TextAlign.start,
+                  style: MyTextStyle(
+                      color: DefaultColors.textColorOnLight, fontSize: 22),
+                ),
+                content: SingleChildScrollView(
+                  child: ListBody(children: <Widget>[
+                    Padding(
+                      padding: EdgeInsets.only(right: 15.0, left: 15.0),
                       child: Text(
-                        "WIFI",
-                        style: MyTextStyle(),
+                        'Verifique se se encontra conectado à rede "PreEpiSeizures". Caso contrário, por favor conectar com a password "preepiseizures"',
+                        textAlign: TextAlign.justify,
+                        style:
+                            MyTextStyle(color: DefaultColors.textColorOnLight),
                       ),
-                      onPressed: () {
-                        AppSettings.openWIFISettings();
-                        Navigator.of(context).pop();
-                      },
                     ),
-                  ),
-                ]),
+                    Padding(
+                      padding:
+                          EdgeInsets.only(right: 15.0, left: 15.0, top: 10.0),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          primary: DefaultColors.mainLColor, // background
+                          onPrimary:
+                              DefaultColors.textColorOnDark, // foreground
+                        ),
+                        child: Text(
+                          "WIFI",
+                          style: MyTextStyle(),
+                        ),
+                        onPressed: () {
+                          _isDialogOpen = false;
+                          AppSettings.openWIFISettings();
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ),
+                  ]),
+                ),
               ),
+              onWillPop: () {
+                _isDialogOpen = false;
+                print('isDialog: $_isDialogOpen');
+                return Future.delayed(Duration.zero, () {
+                  return true;
+                });
+              },
             );
           },
         );
@@ -222,6 +249,18 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
     try {
       annot = prefs.getStringList('annotationTypes').toList() ?? [];
       setState(() => annotationTypesD.value = annot);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void getPreviousDevice() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String device;
+    try {
+      device = prefs.getString('deviceType') ?? 'Bitalino';
+      setState(() => isBitalino.value = device);
+      print('Device: $device');
     } catch (e) {
       print(e);
     }
@@ -272,9 +311,9 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     try {
       await prefs.setStringList('lastBatteries', [
-            battery1,
-            battery2,
-          ]);
+        battery1,
+        battery2,
+      ]);
     } catch (e) {
       print(e);
     }
@@ -310,6 +349,7 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
     timer?.cancel();
     super.dispose();
     nameController.dispose();
+    subscription.cancel();
   }
 
   void gotNewMessage(String newMessage) {
@@ -324,6 +364,7 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
     _isBatteryLevel(message);
     _isTimeout(message);
     _isStartupError(message);
+    _isTurnedOff(message);
   }
 
   void updatedConnection(MqttCurrentConnectionState newConnectionState) {
@@ -332,6 +373,20 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
       receivedMACNotifier.value = false;
     }
     print('This is the new connection state $connectionState');
+  }
+
+  Future<void> _updateConnectionStatus(ConnectivityResult result) async {
+    switch (result) {
+      case ConnectivityResult.wifi:
+      case ConnectivityResult.mobile:
+      case ConnectivityResult.none:
+        setState(() => _connectionStatus = result.toString());
+        _wifiDialog();
+        break;
+      default:
+        setState(() => _connectionStatus = 'Failed to get connectivity.');
+        break;
+    }
   }
 
   void _isMACAddress(String message) {
@@ -401,7 +456,7 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
       print('PAIRING');
     } else if (message.contains('STOPPED')) {
       setState(() => acquisitionNotifier.value = 'stopped');
-      _restart();
+      _restart(true);
       print('ACQUISITION STOPPED AND SAVED');
     } else if (message.contains('PAUSED')) {
       setState(() => acquisitionNotifier.value = 'paused');
@@ -490,12 +545,60 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
   void _isStartupError(String message) {
     if (message.contains('ERROR')) {
       setState(() => startupError.value = true);
-      _restart();
+      _restart(true);
     }
   }
 
-  Future<void> _restart() async {
-    mqttClientWrapper.publishMessage("['RESTART']");
+  void _isTurnedOff(String message) {
+    if (message.contains('TURNED OFF')) {
+      print(message);
+      _restart(false);
+      _showTurnedOffDialog();
+    }
+  }
+
+  Future<void> _showTurnedOffDialog() async {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'RPi desligado corretamente!',
+            textAlign: TextAlign.center,
+            style: MyTextStyle(
+                color: DefaultColors.textColorOnLight, fontSize: 22),
+          ),
+          content: SingleChildScrollView(
+            child: ListBody(children: <Widget>[
+              Padding(
+                padding: EdgeInsets.only(right: 15.0, left: 15.0, top: 10.0),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    primary: DefaultColors.mainLColor, // background
+                    onPrimary: DefaultColors.textColorOnDark, // foreground
+                  ),
+                  child: Text(
+                    "OK",
+                    style: MyTextStyle(),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ),
+            ]),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _restart(bool restart) async {
+    if (restart) {
+      mqttClientWrapper.publishMessage("['RESTART']");
+    }
+
     await mqttClientWrapper.diconnectClient();
 
     setState(() {
@@ -549,9 +652,11 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
     return Scaffold(
       key: _scaffoldKey,
       drawer: ProfileDrawer(
+        mqttClientWrapper: mqttClientWrapper,
         patientNotifier: widget.patientNotifier,
         annotationTypesD: annotationTypesD,
         historyMAC: historyMAC,
+        isBitalino: isBitalino,
       ),
       appBar: ExpandedAppBar(
         title: 'EpiBOX',
@@ -562,7 +667,8 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
         batteryBit1Notifier: batteryBit1Notifier,
         batteryBit2Notifier: batteryBit2Notifier,
       ),
-      body: ListView(/* mainAxisAlignment: MainAxisAlignment.start, */ children: [
+      body:
+          ListView(/* mainAxisAlignment: MainAxisAlignment.start, */ children: [
         Padding(
           padding: EdgeInsets.fromLTRB(20, vPadding, 20, 0),
           child: Container(
@@ -666,12 +772,12 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
                   title: Text(
                     'Selecionar dispositivos',
                     style: MyTextStyle(
-                      color: DefaultColors.textColorOnLight,
+                      color: receivedMACNotifier.value == true ? DefaultColors.textColorOnLight : Colors.grey,
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
                     ),
                   ),
-                  //enabled: receivedMACNotifier.value == true,
+                  enabled: receivedMACNotifier.value == true,
                   onTap: () async {
                     Navigator.push(
                       context,
@@ -700,6 +806,7 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
                           controllerFreq: controllerFreq,
                           historyMAC: historyMAC,
                           saveRaw: saveRaw,
+                          isBitalino: isBitalino,
                         );
                       }),
                     );
@@ -736,12 +843,12 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
                   title: Text(
                     'Configurações',
                     style: MyTextStyle(
-                      color: DefaultColors.textColorOnLight,
+                      color: receivedMACNotifier.value == true ? DefaultColors.textColorOnLight : Colors.grey,
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
                     ),
                   ),
-                  //enabled: receivedMACNotifier.value == true,
+                  enabled: receivedMACNotifier.value == true,
                   onTap: () async {
                     Navigator.push(
                       context,
@@ -762,6 +869,7 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
                           controllerSensors: controllerSensors,
                           controllerFreq: controllerFreq,
                           saveRaw: saveRaw,
+                          isBitalino: isBitalino,
                         );
                       }),
                     );
@@ -804,12 +912,12 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
                   title: Text(
                     'Aquisição',
                     style: MyTextStyle(
-                      color: DefaultColors.textColorOnLight,
+                      color: acquisitionNotifier.value == 'acquiring' ? DefaultColors.textColorOnLight : Colors.grey,
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
                     ),
                   ),
-                  //enabled: acquisitionNotifier.value == 'acquiring',
+                  enabled: acquisitionNotifier.value == 'acquiring',
                   onTap: () async {
                     Navigator.push(
                       context,

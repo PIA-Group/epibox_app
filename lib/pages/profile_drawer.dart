@@ -1,17 +1,22 @@
+import 'package:epibox/utils/mqtt_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:epibox/decor/text_styles.dart';
 
 class ProfileDrawer extends StatefulWidget {
+  final MQTTClientWrapper mqttClientWrapper;
   final ValueNotifier<String> patientNotifier;
   final ValueNotifier<List> annotationTypesD;
   final ValueNotifier<List<String>> historyMAC;
+  final ValueNotifier<String> isBitalino;
 
   ProfileDrawer({
+    this.mqttClientWrapper,
     this.patientNotifier,
     this.annotationTypesD,
     this.historyMAC,
+    this.isBitalino,
   });
 
   @override
@@ -20,12 +25,14 @@ class ProfileDrawer extends StatefulWidget {
 
 class _ProfileDrawerState extends State<ProfileDrawer> {
   List<String> annotationTypesS;
+  int _radioValue;
+  Map<String,int> typeOfDevices = {'Bitalino': 0, 'Mini': 1, 'Sense': 2};
   //TextEditingController _idTemplateController = TextEditingController();
-
+  
   @override
   void initState() {
     super.initState();
-    //_getIdTemplate();
+    _radioValue = typeOfDevices[widget.isBitalino.value];
     annotationTypesS = List<String>.from(widget.annotationTypesD.value);
   }
 
@@ -39,6 +46,11 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setStringList('historyMAC', widget.historyMAC.value);
     print('removed MAC');
+  }
+
+  void _updateDeviceType() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('deviceType', widget.isBitalino.value);
   }
 
   Iterable<Widget> get annotationsWidgets sync* {
@@ -102,27 +114,30 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
           // Important: Remove any padding from the ListView.
           padding: EdgeInsets.zero,
           children: <Widget>[
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: DefaultColors.mainColor,
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  CircleAvatar(
-                      radius: 40.0,
-                      backgroundImage: AssetImage('images/owl.jpg')),
-                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Text('ID:  ',
-                        style: MyTextStyle(
-                          fontSize: 18,
-                        )),
-                    Text(widget.patientNotifier.value,
-                        style: MyTextStyle(
-                          fontSize: 18,
-                        )),
-                  ]),
-                ],
+            Container(
+              height: 170,
+              child: DrawerHeader(
+                decoration: BoxDecoration(
+                  color: DefaultColors.mainColor,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    CircleAvatar(
+                        radius: 40.0,
+                        backgroundImage: AssetImage('images/owl.jpg')),
+                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                      Text('ID:  ',
+                          style: MyTextStyle(
+                            fontSize: 18,
+                          )),
+                      Text(widget.patientNotifier.value,
+                          style: MyTextStyle(
+                            fontSize: 18,
+                          )),
+                    ]),
+                  ],
+                ),
               ),
             ),
             Padding(
@@ -135,7 +150,8 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                 ),
                 label: Text(
                   'Sign out',
-                  style: MyTextStyle(fontSize: 16, color: DefaultColors.textColorOnLight),
+                  style: MyTextStyle(
+                      fontSize: 16, color: DefaultColors.textColorOnLight),
                 ),
                 icon: Icon(
                   Icons.person,
@@ -149,43 +165,95 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                 },
               ),
             ),
-            /* Padding(
-                padding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: ValueListenableBuilder(
-                        builder: (BuildContext context, _value, _) {
-                          return TextField(
-                              style: MyTextStyle(
-                                color: DefaultColors.textColorOnLight,
-                              ),
-                              controller: _idTemplateController,
-                              decoration: InputDecoration(
-                                  filled: true,
-                                  fillColor: Colors.white,
-                                  border: OutlineInputBorder(),
-                                  labelText: 'ID template',
-                                  isDense: true,
-                                  contentPadding: EdgeInsets.all(10)),
-                              onChanged: null);
-                        },
-                        valueListenable: _idTemplateController,
-                      ),
-                    ),
-                    IconButton(
-                        icon: Icon(
-                          Icons.save_outlined,
-                          color: DefaultColors.mainLColor,
-                          size: 25,
-                        ),
-                        onPressed: () => _updateIdTemplate())
-                  ],
-                )), */
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                  width - 0.9 * width, 5, width - 0.9 * width, 0.0),
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.grey[200], // background
+                  onPrimary: Colors.grey[600], // foreground
+                ),
+                label: Text(
+                  'Desligar RPi',
+                  style: MyTextStyle(
+                      fontSize: 16, color: DefaultColors.textColorOnLight),
+                ),
+                icon: Icon(
+                  Icons.power_settings_new_rounded,
+                  color: Colors.grey[600],
+                ),
+                onPressed: () {
+                  setState(() {
+                    widget.mqttClientWrapper.publishMessage("['TURN OFF']");
+                    Navigator.pop(context);
+                  });
+                },
+              ),
+            ),
             Padding(
               padding: EdgeInsets.fromLTRB(
                   width - 0.9 * width, 20.0, width - 0.9 * width, 0.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Text('BITalino',
+                          style: MyTextStyle(
+                              color: DefaultColors.textColorOnLight)),
+                      Radio(
+                        value: 0,
+                        groupValue: _radioValue,
+                        onChanged: (int value) {
+                          setState(() {
+                                _radioValue = value;
+                                widget.isBitalino.value = 'Bitalino';
+                                _updateDeviceType();
+                              });
+                            }),
+                    ],
+                  ),
+                  Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Text('Mini',
+                            style: MyTextStyle(
+                                color: DefaultColors.textColorOnLight)),
+                        Radio(
+                          value: 1,
+                          groupValue: _radioValue,
+                          onChanged: (int value) {
+                            setState(() {
+                                _radioValue = value;
+                                widget.isBitalino.value = 'Mini';
+                                _updateDeviceType();
+                              });
+                            }),
+                      ]),
+                  /* Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Text('Sense',
+                            style: MyTextStyle(
+                                color: DefaultColors.textColorOnLight)),
+                        Radio(
+                            value: 2,
+                            groupValue: _radioValue,
+                            onChanged: (int value) {
+                              setState(() {
+                                _radioValue = value;
+                                widget.isBitalino.value = 'Sense';
+                                _updateDeviceType();
+                              });
+                            }),
+                      ]), */
+                ],
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                  width - 0.9 * width, 10.0, width - 0.9 * width, 0.0),
               child: Text('Tipos de Anotações:',
                   style: MyTextStyle(
                     color: DefaultColors.textColorOnLight,
@@ -250,7 +318,8 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                       )),
                 ),
               ),
-            )
+            ),
+            SizedBox(height: 20)
           ]),
     );
   }
