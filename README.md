@@ -15,7 +15,7 @@ This mobile app is complementary to the Python package epibox (available @ [epib
 - Real-time visualization of up-to 12 channels
 - In-acquisition annotations
 
-![](intro-gif.gif) ![](config-gif.gif) ![](vizualize-gif.gif)
+![](intro-gif.gif) ![](config-gif.gif) ![](visualize-gif.gif)
 
 ## Additional Resources
 
