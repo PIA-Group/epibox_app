@@ -5,7 +5,7 @@ EpiBOX is a user-friendly solution for long-term monitorings, enabling researche
 
 EpiBOX app is a user-friendly interface to configure, start, visualize, pause and stop acquisitions with wearable devices. Currently, EpiBOX supports BITalino-based equipments allowing for the recording, storage and visualization of up to 12 channels simmultaneously. 
 
-This mobile app is complementary to the Python package epibox (available at [epibox (GitHub)](https://github.com/anascacais/epibox) and [epibox (PyPI)](https://pypi.org/project/epibox/)), designed for use with a Raspberry Pi.
+This mobile app is complementary to the Python package epibox (available @ [epibox (GitHub)](https://github.com/anascacais/epibox) and [epibox (PyPI)](https://pypi.org/project/epibox/)), designed for use with a Raspberry Pi.
 
 ## Features
 
@@ -28,7 +28,7 @@ Why Raspberry Pi:
  - Ease of system replication - through shell script or Docker (soon!)
  - Computational and storage power
 
-
+Get to know our project @ [LinkedIn - PreEpiSeizures](https://www.linkedin.com/feed/update/urn:li:activity:6787017108631941120/)
 
 
 
