@@ -2,7 +2,6 @@ import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:epibox/appbars/condensed_appbar.dart';
 import 'package:epibox/decor/text_styles.dart';
 import 'package:epibox/pages/config_page.dart';
 import 'package:epibox/decor/default_colors.dart';
@@ -10,8 +9,6 @@ import 'package:epibox/utils/masked_text.dart';
 import 'package:epibox/utils/models.dart';
 import 'package:epibox/utils/mqtt_wrapper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:epibox/states/server_state.dart';
-import 'package:epibox/states/sent_devices_state.dart';
 
 // programar button "Usar default" e "Usar novo" para enviar MACAddress para RPi e voltar à HomePage
 // programar button "Definir novo default" para enviar MACAddress para RPi e mudar "defaultBIT"
@@ -159,7 +156,7 @@ class _DevicesPageState extends State<DevicesPage> {
         MediaQuery.of(context).viewInsets.left -
         MediaQuery.of(context).viewInsets.right;
 
-    return Scaffold(
+    return /* Scaffold(
       appBar: CondensedAppBar(
         text1: 'Servidor: ',
         state1: ServerState(
@@ -169,7 +166,7 @@ class _DevicesPageState extends State<DevicesPage> {
             SentMACState(sentMACNotifier: widget.sentMACNotifier, fontSize: 16),
       ),
       body: Center(
-        child: ListView(children: <Widget>[
+        child:  */ListView(children: <Widget>[
           Padding(
             padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
             child: Column(children: [
@@ -459,9 +456,7 @@ class _DevicesPageState extends State<DevicesPage> {
               ),
             ]),
           ),
-        ]),
-      ),
-    );
+        ]);
   }
 
   Future scan(TextEditingController controller) async {

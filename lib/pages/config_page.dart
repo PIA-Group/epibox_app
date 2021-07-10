@@ -360,7 +360,7 @@ class _ConfigPageState extends State<ConfigPage> {
                                     EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 0.0),
                                 child: DropdownButton(
                                   value: widget.controllerFreq.value.text,
-                                  items: ['1000', '100', '10', '1']
+                                  items: ['17000', '16000', '10000', '9000', '7000', '6000', '5000', '4000', '3000', '1000', '100', '10', '1']
                                       .map<DropdownMenuItem<String>>(
                                           (String value) {
                                     return DropdownMenuItem<String>(

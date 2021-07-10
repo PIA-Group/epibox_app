@@ -381,19 +381,7 @@ class _DestinationViewState extends State<DestinationView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: ExpandedAppBar(
-        title: '',
-        text1: 'Servidor: ',
-        state1: ServerState(connectionNotifier: widget.connectionNotifier),
-        text2: 'Aquisição: ',
-        state2:
-            AcquisitionState(acquisitionNotifier: widget.acquisitionNotifier),
-        batteryBit1Notifier: widget.batteryBit1Notifier,
-        batteryBit2Notifier: widget.batteryBit2Notifier,
-      ),
-      //backgroundColor: widget.destination.color[100],
-      body: Column(children: [
+    return Column(children: [
         Expanded(
           child: Container(
             width: MediaQuery.of(context).size.width - 15.0,
@@ -495,7 +483,6 @@ class _DestinationViewState extends State<DestinationView> {
             ),
           ),
         ),
-      ]),
-    );
+      ]);
   }
 }

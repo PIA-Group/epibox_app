@@ -24,7 +24,9 @@ class ExpandedAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppBar(
+    return AppBar();
+
+    /* AppBar(
       /* shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           bottom: Radius.circular(10),
@@ -80,6 +82,6 @@ class ExpandedAppBar extends StatelessWidget implements PreferredSizeWidget {
           ]),
         ]),
       ),
-    );
+    ); */
   }
 }

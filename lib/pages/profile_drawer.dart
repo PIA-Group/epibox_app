@@ -231,7 +231,7 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                               });
                             }),
                       ]),
-                  /* Column(
+                  Column(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         Text('Sense',
@@ -247,7 +247,7 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                                 _updateDeviceType();
                               });
                             }),
-                      ]), */
+                      ]),
                 ],
               ),
             ),

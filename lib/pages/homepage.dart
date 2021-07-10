@@ -640,6 +640,15 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
     }
   }
 
+  double appBarHeight = 100;
+  int _navigationIndex = 0;
+
+  void _onNavigationTap(int index) {
+  setState(() {
+    _navigationIndex = index;
+  });
+}
+
   @override
   Widget build(BuildContext context) {
     double vPadding = (MediaQuery.of(context).size.height -
@@ -649,26 +658,454 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
             0.13 * MediaQuery.of(context).size.height) /
         2;
 
-    return Scaffold(
-      key: _scaffoldKey,
-      drawer: ProfileDrawer(
-        mqttClientWrapper: mqttClientWrapper,
-        patientNotifier: widget.patientNotifier,
-        annotationTypesD: annotationTypesD,
-        historyMAC: historyMAC,
-        isBitalino: isBitalino,
+    return Stack(children: [
+      Positioned(
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        child: Container(
+          height: appBarHeight * 2,
+          color: DefaultColors.mainColor,
+        ),
       ),
-      appBar: ExpandedAppBar(
-        title: 'EpiBOX',
-        text1: 'Servidor: ',
-        state1: ServerState(connectionNotifier: connectionNotifier),
-        text2: 'Aquisição: ',
-        state2: AcquisitionState(acquisitionNotifier: acquisitionNotifier),
-        batteryBit1Notifier: batteryBit1Notifier,
-        batteryBit2Notifier: batteryBit2Notifier,
+      /* Scaffold(
+        key: _scaffoldKey,
+        drawer: ProfileDrawer(
+          mqttClientWrapper: mqttClientWrapper,
+          patientNotifier: widget.patientNotifier,
+          annotationTypesD: annotationTypesD,
+          historyMAC: historyMAC,
+          isBitalino: isBitalino,
+        ),
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(appBarHeight * 2),
+          child: AppBar(
+            elevation: 0,
+          ),
+        ),
+        body: new Container(child: Text('cenas')),
+      ), */
+      Positioned(
+          top: appBarHeight,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            key: _scaffoldKey,
+            body: Container(
+              decoration: BoxDecoration(
+                  color: DefaultColors.backgroundColor,
+                  borderRadius: new BorderRadius.only(
+                    topLeft: const Radius.circular(30.0),
+                    topRight: const Radius.circular(30.0),
+                  )),
+              child: new Center(
+                child: ListView(
+                    /* mainAxisAlignment: MainAxisAlignment.start, */ children: [
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(20, vPadding, 20, 0),
+                        child: Container(
+                          height: MediaQuery.of(context).size.height * 0.13,
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: Center(
+                              child: ListTile(
+                                leading: Container(
+                                  width: 50.0,
+                                  height: 50.0,
+                                  /*  padding: const EdgeInsets.all(
+                        20.0), //I used some padding without fixed width and height */
+                                  decoration: new BoxDecoration(
+                                    shape: BoxShape
+                                        .circle, // You can use like this way or like the below line
+                                    //borderRadius: new BorderRadius.circular(30.0),
+                                    color: DefaultColors.mainLColor,
+                                  ),
+                                  child: Icon(Icons.wifi, color: Colors.white),
+                                ),
+                                title: Text(
+                                  'Conectividade',
+                                  style: MyTextStyle(
+                                    color: DefaultColors.textColorOnLight,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                onTap: () async {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) {
+                                      return RPiPage(
+                                        mqttClientWrapper: mqttClientWrapper,
+                                        connectionNotifier: connectionNotifier,
+                                        defaultMacAddress1Notifier:
+                                            defaultMacAddress1Notifier,
+                                        defaultMacAddress2Notifier:
+                                            defaultMacAddress2Notifier,
+                                        macAddress1Notifier:
+                                            macAddress1Notifier,
+                                        macAddress2Notifier:
+                                            macAddress2Notifier,
+                                        receivedMACNotifier:
+                                            receivedMACNotifier,
+                                        driveListNotifier: driveListNotifier,
+                                        acquisitionNotifier:
+                                            acquisitionNotifier,
+                                        hostnameNotifier: hostnameNotifier,
+                                        sentMACNotifier: sentMACNotifier,
+                                        sentConfigNotifier: sentConfigNotifier,
+                                        batteryBit1Notifier:
+                                            batteryBit1Notifier,
+                                        batteryBit2Notifier:
+                                            batteryBit2Notifier,
+                                        isBit1Enabled: isBit1Enabled,
+                                        isBit2Enabled: isBit2Enabled,
+                                        dataMAC1Notifier: dataMAC1Notifier,
+                                        dataMAC2Notifier: dataMAC2Notifier,
+                                        channelsMAC1Notifier:
+                                            channelsMAC1Notifier,
+                                        channelsMAC2Notifier:
+                                            channelsMAC2Notifier,
+                                        sensorsMAC1Notifier:
+                                            sensorsMAC1Notifier,
+                                        sensorsMAC2Notifier:
+                                            sensorsMAC2Notifier,
+                                        patientNotifier: widget.patientNotifier,
+                                        annotationTypesD: annotationTypesD,
+                                        timedOut: timedOut,
+                                        startupError: startupError,
+                                        allDestinations: allDestinations.value,
+                                        saveRaw: saveRaw,
+                                      );
+                                    }),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(20, 2, 20, 0),
+                        child: Container(
+                          height: MediaQuery.of(context).size.height * 0.13,
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: Center(
+                              child: ListTile(
+                                leading: Container(
+                                  width: 50.0,
+                                  height: 50.0,
+                                  /*  padding: const EdgeInsets.all(
+                        20.0), //I used some padding without fixed width and height */
+                                  decoration: new BoxDecoration(
+                                    shape: BoxShape
+                                        .circle, // You can use like this way or like the below line
+                                    //borderRadius: new BorderRadius.circular(30.0),
+                                    color: DefaultColors.mainLColor,
+                                  ),
+                                  child: Icon(Icons.device_hub_rounded,
+                                      color: Colors.white),
+                                ),
+                                title: Text(
+                                  'Selecionar dispositivos',
+                                  style: MyTextStyle(
+                                    color: receivedMACNotifier.value == true
+                                        ? DefaultColors.textColorOnLight
+                                        : Colors.grey,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                //enabled: receivedMACNotifier.value == true,
+                                onTap: () async {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) {
+                                      return DevicesPage(
+                                        patientNotifier: widget.patientNotifier,
+                                        mqttClientWrapper: mqttClientWrapper,
+                                        defaultMacAddress1Notifier:
+                                            defaultMacAddress1Notifier,
+                                        defaultMacAddress2Notifier:
+                                            defaultMacAddress2Notifier,
+                                        macAddress1Notifier:
+                                            macAddress1Notifier,
+                                        macAddress2Notifier:
+                                            macAddress2Notifier,
+                                        connectionNotifier: connectionNotifier,
+                                        isBit1Enabled: isBit1Enabled,
+                                        isBit2Enabled: isBit2Enabled,
+                                        receivedMACNotifier:
+                                            receivedMACNotifier,
+                                        sentMACNotifier: sentMACNotifier,
+                                        driveListNotifier: driveListNotifier,
+                                        sentConfigNotifier: sentConfigNotifier,
+                                        configDefault: configDefaultNotifier,
+                                        chosenDrive: chosenDrive,
+                                        bit1Selections: bit1Selections,
+                                        bit2Selections: bit2Selections,
+                                        controllerSensors: controllerSensors,
+                                        controllerFreq: controllerFreq,
+                                        historyMAC: historyMAC,
+                                        saveRaw: saveRaw,
+                                        isBitalino: isBitalino,
+                                      );
+                                    }),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(20, 2, 20, 0),
+                        child: Container(
+                          height: MediaQuery.of(context).size.height * 0.13,
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: Center(
+                              child: ListTile(
+                                leading: Container(
+                                  width: 50.0,
+                                  height: 50.0,
+                                  /*  padding: const EdgeInsets.all(
+                        20.0), //I used some padding without fixed width and height */
+                                  decoration: new BoxDecoration(
+                                    shape: BoxShape
+                                        .circle, // You can use like this way or like the below line
+                                    //borderRadius: new BorderRadius.circular(30.0),
+                                    color: DefaultColors.mainLColor,
+                                  ),
+                                  child:
+                                      Icon(Icons.settings, color: Colors.white),
+                                ),
+                                title: Text(
+                                  'Configurações',
+                                  style: MyTextStyle(
+                                    color: receivedMACNotifier.value == true
+                                        ? DefaultColors.textColorOnLight
+                                        : Colors.grey,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                //enabled: receivedMACNotifier.value == true,
+                                onTap: () async {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) {
+                                      return ConfigPage(
+                                        mqttClientWrapper: mqttClientWrapper,
+                                        connectionNotifier: connectionNotifier,
+                                        driveListNotifier: driveListNotifier,
+                                        isBit1Enabled: isBit1Enabled,
+                                        isBit2Enabled: isBit2Enabled,
+                                        macAddress1Notifier:
+                                            macAddress1Notifier,
+                                        macAddress2Notifier:
+                                            macAddress2Notifier,
+                                        sentConfigNotifier: sentConfigNotifier,
+                                        configDefault: configDefaultNotifier,
+                                        chosenDrive: chosenDrive,
+                                        bit1Selections: bit1Selections,
+                                        bit2Selections: bit2Selections,
+                                        controllerSensors: controllerSensors,
+                                        controllerFreq: controllerFreq,
+                                        saveRaw: saveRaw,
+                                        isBitalino: isBitalino,
+                                      );
+                                    }),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(20, 2, 20, 0),
+                        child: Container(
+                          height: MediaQuery.of(context).size.height * 0.13,
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: Center(
+                              child: ListTile(
+                                leading: Container(
+                                  width: 50.0,
+                                  height: 50.0,
+                                  padding: const EdgeInsets.all(10),
+                                  /*  padding: const EdgeInsets.all(
+                        20.0), //I used some padding without fixed width and height */
+                                  decoration: new BoxDecoration(
+                                    shape: BoxShape
+                                        .circle, // You can use like this way or like the below line
+                                    //borderRadius: new BorderRadius.circular(30.0),
+                                    color: DefaultColors.mainLColor,
+                                  ),
+                                  child: Image.asset(
+                                    "images/ecg.png",
+                                    color: Colors.white,
+                                    width: 24.0,
+                                    height: 24.0,
+                                  ),
+                                ),
+                                title: Text(
+                                  'Aquisição',
+                                  style: MyTextStyle(
+                                    color:
+                                        acquisitionNotifier.value == 'acquiring'
+                                            ? DefaultColors.textColorOnLight
+                                            : Colors.grey,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                //enabled: acquisitionNotifier.value == 'acquiring',
+                                onTap: () async {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) {
+                                      return VisualizationPage(
+                                        dataMAC1Notifier: dataMAC1Notifier,
+                                        dataMAC2Notifier: dataMAC2Notifier,
+                                        channelsMAC1Notifier:
+                                            channelsMAC1Notifier,
+                                        channelsMAC2Notifier:
+                                            channelsMAC2Notifier,
+                                        sensorsMAC1Notifier:
+                                            sensorsMAC1Notifier,
+                                        sensorsMAC2Notifier:
+                                            sensorsMAC2Notifier,
+                                        mqttClientWrapper: mqttClientWrapper,
+                                        acquisitionNotifier:
+                                            acquisitionNotifier,
+                                        batteryBit1Notifier:
+                                            batteryBit1Notifier,
+                                        batteryBit2Notifier:
+                                            batteryBit2Notifier,
+                                        patientNotifier: widget.patientNotifier,
+                                        annotationTypesD: annotationTypesD,
+                                        connectionNotifier: connectionNotifier,
+                                        timedOut: timedOut,
+                                        startupError: startupError,
+                                        allDestinations: allDestinations.value,
+                                        saveRaw: saveRaw,
+                                      );
+                                    }),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ]),
+              ),
+            ),
+            bottomNavigationBar: BottomNavigationBar(
+              currentIndex: _navigationIndex, //New
+              onTap: _onNavigationTap,
+              items: const <BottomNavigationBarItem>[
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.call),
+                  label: 'Calls',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.camera),
+                  label: 'Camera',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.chat),
+                  label: 'Chats',
+                ),
+              ],
+            ),
+          )),
+    ]);
+  }
+}
+      /* floatingActionButton: Stack(children: [
+        Align(
+          alignment: Alignment(-0.8, 1.0),
+          child: FloatingActionButton(
+              mini: true,
+              heroTag: null,
+              child: Icon(Icons.list),
+              onPressed: () async {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) {
+                    return InstructionsHPage();
+                  }),
+                );
+              }),
+        ),
+        Align(
+          alignment: Alignment.bottomRight,
+          child: FloatingActionButton.extended(
+            onPressed: sentMACNotifier.value
+                ? () async {
+                    mqttClientWrapper.publishMessage("['START']");
+                    //print(annotationTypesD);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) {
+                        return VisualizationPage(
+                          //return RealtimePageMAC1(
+                          dataMAC1Notifier: dataMAC1Notifier,
+                          dataMAC2Notifier: dataMAC2Notifier,
+                          channelsMAC1Notifier: channelsMAC1Notifier,
+                          channelsMAC2Notifier: channelsMAC2Notifier,
+                          sensorsMAC1Notifier: sensorsMAC1Notifier,
+                          sensorsMAC2Notifier: sensorsMAC2Notifier,
+                          mqttClientWrapper: mqttClientWrapper,
+                          acquisitionNotifier: acquisitionNotifier,
+                          batteryBit1Notifier: batteryBit1Notifier,
+                          batteryBit2Notifier: batteryBit2Notifier,
+                          patientNotifier: widget.patientNotifier,
+                          annotationTypesD: annotationTypesD,
+                          connectionNotifier: connectionNotifier,
+                          timedOut: timedOut,
+                          startupError: startupError,
+                          allDestinations: allDestinations.value,
+                          saveRaw: saveRaw,
+                        );
+                      }),
+                    );
+                  }
+                : () => {
+                      connectionState != MqttCurrentConnectionState.CONNECTED
+                          ? _showSnackBar('Erro: disconectado do RPi')
+                          : _showSnackBar(
+                              'Erro: dispositivo(s) ainda não selecionado(s)'),
+                    },
+            label: Text('Iniciar'),
+            icon: Icon(Icons.play_circle_outline),
+          ),
+        ),
+      ]), 
+          ),
+        ),
       ),
-      body:
-          ListView(/* mainAxisAlignment: MainAxisAlignment.start, */ children: [
+    ]); */
+
+    /* ListView(/* mainAxisAlignment: MainAxisAlignment.start, */ children: [
         Padding(
           padding: EdgeInsets.fromLTRB(20, vPadding, 20, 0),
           child: Container(
@@ -772,12 +1209,14 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
                   title: Text(
                     'Selecionar dispositivos',
                     style: MyTextStyle(
-                      color: receivedMACNotifier.value == true ? DefaultColors.textColorOnLight : Colors.grey,
+                      color: receivedMACNotifier.value == true
+                          ? DefaultColors.textColorOnLight
+                          : Colors.grey,
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
                     ),
                   ),
-                  enabled: receivedMACNotifier.value == true,
+                  //enabled: receivedMACNotifier.value == true,
                   onTap: () async {
                     Navigator.push(
                       context,
@@ -843,12 +1282,14 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
                   title: Text(
                     'Configurações',
                     style: MyTextStyle(
-                      color: receivedMACNotifier.value == true ? DefaultColors.textColorOnLight : Colors.grey,
+                      color: receivedMACNotifier.value == true
+                          ? DefaultColors.textColorOnLight
+                          : Colors.grey,
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
                     ),
                   ),
-                  enabled: receivedMACNotifier.value == true,
+                  //enabled: receivedMACNotifier.value == true,
                   onTap: () async {
                     Navigator.push(
                       context,
@@ -912,12 +1353,14 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
                   title: Text(
                     'Aquisição',
                     style: MyTextStyle(
-                      color: acquisitionNotifier.value == 'acquiring' ? DefaultColors.textColorOnLight : Colors.grey,
+                      color: acquisitionNotifier.value == 'acquiring'
+                          ? DefaultColors.textColorOnLight
+                          : Colors.grey,
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
                     ),
                   ),
-                  enabled: acquisitionNotifier.value == 'acquiring',
+                  //enabled: acquisitionNotifier.value == 'acquiring',
                   onTap: () async {
                     Navigator.push(
                       context,
@@ -1009,7 +1452,7 @@ class _HomeHPageState extends State<HomeHPage> with TickerProviderStateMixin {
             icon: Icon(Icons.play_circle_outline),
           ),
         ),
-      ]),
-    );
-  }
-}
+      ]), */
+    //);
+  //}
+//}
