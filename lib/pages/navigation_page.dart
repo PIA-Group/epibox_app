@@ -1,6 +1,5 @@
 import 'package:epibox/pages/acquisition_page.dart';
-import 'package:epibox/pages/config_page2.dart';
-import 'package:epibox/pages/homepage2.dart';
+import 'package:epibox/pages/config_page.dart';
 import 'package:epibox/pages/profile_drawer.dart';
 import 'package:epibox/pages/server_page.dart';
 import 'package:flutter/material.dart';
@@ -14,8 +13,6 @@ import 'package:epibox/bottom_navbar/destinations.dart';
 
 import 'package:epibox/decor/text_styles.dart';
 
-import 'package:epibox/pages/devices_setup.dart';
-
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/utils/models.dart';
 import 'package:epibox/utils/mqtt_wrapper.dart';
@@ -24,6 +21,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:wifi_info_flutter/wifi_info_flutter.dart';
 import 'package:epibox/decor/custom_icons.dart';
+
+import 'devices_page.dart';
 
 class NavigationPage extends StatefulWidget {
   final ValueNotifier<String> patientNotifier;
@@ -48,7 +47,7 @@ class _NavigationPageState extends State<NavigationPage>
   ValueNotifier<String> defaultMacAddress2Notifier =
       ValueNotifier('Endereço MAC');
 
-  ValueNotifier<List<String>> driveListNotifier = ValueNotifier(['RPi']);
+  ValueNotifier<List<String>> driveListNotifier = ValueNotifier([' ']);
 
   ValueNotifier<String> hostnameNotifier = ValueNotifier('192.168.0.10');
 
@@ -58,7 +57,7 @@ class _NavigationPageState extends State<NavigationPage>
   ValueNotifier<bool> sentMACNotifier = ValueNotifier(false);
   ValueNotifier<bool> sentConfigNotifier = ValueNotifier(false);
 
-  ValueNotifier<List> configDefaultNotifier = ValueNotifier([]);
+  ValueNotifier<Map<String,dynamic>> configDefaultNotifier = ValueNotifier({});
 
   ValueNotifier<bool> isBit1Enabled = ValueNotifier(false);
   ValueNotifier<bool> isBit2Enabled = ValueNotifier(false);
@@ -69,13 +68,13 @@ class _NavigationPageState extends State<NavigationPage>
   ValueNotifier<String> timedOut = ValueNotifier(null);
   ValueNotifier<bool> startupError = ValueNotifier(false);
 
-  ValueNotifier<String> chosenDrive = ValueNotifier(null);
+  ValueNotifier<String> chosenDrive = ValueNotifier(' ');
   ValueNotifier<List<bool>> bit1Selections = ValueNotifier(null);
   ValueNotifier<List<bool>> bit2Selections = ValueNotifier(null);
   ValueNotifier<List<TextEditingController>> controllerSensors =
       ValueNotifier(List.generate(12, (i) => TextEditingController()));
   ValueNotifier<TextEditingController> controllerFreq =
-      ValueNotifier(TextEditingController());
+      ValueNotifier(TextEditingController(text: ' '));
   ValueNotifier<bool> saveRaw = ValueNotifier(true);
 
   String message;
@@ -366,6 +365,7 @@ class _NavigationPageState extends State<NavigationPage>
   }
 
   void gotNewMessage(String newMessage) {
+    print('NEW MESSAGE: $message');
     setState(() => message = newMessage);
     _isMACAddress(message);
     _isDrivesList(message);
@@ -414,6 +414,16 @@ class _NavigationPageState extends State<NavigationPage>
       } catch (e) {
         print(e);
       }
+      if (defaultMacAddress1Notifier.value != '' or defaultMacAddress1Notifier.value != ' ') {
+        setState(() => isBit1Enabled.value = true);
+      } else {
+        setState(() => isBit1Enabled.value = false);
+      }
+      if (defaultMacAddress2Notifier.value != '' or defaultMacAddress2Notifier.value != ' ') {
+        setState(() => isBit2Enabled.value = true);
+      } else {
+        setState(() => isBit2Enabled.value = false);
+      }
     }
   }
 
@@ -424,6 +434,7 @@ class _NavigationPageState extends State<NavigationPage>
         listDrives.removeAt(0);
         listDrives = listDrives.map((drive) => drive.split("'")[1]).toList();
         setState(() => driveListNotifier.value = listDrives);
+        driveListNotifier.notifyListeners();
         print(driveListNotifier);
         mqttClientWrapper.publishMessage("['GO TO DEVICES']");
       } catch (e) {
@@ -627,8 +638,9 @@ class _NavigationPageState extends State<NavigationPage>
 
       acquisitionNotifier.value = 'off';
 
-      driveListNotifier.value = ['RPi'];
-      chosenDrive.value = null;
+      driveListNotifier.value = [' '];
+      chosenDrive.value = ' ';
+      controllerFreq.value.text = ' ';
 
       batteryBit1Notifier.value = null;
       batteryBit2Notifier.value = null;
@@ -807,7 +819,6 @@ class _NavigationPageState extends State<NavigationPage>
                               sentMACNotifier: sentMACNotifier,
                               driveListNotifier: driveListNotifier,
                               sentConfigNotifier: sentConfigNotifier,
-                              configDefault: configDefaultNotifier,
                               chosenDrive: chosenDrive,
                               bit1Selections: bit1Selections,
                               bit2Selections: bit2Selections,

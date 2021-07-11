@@ -95,17 +95,6 @@ class _ServerPageState extends State<ServerPage> {
   void initState() {
     super.initState();
     print('SAVE RAW: ${widget.saveRaw}');
-    widget.receivedMACNotifier.addListener(() {
-      if (widget.connectionNotifier.value ==
-              MqttCurrentConnectionState.CONNECTED &&
-          widget.receivedMACNotifier.value) {
-        Future.delayed(Duration.zero).then((value) {
-          if (this.mounted) {
-            Navigator.pop(context);
-          }
-        });
-      }
-    });
   }
 
   Future<void> _restart(String method) async {
@@ -171,9 +160,10 @@ class _ServerPageState extends State<ServerPage> {
     String time =
         "${timeStamp.year}-${timeStamp.month}-${timeStamp.day} ${timeStamp.hour}:${timeStamp.minute}:${timeStamp.second}";
     widget.mqttClientWrapper.publishMessage("['TIME', '$time']");
-    widget.mqttClientWrapper.publishMessage("['Send MAC Addresses']");
-    widget.mqttClientWrapper.publishMessage("['Send config']");
-    widget.mqttClientWrapper.publishMessage("['Send drives']");
+    widget.mqttClientWrapper.publishMessage("['Send default']");
+    //widget.mqttClientWrapper.publishMessage("['Send MAC Addresses']");
+    //widget.mqttClientWrapper.publishMessage("['Send config']");
+    //widget.mqttClientWrapper.publishMessage("['Send drives']");
   }
 
   @override
@@ -320,43 +310,7 @@ class _ServerPageState extends State<ServerPage> {
                       disabledTextColor: Colors.transparent,
                       disabledColor: Colors.transparent,
                       elevation: state == 'acquiring' ? 2 : 0,
-                      onPressed: state == 'acquiring'
-                          ? () {
-                              Navigator.pop(context);
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) {
-                                  return VisualizationPage(
-                                    dataMAC1Notifier: widget.dataMAC1Notifier,
-                                    dataMAC2Notifier: widget.dataMAC2Notifier,
-                                    channelsMAC1Notifier:
-                                        widget.channelsMAC1Notifier,
-                                    channelsMAC2Notifier:
-                                        widget.channelsMAC2Notifier,
-                                    sensorsMAC1Notifier:
-                                        widget.sensorsMAC1Notifier,
-                                    sensorsMAC2Notifier:
-                                        widget.sensorsMAC2Notifier,
-                                    mqttClientWrapper: widget.mqttClientWrapper,
-                                    acquisitionNotifier:
-                                        widget.acquisitionNotifier,
-                                    batteryBit1Notifier:
-                                        widget.batteryBit1Notifier,
-                                    batteryBit2Notifier:
-                                        widget.batteryBit2Notifier,
-                                    patientNotifier: widget.patientNotifier,
-                                    annotationTypesD: widget.annotationTypesD,
-                                    connectionNotifier:
-                                        widget.connectionNotifier,
-                                    timedOut: widget.timedOut,
-                                    startupError: widget.startupError,
-                                    allDestinations: widget.allDestinations,
-                                    saveRaw: widget.saveRaw,
-                                  );
-                                }),
-                              );
-                            }
-                          : null,
+                      onPressed: state == 'acquiring' ? () {} : null,
                       child: new Text(
                         "Aquisição a decorrer!",
                       ),
