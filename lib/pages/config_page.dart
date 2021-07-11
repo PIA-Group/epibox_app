@@ -16,6 +16,9 @@ class ConfigPage extends StatefulWidget {
   final ValueNotifier<String> macAddress1Notifier;
   final ValueNotifier<String> macAddress2Notifier;
 
+  final ValueNotifier<String> defaultMacAddress1Notifier;
+  final ValueNotifier<String> defaultMacAddress2Notifier;
+
   final ValueNotifier<bool> sentConfigNotifier;
 
   final ValueNotifier<Map<String, dynamic>> configDefault;
@@ -36,6 +39,8 @@ class ConfigPage extends StatefulWidget {
     this.isBit1Enabled,
     this.isBit2Enabled,
     this.macAddress1Notifier,
+    this.defaultMacAddress1Notifier,
+    this.defaultMacAddress2Notifier,
     this.macAddress2Notifier,
     this.sentConfigNotifier,
     this.configDefault,
@@ -140,8 +145,28 @@ class _ConfigPageState extends State<ConfigPage> {
         // Channels & sensors
         _getDefaultChannels(widget.configDefault.value['channels']);
         _getDefaultSensors(widget.configDefault.value['channels']);
+        print('Channels: ${widget.configDefault.value['channels']}');
+        print('Bit1Selections: ${widget.bit1Selections.value}');
       });
     }
+
+    widget.macAddress1Notifier.addListener(() {
+      if (widget.macAddress1Notifier.value == '' ||
+          widget.macAddress1Notifier.value == ' ') {
+        setState(() => widget.isBit1Enabled.value = false);
+      } else {
+        setState(() => widget.isBit1Enabled.value = true);
+      }
+    });
+
+    widget.macAddress2Notifier.addListener(() {
+      if (widget.macAddress2Notifier.value == '' ||
+          widget.macAddress2Notifier.value == ' ') {
+        setState(() => widget.isBit2Enabled.value = false);
+      } else {
+        setState(() => widget.isBit2Enabled.value = true);
+      }
+    });
 
     widget.driveListNotifier.addListener(() {
       if (!widget.driveListNotifier.value.contains(widget.chosenDrive.value))
@@ -151,30 +176,30 @@ class _ConfigPageState extends State<ConfigPage> {
   }
 
   void _getDefaultChannels(List channels) {
-    //List<List<String>>
-    setState(
-        () => widget.bit1Selections.value = List.generate(6, (_) => false));
-    setState(
-        () => widget.bit2Selections.value = List.generate(6, (_) => false));
+    List<bool> _aux1Selections = List.generate(6, (_) => false);
+    List<bool> _aux2Selections = List.generate(6, (_) => false);
+
     channels.asMap().forEach((i, triplet) {
-      if (triplet[0] == widget.macAddress1Notifier.value) {
-        widget.bit1Selections.value[int.parse(triplet[1]) - 1] = true;
+      if (triplet[0] == widget.defaultMacAddress1Notifier.value) {
+        _aux1Selections[int.parse(triplet[1]) - 1] = true;
       }
-      if (triplet[0] == widget.macAddress2Notifier.value) {
-        widget.bit2Selections.value[int.parse(triplet[1]) - 1] = true;
+      if (triplet[0] == widget.defaultMacAddress2Notifier.value) {
+       _aux2Selections[int.parse(triplet[1]) - 1] = true;
       }
     });
+    setState(() => widget.bit1Selections.value = _aux1Selections);
+    setState(() => widget.bit2Selections.value = _aux2Selections);
   }
 
   void _getDefaultSensors(List channels) {
     //List<String>
 
     channels.asMap().forEach((i, triplet) {
-      if (triplet[0] == widget.macAddress1Notifier.value) {
+      if (triplet[0] == widget.defaultMacAddress1Notifier.value) {
         widget.controllerSensors.value[int.parse(triplet[1]) - 1].text =
             triplet[2];
       }
-      if (triplet[0] == widget.macAddress2Notifier.value) {
+      if (triplet[0] == widget.defaultMacAddress2Notifier.value) {
         widget.controllerSensors.value[int.parse(triplet[1]) + 5].text =
             triplet[2];
       }
@@ -421,12 +446,14 @@ class _ConfigPageState extends State<ConfigPage> {
                       style: MyTextStyle(color: DefaultColors.textColorOnLight),
                     ),
                   ),
-                  Row(mainAxisAlignment: MainAxisAlignment.center, children: <
-                      Widget>[
-                     ValueListenableBuilder2(
-                          widget.bit1Selections, widget.isBit1Enabled,
-                          builder: (context, bitSelections, isBitEnabled, child) {
-                        return ToggleButtons(
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        ValueListenableBuilder2(
+                            widget.bit1Selections, widget.isBit1Enabled,
+                            builder:
+                                (context, bitSelections, isBitEnabled, child) {
+                          return ToggleButtons(
                             constraints: BoxConstraints(
                                 maxHeight: 25.0,
                                 minHeight: 25.0,
@@ -454,7 +481,7 @@ class _ConfigPageState extends State<ConfigPage> {
                                 : null,
                           );
                         }),
-                  ]),
+                      ]),
                   Padding(
                     padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 5.0),
                     child: Text(
@@ -462,12 +489,14 @@ class _ConfigPageState extends State<ConfigPage> {
                       style: MyTextStyle(color: DefaultColors.textColorOnLight),
                     ),
                   ),
-                  Row(mainAxisAlignment: MainAxisAlignment.center, children: <
-                      Widget>[
-                    ValueListenableBuilder2(
-                          widget.bit2Selections, widget.isBit2Enabled,
-                          builder: (context, bitSelections, isBitEnabled, child) {
-                        return ToggleButtons(
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        ValueListenableBuilder2(
+                            widget.bit2Selections, widget.isBit2Enabled,
+                            builder:
+                                (context, bitSelections, isBitEnabled, child) {
+                          return ToggleButtons(
                             constraints: BoxConstraints(
                                 maxHeight: 25.0,
                                 minHeight: 25.0,
@@ -495,7 +524,7 @@ class _ConfigPageState extends State<ConfigPage> {
                                 : null,
                           );
                         }),
-                  ]),
+                      ]),
                   Padding(
                     padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 5.0),
                     child: Text(

@@ -414,15 +414,16 @@ class _NavigationPageState extends State<NavigationPage>
       } catch (e) {
         print(e);
       }
-      if (defaultMacAddress1Notifier.value != '' or defaultMacAddress1Notifier.value != ' ') {
-        setState(() => isBit1Enabled.value = true);
-      } else {
+
+      if (defaultMacAddress1Notifier.value == '' || defaultMacAddress1Notifier.value == ' ') {
         setState(() => isBit1Enabled.value = false);
-      }
-      if (defaultMacAddress2Notifier.value != '' or defaultMacAddress2Notifier.value != ' ') {
-        setState(() => isBit2Enabled.value = true);
       } else {
+        setState(() => isBit1Enabled.value = true);
+      }
+      if (defaultMacAddress2Notifier.value == '' || defaultMacAddress2Notifier.value == ' ') {
         setState(() => isBit2Enabled.value = false);
+      } else {
+        setState(() => isBit2Enabled.value = true);
       }
     }
   }
@@ -836,6 +837,8 @@ class _NavigationPageState extends State<NavigationPage>
                               isBit2Enabled: isBit2Enabled,
                               macAddress1Notifier: macAddress1Notifier,
                               macAddress2Notifier: macAddress2Notifier,
+                              defaultMacAddress1Notifier: defaultMacAddress1Notifier,
+                              defaultMacAddress2Notifier: defaultMacAddress2Notifier,
                               sentConfigNotifier: sentConfigNotifier,
                               configDefault: configDefaultNotifier,
                               chosenDrive: chosenDrive,

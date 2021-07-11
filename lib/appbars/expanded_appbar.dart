@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:epibox/states/battery_state.dart';
 
 class ExpandedAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;

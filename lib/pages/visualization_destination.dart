@@ -1,10 +1,7 @@
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
 import 'package:flutter/material.dart';
-import 'package:epibox/appbars/expanded_appbar.dart';
 import 'package:epibox/bottom_navbar/destinations.dart';
-import 'package:epibox/states/acquisition_state.dart';
-import 'package:epibox/states/server_state.dart';
 import 'package:epibox/utils/models.dart';
 import 'package:epibox/utils/mqtt_wrapper.dart';
 import 'package:epibox/utils/plot_data.dart';
