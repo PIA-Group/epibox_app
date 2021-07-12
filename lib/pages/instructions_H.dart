@@ -378,7 +378,7 @@ class _InstructionsHPageState extends State<InstructionsHPage> {
           Padding(
             padding: EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0.0),
             child: Text(
-              'Em "Selecionar dispositivos", aparece "Endereço MAC" em vez dos números.',
+              'Em "Selecionar dispositivos", aparece "xx:xx:xx:xx:xx:xx" em vez dos números.',
               style: MyTextStyle(
                   fontStyle: FontStyle.italic,
                   fontWeight: FontWeight.bold,

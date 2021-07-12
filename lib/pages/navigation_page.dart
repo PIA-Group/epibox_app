@@ -2,15 +2,16 @@ import 'package:epibox/pages/acquisition_page.dart';
 import 'package:epibox/pages/config_page.dart';
 import 'package:epibox/pages/profile_drawer.dart';
 import 'package:epibox/pages/server_page.dart';
+import 'package:epibox/utils/overlay_config.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:app_settings/app_settings.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:mqtt_client/mqtt_client.dart';
-
+import 'package:loader_overlay/loader_overlay.dart';
 import 'package:epibox/bottom_navbar/destinations.dart';
-
 import 'package:epibox/decor/text_styles.dart';
 
 import 'package:epibox/decor/default_colors.dart';
@@ -22,7 +23,7 @@ import 'package:connectivity/connectivity.dart';
 import 'package:wifi_info_flutter/wifi_info_flutter.dart';
 import 'package:epibox/decor/custom_icons.dart';
 
-import 'devices_page.dart';
+import 'devices2.dart';
 
 class NavigationPage extends StatefulWidget {
   final ValueNotifier<String> patientNotifier;
@@ -36,16 +37,25 @@ class _NavigationPageState extends State<NavigationPage>
     with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  ValueNotifier<Widget> overlayMessage = ValueNotifier(
+    Center(
+      child: SpinKitFoldingCube(
+        color: DefaultColors.mainColor,
+        size: 70.0,
+      ),
+    ),
+  );
+
   ValueNotifier<MqttCurrentConnectionState> connectionNotifier =
       ValueNotifier(MqttCurrentConnectionState.DISCONNECTED);
 
-  ValueNotifier<String> macAddress1Notifier = ValueNotifier('Endereço MAC');
-  ValueNotifier<String> macAddress2Notifier = ValueNotifier('Endereço MAC');
+  ValueNotifier<String> macAddress1Notifier = ValueNotifier('xx:xx:xx:xx:xx:xx');
+  ValueNotifier<String> macAddress2Notifier = ValueNotifier('xx:xx:xx:xx:xx:xx');
 
   ValueNotifier<String> defaultMacAddress1Notifier =
-      ValueNotifier('Endereço MAC');
+      ValueNotifier('xx:xx:xx:xx:xx:xx');
   ValueNotifier<String> defaultMacAddress2Notifier =
-      ValueNotifier('Endereço MAC');
+      ValueNotifier('xx:xx:xx:xx:xx:xx');
 
   ValueNotifier<List<String>> driveListNotifier = ValueNotifier([' ']);
 
@@ -57,7 +67,7 @@ class _NavigationPageState extends State<NavigationPage>
   ValueNotifier<bool> sentMACNotifier = ValueNotifier(false);
   ValueNotifier<bool> sentConfigNotifier = ValueNotifier(false);
 
-  ValueNotifier<Map<String,dynamic>> configDefaultNotifier = ValueNotifier({});
+  ValueNotifier<Map<String, dynamic>> configDefaultNotifier = ValueNotifier({});
 
   ValueNotifier<bool> isBit1Enabled = ValueNotifier(false);
   ValueNotifier<bool> isBit2Enabled = ValueNotifier(false);
@@ -108,7 +118,6 @@ class _NavigationPageState extends State<NavigationPage>
   ValueNotifier<List> annotationTypesD = ValueNotifier([]);
 
   StreamSubscription<ConnectivityResult> subscription;
-  String _connectionStatus = 'Unknown';
 
   void setupHome() {
     mqttClientWrapper = MQTTClientWrapper(
@@ -130,8 +139,40 @@ class _NavigationPageState extends State<NavigationPage>
   void initState() {
     super.initState();
 
-    subscription =
-        Connectivity().onConnectivityChanged.listen(_updateConnectionStatus);
+    connectionNotifier.addListener(() {
+      if (connectionNotifier.value == MqttCurrentConnectionState.CONNECTING) {
+        setState(() => overlayMessage.value =
+            CustomOverlay(connectionState: connectionNotifier.value));
+        context.loaderOverlay.show();
+      } else if (connectionNotifier.value ==
+          MqttCurrentConnectionState.CONNECTED) {
+        if (context.loaderOverlay.visible) context.loaderOverlay.hide();
+        setState(() => overlayMessage.value =
+            CustomOverlay(connectionState: connectionNotifier.value));
+        context.loaderOverlay.show();
+        Future.delayed(const Duration(seconds: 2), () {
+          setState(() => context.loaderOverlay.hide());
+        });
+      } else if (connectionNotifier.value ==
+              MqttCurrentConnectionState.ERROR_WHEN_CONNECTING ||
+          connectionNotifier.value == MqttCurrentConnectionState.DISCONNECTED) {
+        if (context.loaderOverlay.visible) context.loaderOverlay.hide();
+
+        setState(
+          () => overlayMessage.value =
+              CustomOverlay(connectionState: connectionNotifier.value),
+        );
+
+        context.loaderOverlay.show();
+
+        Future.delayed(const Duration(seconds: 3), () {
+          setState(() => context.loaderOverlay.hide());
+        });
+      }
+    });
+
+    /* subscription =
+        Connectivity().onConnectivityChanged.listen(_updateConnectionStatus); */
 
     macAddress1Notifier.addListener(() {
       setState(
@@ -280,18 +321,21 @@ class _NavigationPageState extends State<NavigationPage>
 
   void getLastMAC() async {
     await Future.delayed(Duration.zero);
+
     await SharedPreferences.getInstance().then((value) {
       List<String> lastMAC = (value.getStringList('lastMAC').toList() ??
-          ['Endereço MAC', 'Endereço MAC']);
+          ['xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx']);
+          print('history; ${lastMAC[0]}');
       setState(() => macAddress1Notifier.value = lastMAC[0]);
       setState(() => macAddress2Notifier.value = lastMAC[1]);
     });
     print(
-        'LAST MAC: ${macAddress1Notifier.value}, ${macAddress2Notifier.value}');
+        'LAST MAC1: ${macAddress1Notifier.value}, ${macAddress2Notifier.value}');
   }
 
   Future<void> saveMAC(mac1, mac2) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    print('save: mac1');
     try {
       await prefs.setStringList('lastMAC', [mac1, mac2]);
     } catch (e) {
@@ -361,7 +405,7 @@ class _NavigationPageState extends State<NavigationPage>
     timer?.cancel();
     super.dispose();
     nameController.dispose();
-    subscription.cancel();
+    //subscription.cancel();
   }
 
   void gotNewMessage(String newMessage) {
@@ -385,10 +429,10 @@ class _NavigationPageState extends State<NavigationPage>
     if (newConnectionState == MqttCurrentConnectionState.DISCONNECTED) {
       receivedMACNotifier.value = false;
     }
-    print('This is the new connection state $connectionState');
+    print('This is the new connection state ${connectionNotifier.value}');
   }
 
-  Future<void> _updateConnectionStatus(ConnectivityResult result) async {
+  /* Future<void> _updateConnectionStatus(ConnectivityResult result) async {
     switch (result) {
       case ConnectivityResult.wifi:
       case ConnectivityResult.mobile:
@@ -400,7 +444,7 @@ class _NavigationPageState extends State<NavigationPage>
         setState(() => _connectionStatus = 'Failed to get connectivity.');
         break;
     }
-  }
+  } */
 
   void _isMACAddress(String message) {
     if (message.contains('DEFAULT MAC')) {
@@ -415,12 +459,14 @@ class _NavigationPageState extends State<NavigationPage>
         print(e);
       }
 
-      if (defaultMacAddress1Notifier.value == '' || defaultMacAddress1Notifier.value == ' ') {
+      if (defaultMacAddress1Notifier.value == '' ||
+          defaultMacAddress1Notifier.value == ' ') {
         setState(() => isBit1Enabled.value = false);
       } else {
         setState(() => isBit1Enabled.value = true);
       }
-      if (defaultMacAddress2Notifier.value == '' || defaultMacAddress2Notifier.value == ' ') {
+      if (defaultMacAddress2Notifier.value == '' ||
+          defaultMacAddress2Notifier.value == ' ') {
         setState(() => isBit2Enabled.value = false);
       } else {
         setState(() => isBit2Enabled.value = true);
@@ -495,7 +541,7 @@ class _NavigationPageState extends State<NavigationPage>
           'acquiring'); // if user leaves the app, this will enable the visualization nontheless
       List message2List = json.decode(message);
 
-      if (macAddress1Notifier.value == 'Endereço MAC') {
+      if (macAddress1Notifier.value == 'xx:xx:xx:xx:xx:xx') {
         getLastMAC();
       }
 
@@ -627,11 +673,11 @@ class _NavigationPageState extends State<NavigationPage>
     await mqttClientWrapper.diconnectClient();
 
     setState(() {
-      defaultMacAddress1Notifier.value = 'Endereço MAC';
-      defaultMacAddress2Notifier.value = 'Endereço MAC';
+      defaultMacAddress1Notifier.value = 'xx:xx:xx:xx:xx:xx';
+      defaultMacAddress2Notifier.value = 'xx:xx:xx:xx:xx:xx';
 
-      macAddress1Notifier.value = 'Endereço MAC';
-      macAddress2Notifier.value = 'Endereço MAC';
+      macAddress1Notifier.value = 'xx:xx:xx:xx:xx:xx';
+      macAddress2Notifier.value = 'xx:xx:xx:xx:xx:xx';
 
       receivedMACNotifier.value = false;
       sentMACNotifier.value = false;
@@ -651,7 +697,7 @@ class _NavigationPageState extends State<NavigationPage>
     });
 
     saveBatteries(null, null);
-    saveMAC('Endereço MAC', 'Endereço MAC');
+    saveMAC('xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx');
   }
 
   void _showSnackBar(String _message) {
@@ -721,161 +767,171 @@ class _NavigationPageState extends State<NavigationPage>
       ),
       backgroundColor: Colors.transparent,
       key: _scaffoldKey,
-      body: Stack(
-        children: [
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Container(
-              height: appBarHeight * 2,
-              color: DefaultColors.mainColor,
-              child: Center(
-                child: Column(children: [
-                  SizedBox(
-                    height: 37,
-                  ),
-                  ValueListenableBuilder(
-                      valueListenable: _navigationIndex,
-                      builder: (BuildContext context, int value, Widget child) {
-                        return _headerIcon[value];
-                      }),
-                  ValueListenableBuilder(
-                      valueListenable: _navigationIndex,
-                      builder: (BuildContext context, int value, Widget child) {
-                        return _headerLabel[value];
-                      })
-                ]),
+      body: LoaderOverlay(
+        overlayOpacity: 0.8,
+        overlayColor: Colors.white,
+        useDefaultLoading: false,
+        overlayWidget: overlayMessage.value,
+        child: Stack(
+          children: [
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Container(
+                height: appBarHeight * 2,
+                color: DefaultColors.mainColor,
+                child: Center(
+                  child: Column(children: [
+                    SizedBox(
+                      height: 37,
+                    ),
+                    ValueListenableBuilder(
+                        valueListenable: _navigationIndex,
+                        builder:
+                            (BuildContext context, int value, Widget child) {
+                          return _headerIcon[value];
+                        }),
+                    ValueListenableBuilder(
+                        valueListenable: _navigationIndex,
+                        builder:
+                            (BuildContext context, int value, Widget child) {
+                          return _headerLabel[value];
+                        })
+                  ]),
+                ),
               ),
             ),
-          ),
-          Positioned(
-            top: appBarHeight,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Container(
-              decoration: BoxDecoration(
-                  color: DefaultColors.backgroundColor,
-                  borderRadius: new BorderRadius.only(
-                    topLeft: const Radius.circular(30.0),
-                    topRight: const Radius.circular(30.0),
-                  )),
-              child: FutureBuilder<bool>(
-                  future: initialized,
-                  builder:
-                      (BuildContext context, AsyncSnapshot<bool> snapshot) {
-                    if (!snapshot.hasData) {
-                      return Container();
-                    } else {
-                      return IndexedStack(
-                          index: _navigationIndex.value,
-                          children: [
-                            ServerPage(
-                              mqttClientWrapper: mqttClientWrapper,
-                              connectionNotifier: connectionNotifier,
-                              defaultMacAddress1Notifier:
-                                  defaultMacAddress1Notifier,
-                              defaultMacAddress2Notifier:
-                                  defaultMacAddress2Notifier,
-                              macAddress1Notifier: macAddress1Notifier,
-                              macAddress2Notifier: macAddress2Notifier,
-                              receivedMACNotifier: receivedMACNotifier,
-                              driveListNotifier: driveListNotifier,
-                              acquisitionNotifier: acquisitionNotifier,
-                              hostnameNotifier: hostnameNotifier,
-                              sentMACNotifier: sentMACNotifier,
-                              sentConfigNotifier: sentConfigNotifier,
-                              batteryBit1Notifier: batteryBit1Notifier,
-                              batteryBit2Notifier: batteryBit2Notifier,
-                              isBit1Enabled: isBit1Enabled,
-                              isBit2Enabled: isBit2Enabled,
-                              dataMAC1Notifier: dataMAC1Notifier,
-                              dataMAC2Notifier: dataMAC2Notifier,
-                              channelsMAC1Notifier: channelsMAC1Notifier,
-                              channelsMAC2Notifier: channelsMAC2Notifier,
-                              sensorsMAC1Notifier: sensorsMAC1Notifier,
-                              sensorsMAC2Notifier: sensorsMAC2Notifier,
-                              patientNotifier: widget.patientNotifier,
-                              annotationTypesD: annotationTypesD,
-                              timedOut: timedOut,
-                              startupError: startupError,
-                              allDestinations: allDestinations.value,
-                              saveRaw: saveRaw,
-                            ),
-                            DevicesPage(
-                              patientNotifier: widget.patientNotifier,
-                              mqttClientWrapper: mqttClientWrapper,
-                              defaultMacAddress1Notifier:
-                                  defaultMacAddress1Notifier,
-                              defaultMacAddress2Notifier:
-                                  defaultMacAddress2Notifier,
-                              macAddress1Notifier: macAddress1Notifier,
-                              macAddress2Notifier: macAddress2Notifier,
-                              connectionNotifier: connectionNotifier,
-                              isBit1Enabled: isBit1Enabled,
-                              isBit2Enabled: isBit2Enabled,
-                              receivedMACNotifier: receivedMACNotifier,
-                              sentMACNotifier: sentMACNotifier,
-                              driveListNotifier: driveListNotifier,
-                              sentConfigNotifier: sentConfigNotifier,
-                              chosenDrive: chosenDrive,
-                              bit1Selections: bit1Selections,
-                              bit2Selections: bit2Selections,
-                              controllerSensors: controllerSensors,
-                              controllerFreq: controllerFreq,
-                              historyMAC: historyMAC,
-                              saveRaw: saveRaw,
-                              isBitalino: isBitalino,
-                            ),
-                            ConfigPage(
-                              mqttClientWrapper: mqttClientWrapper,
-                              connectionNotifier: connectionNotifier,
-                              driveListNotifier: driveListNotifier,
-                              isBit1Enabled: isBit1Enabled,
-                              isBit2Enabled: isBit2Enabled,
-                              macAddress1Notifier: macAddress1Notifier,
-                              macAddress2Notifier: macAddress2Notifier,
-                              defaultMacAddress1Notifier: defaultMacAddress1Notifier,
-                              defaultMacAddress2Notifier: defaultMacAddress2Notifier,
-                              sentConfigNotifier: sentConfigNotifier,
-                              configDefault: configDefaultNotifier,
-                              chosenDrive: chosenDrive,
-                              bit1Selections: bit1Selections,
-                              bit2Selections: bit2Selections,
-                              controllerSensors: controllerSensors,
-                              controllerFreq: controllerFreq,
-                              saveRaw: saveRaw,
-                              isBitalino: isBitalino,
-                            ),
-                            AcquisitionPage(
-                              macAddress1Notifier: macAddress1Notifier,
-                              macAddress2Notifier: macAddress2Notifier,
-                              dataMAC1Notifier: dataMAC1Notifier,
-                              dataMAC2Notifier: dataMAC2Notifier,
-                              channelsMAC1Notifier: channelsMAC1Notifier,
-                              channelsMAC2Notifier: channelsMAC2Notifier,
-                              sensorsMAC1Notifier: sensorsMAC1Notifier,
-                              sensorsMAC2Notifier: sensorsMAC2Notifier,
-                              mqttClientWrapper: mqttClientWrapper,
-                              acquisitionNotifier: acquisitionNotifier,
-                              batteryBit1Notifier: batteryBit1Notifier,
-                              batteryBit2Notifier: batteryBit2Notifier,
-                              patientNotifier: widget.patientNotifier,
-                              annotationTypesD: annotationTypesD,
-                              connectionNotifier: connectionNotifier,
-                              timedOut: timedOut,
-                              startupError: startupError,
-                              allDestinations: allDestinations.value,
-                              saveRaw: saveRaw,
-                            ),
-                          ]);
-                    }
-                  }),
+            Positioned(
+              top: appBarHeight,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Container(
+                decoration: BoxDecoration(
+                    color: DefaultColors.backgroundColor,
+                    borderRadius: new BorderRadius.only(
+                      topLeft: const Radius.circular(30.0),
+                      topRight: const Radius.circular(30.0),
+                    )),
+                child: FutureBuilder<bool>(
+                    future: initialized,
+                    builder:
+                        (BuildContext context, AsyncSnapshot<bool> snapshot) {
+                      if (!snapshot.hasData) {
+                        return Container();
+                      } else {
+                        return IndexedStack(
+                            index: _navigationIndex.value,
+                            children: [
+                              ServerPage(
+                                mqttClientWrapper: mqttClientWrapper,
+                                connectionNotifier: connectionNotifier,
+                                defaultMacAddress1Notifier:
+                                    defaultMacAddress1Notifier,
+                                defaultMacAddress2Notifier:
+                                    defaultMacAddress2Notifier,
+                                macAddress1Notifier: macAddress1Notifier,
+                                macAddress2Notifier: macAddress2Notifier,
+                                receivedMACNotifier: receivedMACNotifier,
+                                driveListNotifier: driveListNotifier,
+                                acquisitionNotifier: acquisitionNotifier,
+                                hostnameNotifier: hostnameNotifier,
+                                sentMACNotifier: sentMACNotifier,
+                                sentConfigNotifier: sentConfigNotifier,
+                                batteryBit1Notifier: batteryBit1Notifier,
+                                batteryBit2Notifier: batteryBit2Notifier,
+                                isBit1Enabled: isBit1Enabled,
+                                isBit2Enabled: isBit2Enabled,
+                                dataMAC1Notifier: dataMAC1Notifier,
+                                dataMAC2Notifier: dataMAC2Notifier,
+                                channelsMAC1Notifier: channelsMAC1Notifier,
+                                channelsMAC2Notifier: channelsMAC2Notifier,
+                                sensorsMAC1Notifier: sensorsMAC1Notifier,
+                                sensorsMAC2Notifier: sensorsMAC2Notifier,
+                                patientNotifier: widget.patientNotifier,
+                                annotationTypesD: annotationTypesD,
+                                timedOut: timedOut,
+                                startupError: startupError,
+                                allDestinations: allDestinations.value,
+                                saveRaw: saveRaw,
+                              ),
+                              DevicesPage(
+                                patientNotifier: widget.patientNotifier,
+                                mqttClientWrapper: mqttClientWrapper,
+                                defaultMacAddress1Notifier:
+                                    defaultMacAddress1Notifier,
+                                defaultMacAddress2Notifier:
+                                    defaultMacAddress2Notifier,
+                                macAddress1Notifier: macAddress1Notifier,
+                                macAddress2Notifier: macAddress2Notifier,
+                                connectionNotifier: connectionNotifier,
+                                isBit1Enabled: isBit1Enabled,
+                                isBit2Enabled: isBit2Enabled,
+                                receivedMACNotifier: receivedMACNotifier,
+                                sentMACNotifier: sentMACNotifier,
+                                driveListNotifier: driveListNotifier,
+                                sentConfigNotifier: sentConfigNotifier,
+                                chosenDrive: chosenDrive,
+                                bit1Selections: bit1Selections,
+                                bit2Selections: bit2Selections,
+                                controllerSensors: controllerSensors,
+                                controllerFreq: controllerFreq,
+                                historyMAC: historyMAC,
+                                saveRaw: saveRaw,
+                                isBitalino: isBitalino,
+                              ),
+                              ConfigPage(
+                                mqttClientWrapper: mqttClientWrapper,
+                                connectionNotifier: connectionNotifier,
+                                driveListNotifier: driveListNotifier,
+                                isBit1Enabled: isBit1Enabled,
+                                isBit2Enabled: isBit2Enabled,
+                                macAddress1Notifier: macAddress1Notifier,
+                                macAddress2Notifier: macAddress2Notifier,
+                                defaultMacAddress1Notifier:
+                                    defaultMacAddress1Notifier,
+                                defaultMacAddress2Notifier:
+                                    defaultMacAddress2Notifier,
+                                sentConfigNotifier: sentConfigNotifier,
+                                configDefault: configDefaultNotifier,
+                                chosenDrive: chosenDrive,
+                                bit1Selections: bit1Selections,
+                                bit2Selections: bit2Selections,
+                                controllerSensors: controllerSensors,
+                                controllerFreq: controllerFreq,
+                                saveRaw: saveRaw,
+                                isBitalino: isBitalino,
+                              ),
+                              AcquisitionPage(
+                                macAddress1Notifier: macAddress1Notifier,
+                                macAddress2Notifier: macAddress2Notifier,
+                                dataMAC1Notifier: dataMAC1Notifier,
+                                dataMAC2Notifier: dataMAC2Notifier,
+                                channelsMAC1Notifier: channelsMAC1Notifier,
+                                channelsMAC2Notifier: channelsMAC2Notifier,
+                                sensorsMAC1Notifier: sensorsMAC1Notifier,
+                                sensorsMAC2Notifier: sensorsMAC2Notifier,
+                                mqttClientWrapper: mqttClientWrapper,
+                                acquisitionNotifier: acquisitionNotifier,
+                                batteryBit1Notifier: batteryBit1Notifier,
+                                batteryBit2Notifier: batteryBit2Notifier,
+                                patientNotifier: widget.patientNotifier,
+                                annotationTypesD: annotationTypesD,
+                                connectionNotifier: connectionNotifier,
+                                timedOut: timedOut,
+                                startupError: startupError,
+                                allDestinations: allDestinations.value,
+                                saveRaw: saveRaw,
+                              ),
+                            ]);
+                      }
+                    }),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: Colors.black,

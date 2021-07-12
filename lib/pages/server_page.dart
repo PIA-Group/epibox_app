@@ -103,11 +103,11 @@ class _ServerPageState extends State<ServerPage> {
       await widget.mqttClientWrapper.diconnectClient();
     }
     setState(() {
-      widget.defaultMacAddress1Notifier.value = 'Endereço MAC';
-      widget.defaultMacAddress2Notifier.value = 'Endereço MAC';
+      widget.defaultMacAddress1Notifier.value = 'xx:xx:xx:xx:xx:xxC';
+      widget.defaultMacAddress2Notifier.value = 'xx:xx:xx:xx:xx:xxC';
 
-      widget.macAddress1Notifier.value = 'Endereço MAC';
-      widget.macAddress2Notifier.value = 'Endereço MAC';
+      widget.macAddress1Notifier.value = 'xx:xx:xx:xx:xx:xxC';
+      widget.macAddress2Notifier.value = 'xx:xx:xx:xx:xx:xxC';
 
       widget.receivedMACNotifier.value = false;
       widget.sentMACNotifier.value = false;
@@ -127,7 +127,7 @@ class _ServerPageState extends State<ServerPage> {
     print('SAVE RAW: ${widget.saveRaw}');
 
     saveBatteries(null, null);
-    saveMAC('Endereço MAC', 'Endereço MAC');
+    saveMAC('xx:xx:xx:xx:xx:xxC', 'xx:xx:xx:xx:xx:xxC');
   }
 
   Future<void> saveMAC(mac1, mac2) async {
@@ -153,17 +153,19 @@ class _ServerPageState extends State<ServerPage> {
 
   Future<void> _setup() async {
     //_restart('');
-    setState(() => widget.saveRaw.value = true);
+    //setState(() => widget.saveRaw.value = true);
     await widget.mqttClientWrapper
-        .prepareMqttClient(widget.hostnameNotifier.value);
-    var timeStamp = DateTime.now();
-    String time =
-        "${timeStamp.year}-${timeStamp.month}-${timeStamp.day} ${timeStamp.hour}:${timeStamp.minute}:${timeStamp.second}";
-    widget.mqttClientWrapper.publishMessage("['TIME', '$time']");
-    widget.mqttClientWrapper.publishMessage("['Send default']");
-    //widget.mqttClientWrapper.publishMessage("['Send MAC Addresses']");
-    //widget.mqttClientWrapper.publishMessage("['Send config']");
-    //widget.mqttClientWrapper.publishMessage("['Send drives']");
+        .prepareMqttClient(widget.hostnameNotifier.value)
+        .then((value) {
+      if (widget.connectionNotifier.value ==
+          MqttCurrentConnectionState.CONNECTED) {
+        var timeStamp = DateTime.now();
+        String time =
+            "${timeStamp.year}-${timeStamp.month}-${timeStamp.day} ${timeStamp.hour}:${timeStamp.minute}:${timeStamp.second}";
+        widget.mqttClientWrapper.publishMessage("['TIME', '$time']");
+        widget.mqttClientWrapper.publishMessage("['Send default']");
+      }
+    });
   }
 
   @override
