@@ -72,7 +72,8 @@ class DevicesPage extends StatefulWidget {
 class _DevicesPageState extends State<DevicesPage> {
   TextEditingController _controller1 = TextEditingController();
   TextEditingController _controller2 = TextEditingController();
-
+  String _histMAC1 = ' ';
+  String _histMAC2 = ' ';
 
   @override
   void dispose() {
@@ -84,7 +85,6 @@ class _DevicesPageState extends State<DevicesPage> {
   @override
   void initState() {
     super.initState();
-    print('mac: ${widget.macAddress1Notifier.value}');
     if (widget.macAddress1Notifier.value == 'xx:xx:xx:xx:xx:xx') {
       if (widget.defaultMacAddress1Notifier.value == '') {
         _controller1.text = ' ';
@@ -201,15 +201,23 @@ class _DevicesPageState extends State<DevicesPage> {
                 ],
               ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   Padding(
                     padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
                     child: Row(children: [
                       Expanded(
-                        child: 
-                        MaskedTextField(
+                        child: DropDownField(
+                          onValueChanged: (dynamic value) {
+                            _controller1.text = value;
+                          },
+                          value: _controller1.text,
+                          required: false,
+                          //hintText: 'Choose a country',
+                          //labelText: 'Country',
+                          items: widget.historyMAC.value,
+                        ),
+                        /* MaskedTextField(
                           maskedTextFieldController: _controller1,
                           mask: 'xx:xx:xx:xx:xx:xx',
                           maxLength: 17,
@@ -218,21 +226,8 @@ class _DevicesPageState extends State<DevicesPage> {
                             counterText: "",
                             labelText: "MAC 1",
                           ),
-                        ),
+                        ), */
                       ),
-                      PopupMenuButton<String>(
-                          icon: const Icon(Icons.arrow_drop_down),
-                          onSelected: (String value) {
-                            _controller1.text = value;
-                          },
-                          itemBuilder: (BuildContext context) {
-                            return widget.historyMAC.value
-                                .map<PopupMenuItem<String>>((String value) {
-                              return new PopupMenuItem(
-                                  child: new Text(value), value: value);
-                            }).toList();
-                          },
-                        ),
                       IconButton(
                           icon: Icon(
                             MdiIcons.qrcode,
@@ -266,7 +261,118 @@ class _DevicesPageState extends State<DevicesPage> {
               ),
             ),
           ),
-          
+          Padding(
+            padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
+            child: Column(children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(20.0, 0.0, 0.0, 20.0),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                    child: Text(
+                      'Histórico de dispositivos',
+                      textAlign: TextAlign.left,
+                      style: MyTextStyle(
+                        color: DefaultColors.textColorOnLight,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Container(
+                height: 150.0,
+                width: 0.95 * bodyWidth,
+                color: Colors.transparent,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.rectangle,
+                    borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.grey[200], offset: new Offset(5.0, 5.0))
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(5.0, 0.0, 53.0, 0.0),
+                        child: Container(
+                          padding: EdgeInsets.all(0),
+                          height: 60.0,
+                          child: InputDecorator(
+                            decoration: InputDecoration(
+                              labelText: 'MAC 1',
+                              border: OutlineInputBorder(),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton(
+                                  isDense: true,
+                                  value: _histMAC1,
+                                  items: widget.historyMAC.value
+                                      .map<DropdownMenuItem<String>>(
+                                          (String value) {
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(
+                                        value,
+                                        style: MyTextStyle(
+                                            color:
+                                                DefaultColors.textColorOnLight),
+                                      ),
+                                    );
+                                  }).toList(),
+                                  onChanged: (hist) => {
+                                        setState(() => _histMAC1 = hist),
+                                        setState(() => _controller1.text = hist)
+                                      }),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(5.0, 0.0, 53.0, 0.0),
+                        child: Container(
+                          padding: EdgeInsets.all(0),
+                          height: 60.0,
+                          child: InputDecorator(
+                            decoration: InputDecoration(
+                              labelText: 'MAC 2',
+                              border: OutlineInputBorder(),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton(
+                                  isDense: true,
+                                  value: _histMAC2,
+                                  items: widget.historyMAC.value
+                                      .map<DropdownMenuItem<String>>(
+                                          (String value) {
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(
+                                        value,
+                                        style: MyTextStyle(
+                                            color:
+                                                DefaultColors.textColorOnLight),
+                                      ),
+                                    );
+                                  }).toList(),
+                                  onChanged: (hist) => {
+                                        setState(() => _histMAC2 = hist),
+                                        setState(() => _controller2.text = hist)
+                                      }),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ]),
+          ),
           Padding(
             padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
             child: Row(

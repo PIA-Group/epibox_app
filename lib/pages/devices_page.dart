@@ -5,8 +5,10 @@ import 'package:epibox/decor/text_styles.dart';
 import 'package:epibox/utils/masked_text.dart';
 import 'package:epibox/utils/models.dart';
 import 'package:epibox/utils/mqtt_wrapper.dart';
+import 'package:epibox/utils/multiple_value_listnable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -14,6 +16,9 @@ class DevicesPage extends StatefulWidget {
   final ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
   final MQTTClientWrapper mqttClientWrapper;
   MqttCurrentConnectionState connectionState;
+
+  final ValueNotifier<String> macAddress1ConnectionNotifier;
+  final ValueNotifier<String> macAddress2ConnectionNotifier;
 
   final ValueNotifier<String> defaultMacAddress1Notifier;
   final ValueNotifier<String> defaultMacAddress2Notifier;
@@ -43,6 +48,8 @@ class DevicesPage extends StatefulWidget {
 
   DevicesPage({
     this.mqttClientWrapper,
+    this.macAddress1ConnectionNotifier,
+    this.macAddress2ConnectionNotifier,
     this.defaultMacAddress1Notifier,
     this.defaultMacAddress2Notifier,
     this.macAddress1Notifier,
@@ -70,10 +77,8 @@ class DevicesPage extends StatefulWidget {
 }
 
 class _DevicesPageState extends State<DevicesPage> {
-  TextEditingController _controller1 = TextEditingController();
+   TextEditingController _controller1 = TextEditingController();
   TextEditingController _controller2 = TextEditingController();
-  String _histMAC1 = ' ';
-  String _histMAC2 = ' ';
 
   @override
   void dispose() {
@@ -85,6 +90,10 @@ class _DevicesPageState extends State<DevicesPage> {
   @override
   void initState() {
     super.initState();
+
+    _controller1.addListener(() { setState(() => widget.macAddress1Notifier.value = _controller1.text);});
+    _controller2.addListener(() { setState(() => widget.macAddress2Notifier.value = _controller2.text);});
+
     if (widget.macAddress1Notifier.value == 'xx:xx:xx:xx:xx:xx') {
       if (widget.defaultMacAddress1Notifier.value == '') {
         _controller1.text = ' ';
@@ -97,8 +106,8 @@ class _DevicesPageState extends State<DevicesPage> {
         _controller2.text = widget.defaultMacAddress2Notifier.value;
       }
     } else {
-      _controller1.text = widget.macAddress1Notifier.value;
-      _controller2.text = widget.macAddress2Notifier.value;
+      _controller1.text = widget.macAddress1Notifier.value == '' ? ' ' :  widget.macAddress1Notifier.value;
+      _controller2.text = widget.macAddress2Notifier.value == '' ? ' ' :  widget.macAddress2Notifier.value;
     }
 
     // show changes in default MAC recieved from the RPi
@@ -118,6 +127,14 @@ class _DevicesPageState extends State<DevicesPage> {
     });
   }
 
+  void _setNewDefault1() {
+    setState(() => widget.defaultMacAddress1Notifier.value = _controller1.text);
+  }
+
+  void _setNewDefault2() {
+    setState(() => widget.defaultMacAddress2Notifier.value = _controller2.text);
+  }
+
   Future<void> _saveMAC(mac1, mac2) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     try {
@@ -127,19 +144,12 @@ class _DevicesPageState extends State<DevicesPage> {
     }
   }
 
-  void _setNewDefault1() {
-    setState(() => widget.defaultMacAddress1Notifier.value = _controller1.text);
-  }
-
-  void _setNewDefault2() {
-    setState(() => widget.defaultMacAddress2Notifier.value = _controller2.text);
-  }
-
   Future<void> _saveMACHistory(mac1, mac2) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     try {
       if (mac1 != '' &&
           mac1 != ' ' &&
+          mac1 != 'xx:xx:xx:xx:xx:xx' &&
           !widget.historyMAC.value.contains(mac1)) {
         setState(() => widget.historyMAC.value.add(_controller1.text));
         await prefs.setStringList('historyMAC', widget.historyMAC.value);
@@ -151,6 +161,7 @@ class _DevicesPageState extends State<DevicesPage> {
     try {
       if (mac2 != '' &&
           mac2 != ' ' &&
+          mac2 != 'xx:xx:xx:xx:xx:xx' &&
           !widget.historyMAC.value.contains(mac2)) {
         setState(() => widget.historyMAC.value.add(mac2));
         await prefs.setStringList('historyMAC', widget.historyMAC.value);
@@ -201,23 +212,14 @@ class _DevicesPageState extends State<DevicesPage> {
                 ],
               ),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   Padding(
                     padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
                     child: Row(children: [
                       Expanded(
-                        child: DropDownField(
-                          onValueChanged: (dynamic value) {
-                            _controller1.text = value;
-                          },
-                          value: _controller1.text,
-                          required: false,
-                          //hintText: 'Choose a country',
-                          //labelText: 'Country',
-                          items: widget.historyMAC.value,
-                        ),
-                        /* MaskedTextField(
+                        child: MaskedTextField(
                           maskedTextFieldController: _controller1,
                           mask: 'xx:xx:xx:xx:xx:xx',
                           maxLength: 17,
@@ -226,7 +228,20 @@ class _DevicesPageState extends State<DevicesPage> {
                             counterText: "",
                             labelText: "MAC 1",
                           ),
-                        ), */
+                        ),
+                      ),
+                      PopupMenuButton<String>(
+                        icon: const Icon(Icons.arrow_drop_down),
+                        onSelected: (String value) {
+                          _controller1.text = value;
+                        },
+                        itemBuilder: (BuildContext context) {
+                          return widget.historyMAC.value
+                              .map<PopupMenuItem<String>>((String value) {
+                            return new PopupMenuItem(
+                                child: new Text(value), value: value);
+                          }).toList();
+                        },
                       ),
                       IconButton(
                           icon: Icon(
@@ -250,6 +265,19 @@ class _DevicesPageState extends State<DevicesPage> {
                           ),
                         ),
                       ),
+                      PopupMenuButton<String>(
+                        icon: const Icon(Icons.arrow_drop_down),
+                        onSelected: (String value) {
+                          _controller2.text = value;
+                        },
+                        itemBuilder: (BuildContext context) {
+                          return widget.historyMAC.value
+                              .map<PopupMenuItem<String>>((String value) {
+                            return new PopupMenuItem(
+                                child: new Text(value), value: value);
+                          }).toList();
+                        },
+                      ),
                       IconButton(
                           icon: Icon(
                             MdiIcons.qrcode,
@@ -263,122 +291,10 @@ class _DevicesPageState extends State<DevicesPage> {
           ),
           Padding(
             padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
-            child: Column(children: [
-              Padding(
-                padding: EdgeInsets.fromLTRB(20.0, 0.0, 0.0, 20.0),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Container(
-                    child: Text(
-                      'Histórico de dispositivos',
-                      textAlign: TextAlign.left,
-                      style: MyTextStyle(
-                        color: DefaultColors.textColorOnLight,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                height: 150.0,
-                width: 0.95 * bodyWidth,
-                color: Colors.transparent,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.rectangle,
-                    borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                    boxShadow: [
-                      BoxShadow(
-                          color: Colors.grey[200], offset: new Offset(5.0, 5.0))
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.fromLTRB(5.0, 0.0, 53.0, 0.0),
-                        child: Container(
-                          padding: EdgeInsets.all(0),
-                          height: 60.0,
-                          child: InputDecorator(
-                            decoration: InputDecoration(
-                              labelText: 'MAC 1',
-                              border: OutlineInputBorder(),
-                            ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton(
-                                  isDense: true,
-                                  value: _histMAC1,
-                                  items: widget.historyMAC.value
-                                      .map<DropdownMenuItem<String>>(
-                                          (String value) {
-                                    return DropdownMenuItem<String>(
-                                      value: value,
-                                      child: Text(
-                                        value,
-                                        style: MyTextStyle(
-                                            color:
-                                                DefaultColors.textColorOnLight),
-                                      ),
-                                    );
-                                  }).toList(),
-                                  onChanged: (hist) => {
-                                        setState(() => _histMAC1 = hist),
-                                        setState(() => _controller1.text = hist)
-                                      }),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.fromLTRB(5.0, 0.0, 53.0, 0.0),
-                        child: Container(
-                          padding: EdgeInsets.all(0),
-                          height: 60.0,
-                          child: InputDecorator(
-                            decoration: InputDecoration(
-                              labelText: 'MAC 2',
-                              border: OutlineInputBorder(),
-                            ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton(
-                                  isDense: true,
-                                  value: _histMAC2,
-                                  items: widget.historyMAC.value
-                                      .map<DropdownMenuItem<String>>(
-                                          (String value) {
-                                    return DropdownMenuItem<String>(
-                                      value: value,
-                                      child: Text(
-                                        value,
-                                        style: MyTextStyle(
-                                            color:
-                                                DefaultColors.textColorOnLight),
-                                      ),
-                                    );
-                                  }).toList(),
-                                  onChanged: (hist) => {
-                                        setState(() => _histMAC2 = hist),
-                                        setState(() => _controller2.text = hist)
-                                      }),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ]),
-          ),
-          Padding(
-            padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                ElevatedButton(
+                /* ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     primary: DefaultColors.mainLColor, // background
                     //onPrimary: Colors.white, // foreground
@@ -406,10 +322,10 @@ class _DevicesPageState extends State<DevicesPage> {
                         widget.macAddress2Notifier.value);
                   },
                   child: new Text(
-                    "Selecionar",
+                    "Conectar",
                     style: MyTextStyle(),
                   ),
-                ),
+                ), */
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     primary: DefaultColors.mainLColor, // background
@@ -433,6 +349,215 @@ class _DevicesPageState extends State<DevicesPage> {
               ],
             ),
           ),
+          ValueListenableBuilder(
+              valueListenable: widget.macAddress1Notifier,
+              builder: (BuildContext context, String macAddress, Widget child) {
+                return Padding(
+                  padding: EdgeInsets.fromLTRB(5, 20, 5, 0),
+                  child: (widget.macAddress1Notifier.value ==
+                              'xx:xx:xx:xx:xx:xx' ||
+                          widget.macAddress1Notifier.value.trim() == '')
+                      ? Container()
+                      : Container(
+                          width: 0.95 * bodyWidth,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.rectangle,
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(8.0)),
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Colors.grey[200],
+                                  offset: new Offset(5.0, 5.0))
+                            ],
+                          ),
+                          child: Material(
+                            color: Colors.white.withOpacity(0.0),
+                            child: InkWell(
+                              onTap: () {},
+                              child: Container(
+                                child: ValueListenableBuilder(
+                                    valueListenable:
+                                        widget.macAddress1ConnectionNotifier,
+                                    builder: (BuildContext context,
+                                        String state, Widget child) {
+                                      return ListTile(
+                                        leading: state == 'connected'
+                                            ? Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                    CircleAvatar(
+                                                      backgroundColor:
+                                                          Colors.green[800],
+                                                      radius: 15,
+                                                      child: Icon(
+                                                          Icons
+                                                              .bluetooth_connected_rounded,
+                                                          color: Colors.white),
+                                                    ),
+                                                  ])
+                                            : state == 'connecting'
+                                                ? Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                        SpinKitFadingCircle(
+                                                          color: DefaultColors
+                                                              .mainColor,
+                                                        ),
+                                                      ])
+                                                : Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                        CircleAvatar(
+                                                          backgroundColor:
+                                                              Colors.red[800],
+                                                          radius: 15,
+                                                          child: Icon(
+                                                              Icons
+                                                                  .bluetooth_disabled_rounded,
+                                                              color:
+                                                                  Colors.white),
+                                                        ),
+                                                      ]),
+                                        title: Text(_controller1.text,
+                                            style: MyTextStyle(
+                                                color: DefaultColors
+                                                    .textColorOnLight,
+                                                fontWeight: FontWeight.bold)),
+                                        subtitle: state == 'connected'
+                                            ? Text('Dispositivo conectado!',
+                                                style: MyTextStyle(
+                                                    color: DefaultColors
+                                                        .textColorOnLight))
+                                            : state == 'connecting'
+                                                ? Text('A conectar...',
+                                                    style: MyTextStyle(
+                                                        color: DefaultColors
+                                                            .textColorOnLight))
+                                                : Text(
+                                                    'Dispositivo desconectado',
+                                                    style: MyTextStyle(
+                                                        color: DefaultColors
+                                                            .textColorOnLight)),
+                                        //isThreeLine: true,
+                                      );
+                                    }),
+                              ),
+                            ),
+                          ),
+                        ),
+                );
+              }),
+          ValueListenableBuilder(
+              valueListenable: widget.macAddress2Notifier,
+              builder: (BuildContext context, String macAddress, Widget child) {
+                return Padding(
+                  padding: EdgeInsets.fromLTRB(5, 20, 5, 0),
+                  child: (widget.macAddress2Notifier.value ==
+                              'xx:xx:xx:xx:xx:xx' ||
+                          widget.macAddress2Notifier.value.trim() == '')
+                      ? Container()
+                      : Container(
+                          width: 0.95 * bodyWidth,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.rectangle,
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(8.0)),
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Colors.grey[200],
+                                  offset: new Offset(5.0, 5.0))
+                            ],
+                          ),
+                          child: Material(
+                            color: Colors.white.withOpacity(0.0),
+                            child: InkWell(
+                              //splashColor: Colors.green,
+                              onTap: () {},
+                              child: Container(
+                                child: ValueListenableBuilder(
+                                    valueListenable:
+                                        widget.macAddress2ConnectionNotifier,
+                                    builder: (BuildContext context,
+                                        String state, Widget child) {
+                                      return ListTile(
+                                        leading: state == 'connected'
+                                            ? Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                    CircleAvatar(
+                                                      backgroundColor:
+                                                          Colors.green[800],
+                                                      radius: 15,
+                                                      child: Icon(
+                                                          Icons
+                                                              .bluetooth_connected_rounded,
+                                                          color: Colors.white),
+                                                    ),
+                                                  ])
+                                            : state == 'connecting'
+                                                ? Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                        SpinKitFadingCircle(
+                                                          color: DefaultColors
+                                                              .mainColor,
+                                                        ),
+                                                      ])
+                                                : Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                        CircleAvatar(
+                                                          backgroundColor:
+                                                              Colors.red[800],
+                                                          radius: 15,
+                                                          child: Icon(
+                                                              Icons
+                                                                  .bluetooth_disabled_rounded,
+                                                              color:
+                                                                  Colors.white),
+                                                        ),
+                                                      ]),
+                                        title: Text(macAddress,
+                                            style: MyTextStyle(
+                                                color: DefaultColors
+                                                    .textColorOnLight,
+                                                fontWeight: FontWeight.bold)),
+                                        subtitle: state == 'connected'
+                                            ? Text('Dispositivo conectado!',
+                                                style: MyTextStyle(
+                                                    color: DefaultColors
+                                                        .textColorOnLight))
+                                            : state == 'connecting'
+                                                ? Text('A conectar...',
+                                                    style: MyTextStyle(
+                                                        color: DefaultColors
+                                                            .textColorOnLight))
+                                                : Text(
+                                                    'Dispositivo desconectado',
+                                                    style: MyTextStyle(
+                                                        color: DefaultColors
+                                                            .textColorOnLight)),
+                                        //isThreeLine: true,
+                                      );
+                                    }),
+                              ),
+                            ),
+                          ),
+                        ),
+                );
+              }),
         ]),
       ),
     ]);

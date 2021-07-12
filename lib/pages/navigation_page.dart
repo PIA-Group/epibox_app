@@ -23,7 +23,7 @@ import 'package:connectivity/connectivity.dart';
 import 'package:wifi_info_flutter/wifi_info_flutter.dart';
 import 'package:epibox/decor/custom_icons.dart';
 
-import 'devices2.dart';
+import 'devices_page.dart';
 
 class NavigationPage extends StatefulWidget {
   final ValueNotifier<String> patientNotifier;
@@ -49,13 +49,20 @@ class _NavigationPageState extends State<NavigationPage>
   ValueNotifier<MqttCurrentConnectionState> connectionNotifier =
       ValueNotifier(MqttCurrentConnectionState.DISCONNECTED);
 
-  ValueNotifier<String> macAddress1Notifier = ValueNotifier('xx:xx:xx:xx:xx:xx');
-  ValueNotifier<String> macAddress2Notifier = ValueNotifier('xx:xx:xx:xx:xx:xx');
+  ValueNotifier<String> macAddress1Notifier =
+      ValueNotifier('xx:xx:xx:xx:xx:xx');
+  ValueNotifier<String> macAddress2Notifier =
+      ValueNotifier('xx:xx:xx:xx:xx:xx');
 
   ValueNotifier<String> defaultMacAddress1Notifier =
       ValueNotifier('xx:xx:xx:xx:xx:xx');
   ValueNotifier<String> defaultMacAddress2Notifier =
       ValueNotifier('xx:xx:xx:xx:xx:xx');
+
+  ValueNotifier<String> macAddress1ConnectionNotifier =
+      ValueNotifier('disconnected');
+  ValueNotifier<String> macAddress2ConnectionNotifier =
+      ValueNotifier('disconnected');
 
   ValueNotifier<List<String>> driveListNotifier = ValueNotifier([' ']);
 
@@ -154,8 +161,7 @@ class _NavigationPageState extends State<NavigationPage>
           setState(() => context.loaderOverlay.hide());
         });
       } else if (connectionNotifier.value ==
-              MqttCurrentConnectionState.ERROR_WHEN_CONNECTING ||
-          connectionNotifier.value == MqttCurrentConnectionState.DISCONNECTED) {
+          MqttCurrentConnectionState.ERROR_WHEN_CONNECTING) {
         if (context.loaderOverlay.visible) context.loaderOverlay.hide();
 
         setState(
@@ -206,7 +212,6 @@ class _NavigationPageState extends State<NavigationPage>
     print(
         'LAST BATTERIES: ${batteryBit1Notifier.value}, ${batteryBit2Notifier.value}');
     getMACHistory();
-    print('MAC HISTORY: ${historyMAC.value}');
 
     allDestinations = ValueNotifier(<Destination>[
       Destination(
@@ -321,11 +326,10 @@ class _NavigationPageState extends State<NavigationPage>
 
   void getLastMAC() async {
     await Future.delayed(Duration.zero);
-
     await SharedPreferences.getInstance().then((value) {
       List<String> lastMAC = (value.getStringList('lastMAC').toList() ??
           ['xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx']);
-          print('history; ${lastMAC[0]}');
+      print('history; ${lastMAC[0]}');
       setState(() => macAddress1Notifier.value = lastMAC[0]);
       setState(() => macAddress2Notifier.value = lastMAC[1]);
     });
@@ -335,7 +339,6 @@ class _NavigationPageState extends State<NavigationPage>
 
   Future<void> saveMAC(mac1, mac2) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    print('save: mac1');
     try {
       await prefs.setStringList('lastMAC', [mac1, mac2]);
     } catch (e) {
@@ -453,6 +456,8 @@ class _NavigationPageState extends State<NavigationPage>
         setState(() {
           defaultMacAddress1Notifier.value = listMAC[1].split("'")[1];
           defaultMacAddress2Notifier.value = listMAC[2].split("'")[1];
+          macAddress1Notifier.value = listMAC[1].split("'")[1];
+          macAddress2Notifier.value = listMAC[2].split("'")[1];
           receivedMACNotifier.value = true;
         });
       } catch (e) {
@@ -860,6 +865,10 @@ class _NavigationPageState extends State<NavigationPage>
                               DevicesPage(
                                 patientNotifier: widget.patientNotifier,
                                 mqttClientWrapper: mqttClientWrapper,
+                                macAddress1ConnectionNotifier:
+                                    macAddress1ConnectionNotifier,
+                                macAddress2ConnectionNotifier:
+                                    macAddress2ConnectionNotifier,
                                 defaultMacAddress1Notifier:
                                     defaultMacAddress1Notifier,
                                 defaultMacAddress2Notifier:

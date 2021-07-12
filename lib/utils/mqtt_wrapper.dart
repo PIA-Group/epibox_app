@@ -52,7 +52,6 @@ class MQTTClientWrapper {
     try {
       print('MQTTClientWrapper::Mosquitto client disconnecting....');
       client.disconnect();
-      print('DISCONNECTION DONE');
     } on Exception catch (e) {
       print('MQTTClientWrapper::client exception - $e');
     }
@@ -61,7 +60,7 @@ class MQTTClientWrapper {
   void _setupMqttClient(_hostAddress) {
     client = MqttServerClient.withPort(_hostAddress, '#1', 1883);
     client.logging(on: false);
-    client.autoReconnect = true;
+    //client.autoReconnect = true;
     client.onAutoReconnected = _onReconnected;
     client.onDisconnected = _onDisconnected;
     client.onConnected = _onConnected;
@@ -130,11 +129,19 @@ class MQTTClientWrapper {
   }
 
   void _onReconnected() {
-    connectionState = MqttCurrentConnectionState.CONNECTED;
-    print(
-        'MQTTClientWrapper::OnRconnected client callback - Client connection was sucessful');
-    _subscribeToTopic();
-    onConnectedCallback();
+    if (connectionState == MqttCurrentConnectionState.CONNECTED) {
+      print(
+          'MQTTClientWrapper::Tried to reconnect while being already connected');
+      diconnectClient();
+      _connectClient();
+      
+    } else {
+      connectionState = MqttCurrentConnectionState.CONNECTED;
+      print(
+          'MQTTClientWrapper::OnRconnected client callback - Client connection was sucessful');
+      _subscribeToTopic();
+      onConnectedCallback();
+    }
     onNewConnection(connectionState);
   }
 }

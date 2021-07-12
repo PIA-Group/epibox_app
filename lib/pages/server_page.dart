@@ -103,11 +103,11 @@ class _ServerPageState extends State<ServerPage> {
       await widget.mqttClientWrapper.diconnectClient();
     }
     setState(() {
-      widget.defaultMacAddress1Notifier.value = 'xx:xx:xx:xx:xx:xxC';
-      widget.defaultMacAddress2Notifier.value = 'xx:xx:xx:xx:xx:xxC';
+      widget.defaultMacAddress1Notifier.value = 'xx:xx:xx:xx:xx:xx';
+      widget.defaultMacAddress2Notifier.value = 'xx:xx:xx:xx:xx:xx';
 
-      widget.macAddress1Notifier.value = 'xx:xx:xx:xx:xx:xxC';
-      widget.macAddress2Notifier.value = 'xx:xx:xx:xx:xx:xxC';
+      widget.macAddress1Notifier.value = 'xx:xx:xx:xx:xx:xx';
+      widget.macAddress2Notifier.value = 'xx:xx:xx:xx:xx:xx';
 
       widget.receivedMACNotifier.value = false;
       widget.sentMACNotifier.value = false;
@@ -124,10 +124,8 @@ class _ServerPageState extends State<ServerPage> {
       widget.isBit1Enabled.value = false;
     });
 
-    print('SAVE RAW: ${widget.saveRaw}');
-
     saveBatteries(null, null);
-    saveMAC('xx:xx:xx:xx:xx:xxC', 'xx:xx:xx:xx:xx:xxC');
+    saveMAC('xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx');
   }
 
   Future<void> saveMAC(mac1, mac2) async {
