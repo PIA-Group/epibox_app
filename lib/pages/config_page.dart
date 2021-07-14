@@ -269,7 +269,7 @@ class _ConfigPageState extends State<ConfigPage> {
     return ListView(
       children: <Widget>[
         Padding(
-          padding: EdgeInsets.only(top: 15),
+          padding: EdgeInsets.only(top: 0),
           child: Column(children: [
             Padding(
               padding: EdgeInsets.fromLTRB(20.0, 0.0, 0.0, 10.0),
@@ -368,7 +368,9 @@ class _ConfigPageState extends State<ConfigPage> {
                         color: Colors.grey[200], offset: new Offset(5.0, 5.0))
                   ],
                 ),
-                child: ListView(shrinkWrap: true, children: [
+                child: ListView(shrinkWrap: true, 
+                physics: NeverScrollableScrollPhysics(),
+                children: [
                   Padding(
                     padding: EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 0.0),
                     child: Row(
@@ -631,7 +633,7 @@ class _ConfigPageState extends State<ConfigPage> {
           padding: EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 0.0),
           child:
               Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-            ElevatedButton(
+            /* ElevatedButton(
               style: ElevatedButton.styleFrom(
                 primary: DefaultColors.mainLColor, // background
                 //onPrimary: Colors.white, // foreground
@@ -643,7 +645,7 @@ class _ConfigPageState extends State<ConfigPage> {
                 "Selecionar",
                 style: MyTextStyle(),
               ),
-            ),
+            ), */
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 primary: DefaultColors.mainLColor, // background

@@ -77,7 +77,7 @@ class DevicesPage extends StatefulWidget {
 }
 
 class _DevicesPageState extends State<DevicesPage> {
-   TextEditingController _controller1 = TextEditingController();
+  TextEditingController _controller1 = TextEditingController();
   TextEditingController _controller2 = TextEditingController();
 
   @override
@@ -91,8 +91,12 @@ class _DevicesPageState extends State<DevicesPage> {
   void initState() {
     super.initState();
 
-    _controller1.addListener(() { setState(() => widget.macAddress1Notifier.value = _controller1.text);});
-    _controller2.addListener(() { setState(() => widget.macAddress2Notifier.value = _controller2.text);});
+    _controller1.addListener(() {
+      setState(() => widget.macAddress1Notifier.value = _controller1.text);
+    });
+    _controller2.addListener(() {
+      setState(() => widget.macAddress2Notifier.value = _controller2.text);
+    });
 
     if (widget.macAddress1Notifier.value == 'xx:xx:xx:xx:xx:xx') {
       if (widget.defaultMacAddress1Notifier.value == '') {
@@ -106,8 +110,12 @@ class _DevicesPageState extends State<DevicesPage> {
         _controller2.text = widget.defaultMacAddress2Notifier.value;
       }
     } else {
-      _controller1.text = widget.macAddress1Notifier.value == '' ? ' ' :  widget.macAddress1Notifier.value;
-      _controller2.text = widget.macAddress2Notifier.value == '' ? ' ' :  widget.macAddress2Notifier.value;
+      _controller1.text = widget.macAddress1Notifier.value == ''
+          ? ' '
+          : widget.macAddress1Notifier.value;
+      _controller2.text = widget.macAddress2Notifier.value == ''
+          ? ' '
+          : widget.macAddress2Notifier.value;
     }
 
     // show changes in default MAC recieved from the RPi
@@ -374,7 +382,18 @@ class _DevicesPageState extends State<DevicesPage> {
                           child: Material(
                             color: Colors.white.withOpacity(0.0),
                             child: InkWell(
-                              onTap: () {},
+                              onTap: () {
+                                widget.macAddress1ConnectionNotifier.value =
+                                    'connecting';
+                                widget.mqttClientWrapper.publishMessage(
+                                    "['CONNECT', '${widget.macAddress1Notifier.value}', '${widget.isBitalino.value}']");
+
+                                _saveMAC(widget.macAddress1Notifier.value,
+                                    widget.macAddress2Notifier.value);
+                                _saveMACHistory(
+                                    widget.macAddress1Notifier.value,
+                                    widget.macAddress2Notifier.value);
+                              },
                               child: Container(
                                 child: ValueListenableBuilder(
                                     valueListenable:
@@ -403,9 +422,15 @@ class _DevicesPageState extends State<DevicesPage> {
                                                         MainAxisAlignment
                                                             .center,
                                                     children: [
-                                                        SpinKitFadingCircle(
-                                                          color: DefaultColors
-                                                              .mainColor,
+                                                        SizedBox(
+                                                          width: 40,
+                                                          height: 40,
+                                                          child:
+                                                              SpinKitFadingCircle(
+                                                            size: 40,
+                                                            color: DefaultColors
+                                                                .mainColor,
+                                                          ),
                                                         ),
                                                       ])
                                                 : Column(
@@ -479,7 +504,18 @@ class _DevicesPageState extends State<DevicesPage> {
                             color: Colors.white.withOpacity(0.0),
                             child: InkWell(
                               //splashColor: Colors.green,
-                              onTap: () {},
+                              onTap: () {
+                                widget.macAddress1ConnectionNotifier.value =
+                                    'connecting';
+                                widget.mqttClientWrapper.publishMessage(
+                                    "['CONNECT', '${widget.macAddress2Notifier.value}', '${widget.isBitalino.value}']");
+
+                                _saveMAC(widget.macAddress1Notifier.value,
+                                    widget.macAddress2Notifier.value);
+                                _saveMACHistory(
+                                    widget.macAddress1Notifier.value,
+                                    widget.macAddress2Notifier.value);
+                              },
                               child: Container(
                                 child: ValueListenableBuilder(
                                     valueListenable:
@@ -508,9 +544,15 @@ class _DevicesPageState extends State<DevicesPage> {
                                                         MainAxisAlignment
                                                             .center,
                                                     children: [
-                                                        SpinKitFadingCircle(
-                                                          color: DefaultColors
-                                                              .mainColor,
+                                                        SizedBox(
+                                                          width: 40,
+                                                          height: 40,
+                                                          child:
+                                                              SpinKitFadingCircle(
+                                                            size: 40,
+                                                            color: DefaultColors
+                                                                .mainColor,
+                                                          ),
                                                         ),
                                                       ])
                                                 : Column(

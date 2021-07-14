@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 class Destination {
-  Destination(this.label, this.icon, this.color, this.dataMACNotifier, this.sensorsMACNotifier, this.channelsMACNotifier);
-  //final ValueNotifier<String> label;
-  String label;
+  Destination(this.icon, this.color, this.dataMACNotifier,
+      this.sensorsMACNotifier, this.channelsMACNotifier);
+
   final IconData icon;
   final Color color;
   final ValueNotifier<List<List>> dataMACNotifier;

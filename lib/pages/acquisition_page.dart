@@ -1,4 +1,5 @@
-import 'package:epibox/bottom_navbar/destinations.dart';
+
+import 'package:epibox/acquisition_navbar/destinations.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
 import 'package:epibox/pages/visualization_destination.dart';
@@ -67,10 +68,10 @@ class AcquisitionPage extends StatelessWidget {
         TabBar(
           tabs: [
             Tab(
-              child: Text(macAddress1Notifier.value, style: MyTextStyle(color: DefaultColors.textColorOnLight),),
+              child: Text(macAddress1Notifier.value, style: MyTextStyle(color: DefaultColors.textColorOnLight, fontSize: 15),),
             ),
             Tab(
-              child: Text(macAddress2Notifier.value, style: MyTextStyle(color: DefaultColors.textColorOnLight),),
+              child: Text(macAddress2Notifier.value, style: MyTextStyle(color: DefaultColors.textColorOnLight, fontSize: 15),),
             ),
           ],
         ),

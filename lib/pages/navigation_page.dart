@@ -1,7 +1,9 @@
+import 'package:epibox/acquisition_navbar/destinations.dart';
 import 'package:epibox/pages/acquisition_page.dart';
 import 'package:epibox/pages/config_page.dart';
 import 'package:epibox/pages/profile_drawer.dart';
 import 'package:epibox/pages/server_page.dart';
+import 'package:epibox/pages/speed_annotation.dart';
 import 'package:epibox/utils/overlay_config.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -9,9 +11,9 @@ import 'dart:convert';
 import 'package:app_settings/app_settings.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:loader_overlay/loader_overlay.dart';
-import 'package:epibox/bottom_navbar/destinations.dart';
 import 'package:epibox/decor/text_styles.dart';
 
 import 'package:epibox/decor/default_colors.dart';
@@ -107,6 +109,8 @@ class _NavigationPageState extends State<NavigationPage>
   ValueNotifier<List> sensorsMAC1Notifier = ValueNotifier([]);
   ValueNotifier<List> sensorsMAC2Notifier = ValueNotifier([]);
 
+  ValueNotifier<bool> newAnnotation = ValueNotifier(false);
+
   bool _isDialogOpen = false;
 
   MqttCurrentConnectionState connectionState;
@@ -180,16 +184,6 @@ class _NavigationPageState extends State<NavigationPage>
     /* subscription =
         Connectivity().onConnectivityChanged.listen(_updateConnectionStatus); */
 
-    macAddress1Notifier.addListener(() {
-      setState(
-          () => allDestinations.value[0].label = macAddress1Notifier.value);
-    });
-
-    macAddress2Notifier.addListener(() {
-      setState(
-          () => allDestinations.value[1].label = macAddress2Notifier.value);
-    });
-
     timer = Timer.periodic(Duration(seconds: 15), (Timer t) => print('timer'));
 
     var initializationSettingsAndroid =
@@ -214,20 +208,10 @@ class _NavigationPageState extends State<NavigationPage>
     getMACHistory();
 
     allDestinations = ValueNotifier(<Destination>[
-      Destination(
-          macAddress1Notifier.value,
-          Icons.looks_one_outlined,
-          LightColors.kRed,
-          dataMAC1Notifier,
-          sensorsMAC1Notifier,
-          channelsMAC1Notifier),
-      Destination(
-          macAddress2Notifier.value,
-          Icons.looks_two_outlined,
-          LightColors.kBlue,
-          dataMAC2Notifier,
-          sensorsMAC2Notifier,
-          channelsMAC2Notifier),
+      Destination(Icons.looks_one_outlined, LightColors.kRed, dataMAC1Notifier,
+          sensorsMAC1Notifier, channelsMAC1Notifier),
+      Destination(Icons.looks_two_outlined, LightColors.kBlue, dataMAC2Notifier,
+          sensorsMAC2Notifier, channelsMAC2Notifier),
     ]);
 
     initialized = initialize();
@@ -415,6 +399,7 @@ class _NavigationPageState extends State<NavigationPage>
     print('NEW MESSAGE: $message');
     setState(() => message = newMessage);
     _isMACAddress(message);
+    _isMACState(message);
     _isDrivesList(message);
     _isDefaultConfig(message);
     _macReceived(message);
@@ -425,6 +410,19 @@ class _NavigationPageState extends State<NavigationPage>
     _isTimeout(message);
     _isStartupError(message);
     _isTurnedOff(message);
+  }
+
+  void _isMACState(String message) {
+    if (message.contains('MAC STATE')) {
+      List messageList = json.decode(message.replaceAll('\'', '\"'));
+      if (messageList[1] == macAddress1Notifier.value) {
+        setState(() => macAddress1ConnectionNotifier.value = messageList[2]);
+      } else if (messageList[1] == macAddress2Notifier.value) {
+        setState(() => macAddress2ConnectionNotifier.value = messageList[2]);
+      } else {
+        print('Not valid MAC address');
+      }
+    }
   }
 
   void updatedConnection(MqttCurrentConnectionState newConnectionState) {
@@ -760,6 +758,75 @@ class _NavigationPageState extends State<NavigationPage>
         style: MyTextStyle(color: DefaultColors.textColorOnDark, fontSize: 18)),
   ];
 
+  Future<void> _speedAnnotation() async {
+    //List annotationTypesD = await getAnnotationTypes();
+    List<String> annotationTypes = List<String>.from(annotationTypesD.value);
+    //print(annotationTypes);
+    Navigator.of(context).push(new MaterialPageRoute<Null>(
+        builder: (BuildContext context) {
+          return SpeedAnnotationDialog(
+            annotationTypesD: annotationTypesD,
+            annotationTypes: annotationTypes,
+            patientNotifier: widget.patientNotifier,
+            newAnnotation: newAnnotation,
+            mqttClientWrapper: mqttClientWrapper,
+          );
+        },
+        fullscreenDialog: true));
+  }
+
+  void _stopAcquisition() {
+    mqttClientWrapper.publishMessage("['INTERRUPT']");
+  }
+
+  void _resumeAcquisition() {
+    mqttClientWrapper.publishMessage("['RESUME ACQ']");
+  }
+
+  void _pauseAcquisition() {
+    mqttClientWrapper.publishMessage("['PAUSE ACQ']");
+  }
+
+  List<List<String>> _getChannels2Send() {
+    List<List<String>> _channels2Send = [];
+    bit1Selections.value.asMap().forEach((channel, value) {
+      if (value) {
+        _channels2Send.add([
+          "'${macAddress1Notifier.value}'",
+          "'${(channel + 1).toString()}'",
+          "'${controllerSensors.value[channel].text}'"
+        ]);
+      }
+    });
+    bit2Selections.value.asMap().forEach((channel, value) {
+      if (value) {
+        _channels2Send.add([
+          "'${macAddress2Notifier.value}'",
+          "'${(channel + 1).toString()}'",
+          "'${controllerSensors.value[channel + 5].text}'"
+        ]);
+      }
+    });
+    print('chn: $_channels2Send');
+    return _channels2Send;
+  }
+
+  Future<void> _startAcquisition() async {
+    String _newDrive =
+        chosenDrive.value.substring(0, chosenDrive.value.indexOf('(')).trim();
+    mqttClientWrapper.publishMessage("['FOLDER', '$_newDrive']");
+    mqttClientWrapper.publishMessage("['FS', ${controllerFreq.value.text}]");
+    mqttClientWrapper
+        .publishMessage("['ID', '${widget.patientNotifier.value}']");
+    mqttClientWrapper.publishMessage("['SAVE RAW', '${saveRaw.value}']");
+    mqttClientWrapper.publishMessage("['EPI SERVICE', '${isBitalino.value}']");
+
+    List<List<String>> _channels2Send = _getChannels2Send();
+    mqttClientWrapper.publishMessage("['CHANNELS', $_channels2Send]");
+
+    mqttClientWrapper.publishMessage("['START']");
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -967,23 +1034,147 @@ class _NavigationPageState extends State<NavigationPage>
           ),
         ],
       ),
-      floatingActionButton:
-          //Stack(children: [
-          Align(
-        alignment: Alignment(-0.9, -0.65),
-        child: Builder(builder: (context) {
-          return FloatingActionButton(
-              backgroundColor: Colors.transparent,
-              elevation: 0.0,
-              //mini: true,
-              //heroTag: null,
-              child: Icon(Icons.more_vert),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              });
-        }),
-      ),
-      // ]),
+      floatingActionButton: ValueListenableBuilder(
+          valueListenable: _navigationIndex,
+          builder: (BuildContext context, int index, Widget child) {
+            return index != 3
+                ? Stack(children: [
+                    Align(
+                      alignment: Alignment(-0.9, -0.65),
+                      child: Builder(builder: (context) {
+                        return FloatingActionButton(
+                            backgroundColor: Colors.transparent,
+                            elevation: 0.0,
+                            //mini: true,
+                            //heroTag: null,
+                            child: Icon(Icons.more_vert),
+                            onPressed: () {
+                              Scaffold.of(context).openDrawer();
+                            });
+                      }),
+                    ),
+                    Align(
+                      alignment: Alignment(0.95, -0.65),
+                      child: Builder(builder: (context) {
+                        return ValueListenableBuilder(
+                            valueListenable: connectionNotifier,
+                            builder: (BuildContext context,
+                                MqttCurrentConnectionState state,
+                                Widget child) {
+                              return FloatingActionButton(
+                                  backgroundColor: Colors.transparent,
+                                  elevation: 0.0,
+                                  child: CircleAvatar(
+                                    backgroundColor: state ==
+                                            MqttCurrentConnectionState.CONNECTED
+                                        ? Colors.green[800]
+                                        : state ==
+                                                MqttCurrentConnectionState
+                                                    .CONNECTING
+                                            ? Colors.yellow[800]
+                                            : Colors.red[800],
+                                    radius: 20,
+                                    child: Icon(Icons.cast_connected_outlined,
+                                        color: Colors.white),
+                                  ),
+                                  onPressed: () {
+                                    Scaffold.of(context).openDrawer();
+                                  });
+                            });
+                      }),
+                    )
+                  ])
+                : Stack(children: [
+                    Align(
+                      alignment: Alignment(-0.9, -0.65),
+                      child: Builder(builder: (context) {
+                        return FloatingActionButton(
+                            backgroundColor: Colors.transparent,
+                            elevation: 0.0,
+                            //mini: true,
+                            //heroTag: null,
+                            child: Icon(Icons.more_vert),
+                            onPressed: () {
+                              Scaffold.of(context).openDrawer();
+                            });
+                      }),
+                    ),
+                    Align(
+                      alignment: Alignment(0.95, -0.65),
+                      child: Builder(builder: (context) {
+                        return ValueListenableBuilder(
+                            valueListenable: connectionNotifier,
+                            builder: (BuildContext context,
+                                MqttCurrentConnectionState state,
+                                Widget child) {
+                              return FloatingActionButton(
+                                  backgroundColor: Colors.transparent,
+                                  elevation: 0.0,
+                                  child: CircleAvatar(
+                                    backgroundColor: state ==
+                                            MqttCurrentConnectionState.CONNECTED
+                                        ? Colors.green[800]
+                                        : state ==
+                                                MqttCurrentConnectionState
+                                                    .CONNECTING
+                                            ? Colors.yellow[800]
+                                            : Colors.red[800],
+                                    radius: 20,
+                                    child: Icon(Icons.cast_connected_outlined,
+                                        color: Colors.white),
+                                  ),
+                                  onPressed: () {
+                                    Scaffold.of(context).openDrawer();
+                                  });
+                            });
+                      }),
+                    ),
+                    Align(
+                      alignment: Alignment(-0.8, 1.0),
+                      child: FloatingActionButton(
+                        mini: true,
+                        heroTag: null,
+                        onPressed: () => _speedAnnotation(),
+                        child: Icon(MdiIcons.lightningBolt),
+                      ),
+                    ),
+                    Align(
+                        alignment: Alignment(0.2, 1.0),
+                        child: ValueListenableBuilder(
+                            valueListenable: acquisitionNotifier,
+                            builder: (BuildContext context, String state,
+                                Widget child) {
+                              return FloatingActionButton(
+                                mini: true,
+                                onPressed: state == 'paused'
+                                    ? () => _resumeAcquisition()
+                                    : () => _pauseAcquisition(),
+                                child: state == 'paused'
+                                    ? Icon(Icons.play_arrow)
+                                    : Icon(Icons.pause),
+                              );
+                            })),
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: ValueListenableBuilder(
+                          valueListenable: acquisitionNotifier,
+                          builder: (BuildContext context, String state,
+                              Widget child) {
+                            return FloatingActionButton.extended(
+                              onPressed: (state == 'stopped' || state == 'off')
+                                  ? () => _startAcquisition()
+                                  : () => _stopAcquisition(),
+                              label: (state == 'stopped' || state == 'off')
+                                  ? Text('Iniciar')
+                                  : Text('Parar'),
+                              icon: (state == 'stopped' || state == 'off')
+                                  ? Icon(Icons.play_arrow_rounded)
+                                  : Icon(Icons.stop),
+                            );
+                          }),
+                    ),
+                  ]);
+          }),
     );
   }
 }
