@@ -2,7 +2,7 @@
 import 'package:epibox/acquisition_navbar/destinations.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
-import 'package:epibox/pages/visualization_destination.dart';
+import 'package:epibox/acquisition_navbar/visualization_destination.dart';
 import 'package:epibox/utils/models.dart';
 import 'package:epibox/utils/mqtt_wrapper.dart';
 import 'package:flutter/material.dart';

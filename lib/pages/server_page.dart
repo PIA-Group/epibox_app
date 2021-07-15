@@ -6,7 +6,6 @@ import 'package:epibox/utils/models.dart';
 import 'package:epibox/utils/mqtt_wrapper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 class ServerPage extends StatefulWidget {
   final ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
   final MQTTClientWrapper mqttClientWrapper;
@@ -50,6 +49,12 @@ class ServerPage extends StatefulWidget {
 
   final ValueNotifier<bool> saveRaw;
 
+  ValueNotifier<String> macAddress1ConnectionNotifier;
+  ValueNotifier<String> macAddress2ConnectionNotifier;
+
+  ValueNotifier<String> chosenDrive;
+  ValueNotifier<TextEditingController> controllerFreq;
+
   ServerPage({
     this.mqttClientWrapper,
     this.connectionNotifier,
@@ -79,6 +84,10 @@ class ServerPage extends StatefulWidget {
     this.startupError,
     this.allDestinations,
     this.saveRaw,
+    this.macAddress1ConnectionNotifier,
+    this.macAddress2ConnectionNotifier,
+    this.chosenDrive,
+    this.controllerFreq,
   });
 
   @override
@@ -94,31 +103,35 @@ class _ServerPageState extends State<ServerPage> {
     print('SAVE RAW: ${widget.saveRaw}');
   }
 
-  Future<void> _restart(String method) async {
-    if (method == 'all') {
-      widget.mqttClientWrapper.publishMessage("['RESTART']");
+  Future<void> _restart(bool restart) async {
+    widget.mqttClientWrapper.publishMessage("['RESTART']");
+
+    if (restart) {
       await widget.mqttClientWrapper.diconnectClient();
+      setState(() {
+        widget.defaultMacAddress1Notifier.value = 'xx:xx:xx:xx:xx:xx';
+        widget.defaultMacAddress2Notifier.value = 'xx:xx:xx:xx:xx:xx';
+
+        widget.macAddress1Notifier.value = 'xx:xx:xx:xx:xx:xx';
+        widget.macAddress2Notifier.value = 'xx:xx:xx:xx:xx:xx';
+
+        widget.driveListNotifier.value = [' '];
+        widget.chosenDrive.value = ' ';
+        widget.controllerFreq.value.text = ' ';
+
+        widget.isBit1Enabled.value = false;
+        widget.isBit1Enabled.value = false;
+      });
     }
+
     setState(() {
-      widget.defaultMacAddress1Notifier.value = 'xx:xx:xx:xx:xx:xx';
-      widget.defaultMacAddress2Notifier.value = 'xx:xx:xx:xx:xx:xx';
-
-      widget.macAddress1Notifier.value = 'xx:xx:xx:xx:xx:xx';
-      widget.macAddress2Notifier.value = 'xx:xx:xx:xx:xx:xx';
-
-      widget.receivedMACNotifier.value = false;
-      widget.sentMACNotifier.value = false;
-      widget.sentConfigNotifier.value = false;
+      widget.macAddress1ConnectionNotifier.value = 'disconnected';
+      widget.macAddress2ConnectionNotifier.value = 'disconnected';
 
       widget.acquisitionNotifier.value = 'off';
 
-      widget.driveListNotifier.value = ['RPi'];
-
       widget.batteryBit1Notifier.value = null;
       widget.batteryBit2Notifier.value = null;
-
-      widget.isBit1Enabled.value = false;
-      widget.isBit1Enabled.value = false;
     });
 
     saveBatteries(null, null);
@@ -147,8 +160,6 @@ class _ServerPageState extends State<ServerPage> {
   }
 
   Future<void> _setup() async {
-    //_restart('');
-    //setState(() => widget.saveRaw.value = true);
     await widget.mqttClientWrapper
         .prepareMqttClient(widget.hostnameNotifier.value)
         .then((value) {
@@ -246,7 +257,7 @@ class _ServerPageState extends State<ServerPage> {
                       //onPrimary: Colors.white, // foreground
                     ),
                     onPressed: () {
-                      _restart('all');
+                      _restart(true);
                       _setup();
                     },
                     child: new Text(
@@ -297,7 +308,7 @@ class _ServerPageState extends State<ServerPage> {
                 ),
               ),
             ),
-            Padding(
+            /* Padding(
               padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
               child: ValueListenableBuilder(
                   valueListenable: widget.acquisitionNotifier,
@@ -313,7 +324,7 @@ class _ServerPageState extends State<ServerPage> {
                       ),
                     );
                   }),
-            ),
+            ), */
           ]),
         ),
       ],

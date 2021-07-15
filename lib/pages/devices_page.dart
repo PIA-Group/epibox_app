@@ -1,11 +1,9 @@
 import 'package:barcode_scan/barcode_scan.dart';
-import 'package:dropdownfield/dropdownfield.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
 import 'package:epibox/utils/masked_text.dart';
 import 'package:epibox/utils/models.dart';
 import 'package:epibox/utils/mqtt_wrapper.dart';
-import 'package:epibox/utils/multiple_value_listnable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -302,38 +300,6 @@ class _DevicesPageState extends State<DevicesPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                /* ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    primary: DefaultColors.mainLColor, // background
-                    //onPrimary: Colors.white, // foreground
-                  ),
-                  onPressed: () {
-                    setState(() => widget.macAddress1Notifier.value =
-                        _controller1.text.replaceAll(new RegExp(r"\s+"), ""));
-                    setState(() => widget.macAddress2Notifier.value =
-                        _controller2.text.replaceAll(new RegExp(r"\s+"), ""));
-                    widget.mqttClientWrapper.publishMessage(
-                        "['USE MAC',{'MAC1':'${widget.macAddress1Notifier.value}','MAC2':'${widget.macAddress2Notifier.value}'}]");
-                    widget.mqttClientWrapper.publishMessage(
-                        "['ID', '${widget.patientNotifier.value}']");
-                    if (widget.macAddress1Notifier.value != ' ' &&
-                        widget.macAddress1Notifier.value != '') {
-                      setState(() => widget.isBit1Enabled.value = true);
-                    }
-                    if (widget.macAddress2Notifier.value != ' ' &&
-                        widget.macAddress2Notifier.value != '') {
-                      setState(() => widget.isBit2Enabled.value = true);
-                    }
-                    _saveMAC(widget.macAddress1Notifier.value,
-                        widget.macAddress2Notifier.value);
-                    _saveMACHistory(widget.macAddress1Notifier.value,
-                        widget.macAddress2Notifier.value);
-                  },
-                  child: new Text(
-                    "Conectar",
-                    style: MyTextStyle(),
-                  ),
-                ), */
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     primary: DefaultColors.mainLColor, // background
@@ -464,11 +430,16 @@ class _DevicesPageState extends State<DevicesPage> {
                                                     style: MyTextStyle(
                                                         color: DefaultColors
                                                             .textColorOnLight))
-                                                : Text(
-                                                    'Dispositivo desconectado',
-                                                    style: MyTextStyle(
-                                                        color: DefaultColors
-                                                            .textColorOnLight)),
+                                                : state == 'failed'
+                                                    ? Text('Falha na conexão',
+                                                        style: MyTextStyle(
+                                                            color: DefaultColors
+                                                                .textColorOnLight))
+                                                    : Text(
+                                                        'Dispositivo desconectado',
+                                                        style: MyTextStyle(
+                                                            color: DefaultColors
+                                                                .textColorOnLight)),
                                         //isThreeLine: true,
                                       );
                                     }),
@@ -586,11 +557,16 @@ class _DevicesPageState extends State<DevicesPage> {
                                                     style: MyTextStyle(
                                                         color: DefaultColors
                                                             .textColorOnLight))
-                                                : Text(
-                                                    'Dispositivo desconectado',
-                                                    style: MyTextStyle(
-                                                        color: DefaultColors
-                                                            .textColorOnLight)),
+                                                : state == 'failed'
+                                                    ? Text('Falha na conexão',
+                                                        style: MyTextStyle(
+                                                            color: DefaultColors
+                                                                .textColorOnLight))
+                                                    : Text(
+                                                        'Dispositivo desconectado',
+                                                        style: MyTextStyle(
+                                                            color: DefaultColors
+                                                                .textColorOnLight)),
                                         //isThreeLine: true,
                                       );
                                     }),

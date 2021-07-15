@@ -1,30 +1,26 @@
 import 'package:epibox/acquisition_navbar/destinations.dart';
+import 'package:epibox/costum_overlays/acquisition_overlay.dart';
+import 'package:epibox/costum_overlays/server_overlay.dart';
 import 'package:epibox/pages/acquisition_page.dart';
 import 'package:epibox/pages/config_page.dart';
 import 'package:epibox/pages/profile_drawer.dart';
 import 'package:epibox/pages/server_page.dart';
 import 'package:epibox/pages/speed_annotation.dart';
-import 'package:epibox/utils/overlay_config.dart';
+import 'package:epibox/utils/multiple_value_listnable.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
-import 'package:app_settings/app_settings.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:epibox/decor/text_styles.dart';
-
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/utils/models.dart';
 import 'package:epibox/utils/mqtt_wrapper.dart';
-
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:connectivity/connectivity.dart';
-import 'package:wifi_info_flutter/wifi_info_flutter.dart';
 import 'package:epibox/decor/custom_icons.dart';
-
 import 'devices_page.dart';
 
 class NavigationPage extends StatefulWidget {
@@ -111,8 +107,6 @@ class _NavigationPageState extends State<NavigationPage>
 
   ValueNotifier<bool> newAnnotation = ValueNotifier(false);
 
-  bool _isDialogOpen = false;
-
   MqttCurrentConnectionState connectionState;
   MQTTClientWrapper mqttClientWrapper;
   MqttClient client;
@@ -127,8 +121,6 @@ class _NavigationPageState extends State<NavigationPage>
       FlutterLocalNotificationsPlugin();
 
   ValueNotifier<List> annotationTypesD = ValueNotifier([]);
-
-  StreamSubscription<ConnectivityResult> subscription;
 
   void setupHome() {
     mqttClientWrapper = MQTTClientWrapper(
@@ -153,13 +145,13 @@ class _NavigationPageState extends State<NavigationPage>
     connectionNotifier.addListener(() {
       if (connectionNotifier.value == MqttCurrentConnectionState.CONNECTING) {
         setState(() => overlayMessage.value =
-            CustomOverlay(connectionState: connectionNotifier.value));
+            ServerCustomOverlay(connectionState: connectionNotifier.value));
         context.loaderOverlay.show();
       } else if (connectionNotifier.value ==
           MqttCurrentConnectionState.CONNECTED) {
         if (context.loaderOverlay.visible) context.loaderOverlay.hide();
         setState(() => overlayMessage.value =
-            CustomOverlay(connectionState: connectionNotifier.value));
+            ServerCustomOverlay(connectionState: connectionNotifier.value));
         context.loaderOverlay.show();
         Future.delayed(const Duration(seconds: 2), () {
           setState(() => context.loaderOverlay.hide());
@@ -170,7 +162,7 @@ class _NavigationPageState extends State<NavigationPage>
 
         setState(
           () => overlayMessage.value =
-              CustomOverlay(connectionState: connectionNotifier.value),
+              ServerCustomOverlay(connectionState: connectionNotifier.value),
         );
 
         context.loaderOverlay.show();
@@ -181,8 +173,40 @@ class _NavigationPageState extends State<NavigationPage>
       }
     });
 
-    /* subscription =
-        Connectivity().onConnectivityChanged.listen(_updateConnectionStatus); */
+    acquisitionNotifier.addListener(() {
+      print('---- change in acquisition state: ${acquisitionNotifier.value}');
+
+      if (acquisitionNotifier.value == 'starting') {
+        setState(() => overlayMessage.value =
+            AcquisitionCustomOverlay(state: acquisitionNotifier.value));
+        context.loaderOverlay.show();
+      } else if (acquisitionNotifier.value == 'reconnecting') {
+        if (context.loaderOverlay.visible) context.loaderOverlay.hide();
+        setState(() => overlayMessage.value =
+            AcquisitionCustomOverlay(state: acquisitionNotifier.value));
+        context.loaderOverlay.show();
+      } else if (acquisitionNotifier.value == 'paused') {
+        if (context.loaderOverlay.visible) context.loaderOverlay.hide();
+        setState(() => overlayMessage.value =
+            AcquisitionCustomOverlay(state: acquisitionNotifier.value));
+        context.loaderOverlay.show();
+        Future.delayed(const Duration(seconds: 3), () {
+          setState(() => context.loaderOverlay.hide());
+        });
+      } else if (acquisitionNotifier.value == 'stopped') {
+        if (context.loaderOverlay.visible) context.loaderOverlay.hide();
+        setState(() => overlayMessage.value =
+            AcquisitionCustomOverlay(state: acquisitionNotifier.value));
+        context.loaderOverlay.show();
+        Future.delayed(const Duration(seconds: 3), () {
+          setState(() => context.loaderOverlay.hide());
+        });
+      } else if (acquisitionNotifier.value == 'off') {
+        print('do nothing');
+      } else {
+        if (context.loaderOverlay.visible) context.loaderOverlay.hide();
+      }
+    });
 
     timer = Timer.periodic(Duration(seconds: 15), (Timer t) => print('timer'));
 
@@ -193,10 +217,9 @@ class _NavigationPageState extends State<NavigationPage>
         android: initializationSettingsAndroid, iOS: initializationSettingsIOs);
     batteryNotification.initialize(initSetttings);
 
-    acquisitionNotifier.value = 'off';
+    //acquisitionNotifier.value = 'off';
     setupHome();
     nameController.text = " ";
-    //_wifiDialog();
     getAnnotationTypes();
     getPreviousDevice();
     getLastMAC();
@@ -215,74 +238,6 @@ class _NavigationPageState extends State<NavigationPage>
     ]);
 
     initialized = initialize();
-  }
-
-  Future<void> _wifiDialog() async {
-    if (_isDialogOpen) Navigator.of(context, rootNavigator: true).pop();
-    await Future.delayed(Duration.zero);
-    await WifiInfo().getWifiName().then((wifiName) {
-      print('WIFI NAME: $wifiName');
-      if (wifiName != 'PreEpiSeizures') {
-        _isDialogOpen = true;
-        print('isDialog: $_isDialogOpen');
-        return showDialog<void>(
-          context: context,
-          barrierDismissible: true,
-          builder: (BuildContext context) {
-            return WillPopScope(
-              child: AlertDialog(
-                title: Text(
-                  'Conexão wifi',
-                  textAlign: TextAlign.start,
-                  style: MyTextStyle(
-                      color: DefaultColors.textColorOnLight, fontSize: 22),
-                ),
-                content: SingleChildScrollView(
-                  child: ListBody(children: <Widget>[
-                    Padding(
-                      padding: EdgeInsets.only(right: 15.0, left: 15.0),
-                      child: Text(
-                        'Verifique se se encontra conectado à rede "PreEpiSeizures". Caso contrário, por favor conectar com a password "preepiseizures"',
-                        textAlign: TextAlign.justify,
-                        style:
-                            MyTextStyle(color: DefaultColors.textColorOnLight),
-                      ),
-                    ),
-                    Padding(
-                      padding:
-                          EdgeInsets.only(right: 15.0, left: 15.0, top: 10.0),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          primary: DefaultColors.mainLColor, // background
-                          onPrimary:
-                              DefaultColors.textColorOnDark, // foreground
-                        ),
-                        child: Text(
-                          "WIFI",
-                          style: MyTextStyle(),
-                        ),
-                        onPressed: () {
-                          _isDialogOpen = false;
-                          AppSettings.openWIFISettings();
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    ),
-                  ]),
-                ),
-              ),
-              onWillPop: () {
-                _isDialogOpen = false;
-                print('isDialog: $_isDialogOpen');
-                return Future.delayed(Duration.zero, () {
-                  return true;
-                });
-              },
-            );
-          },
-        );
-      }
-    });
   }
 
   void getAnnotationTypes() async {
@@ -392,7 +347,6 @@ class _NavigationPageState extends State<NavigationPage>
     timer?.cancel();
     super.dispose();
     nameController.dispose();
-    //subscription.cancel();
   }
 
   void gotNewMessage(String newMessage) {
@@ -433,20 +387,6 @@ class _NavigationPageState extends State<NavigationPage>
     print('This is the new connection state ${connectionNotifier.value}');
   }
 
-  /* Future<void> _updateConnectionStatus(ConnectivityResult result) async {
-    switch (result) {
-      case ConnectivityResult.wifi:
-      case ConnectivityResult.mobile:
-      case ConnectivityResult.none:
-        setState(() => _connectionStatus = result.toString());
-        _wifiDialog();
-        break;
-      default:
-        setState(() => _connectionStatus = 'Failed to get connectivity.');
-        break;
-    }
-  } */
-
   void _isMACAddress(String message) {
     if (message.contains('DEFAULT MAC')) {
       try {
@@ -484,7 +424,6 @@ class _NavigationPageState extends State<NavigationPage>
         listDrives.removeAt(0);
         listDrives = listDrives.map((drive) => drive.split("'")[1]).toList();
         setState(() => driveListNotifier.value = listDrives);
-        driveListNotifier.notifyListeners();
         print(driveListNotifier);
         mqttClientWrapper.publishMessage("['GO TO DEVICES']");
       } catch (e) {
@@ -517,11 +456,8 @@ class _NavigationPageState extends State<NavigationPage>
       setState(() => acquisitionNotifier.value = 'starting');
       print('ACQUISITION STARTING');
     } else if (message.contains('ACQUISITION ON')) {
-      setState(() => acquisitionNotifier.value = 'acquiring');
+      //setState(() => acquisitionNotifier.value = 'acquiring');
       print('ACQUIRING');
-    } else if (message.contains('TRYING')) {
-      setState(() => acquisitionNotifier.value = 'trying');
-      print('TRYING TO CONNECT TO DEVICES');
     } else if (message.contains('RECONNECTING')) {
       setState(() => acquisitionNotifier.value = 'reconnecting');
       print('RECONNECTING ACQUISITION');
@@ -530,7 +466,7 @@ class _NavigationPageState extends State<NavigationPage>
       print('PAIRING');
     } else if (message.contains('STOPPED')) {
       setState(() => acquisitionNotifier.value = 'stopped');
-      _restart(true);
+      _restart(false);
       print('ACQUISITION STOPPED AND SAVED');
     } else if (message.contains('PAUSED')) {
       setState(() => acquisitionNotifier.value = 'paused');
@@ -619,7 +555,7 @@ class _NavigationPageState extends State<NavigationPage>
   void _isStartupError(String message) {
     if (message.contains('ERROR')) {
       setState(() => startupError.value = true);
-      _restart(true);
+      _restart(false);
     }
   }
 
@@ -669,50 +605,38 @@ class _NavigationPageState extends State<NavigationPage>
   }
 
   Future<void> _restart(bool restart) async {
+    mqttClientWrapper.publishMessage("['RESTART']");
+
     if (restart) {
-      mqttClientWrapper.publishMessage("['RESTART']");
+      await mqttClientWrapper.diconnectClient();
+      setState(() {
+        defaultMacAddress1Notifier.value = 'xx:xx:xx:xx:xx:xx';
+        defaultMacAddress2Notifier.value = 'xx:xx:xx:xx:xx:xx';
+
+        macAddress1Notifier.value = 'xx:xx:xx:xx:xx:xx';
+        macAddress2Notifier.value = 'xx:xx:xx:xx:xx:xx';
+
+        driveListNotifier.value = [' '];
+        chosenDrive.value = ' ';
+        controllerFreq.value.text = ' ';
+
+        isBit1Enabled.value = false;
+        isBit1Enabled.value = false;
+      });
     }
 
-    await mqttClientWrapper.diconnectClient();
-
     setState(() {
-      defaultMacAddress1Notifier.value = 'xx:xx:xx:xx:xx:xx';
-      defaultMacAddress2Notifier.value = 'xx:xx:xx:xx:xx:xx';
-
-      macAddress1Notifier.value = 'xx:xx:xx:xx:xx:xx';
-      macAddress2Notifier.value = 'xx:xx:xx:xx:xx:xx';
-
-      receivedMACNotifier.value = false;
-      sentMACNotifier.value = false;
-      sentConfigNotifier.value = false;
+      macAddress1ConnectionNotifier.value = 'disconnected';
+      macAddress2ConnectionNotifier.value = 'disconnected';
 
       acquisitionNotifier.value = 'off';
 
-      driveListNotifier.value = [' '];
-      chosenDrive.value = ' ';
-      controllerFreq.value.text = ' ';
-
       batteryBit1Notifier.value = null;
       batteryBit2Notifier.value = null;
-
-      isBit1Enabled.value = false;
-      isBit1Enabled.value = false;
     });
 
     saveBatteries(null, null);
     saveMAC('xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx');
-  }
-
-  void _showSnackBar(String _message) {
-    try {
-      ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
-        duration: Duration(seconds: 3),
-        content: new Text(_message),
-        //backgroundColor: Colors.blue,
-      ));
-    } catch (e) {
-      print(e);
-    }
   }
 
   double appBarHeight = 100;
@@ -759,9 +683,7 @@ class _NavigationPageState extends State<NavigationPage>
   ];
 
   Future<void> _speedAnnotation() async {
-    //List annotationTypesD = await getAnnotationTypes();
     List<String> annotationTypes = List<String>.from(annotationTypesD.value);
-    //print(annotationTypes);
     Navigator.of(context).push(new MaterialPageRoute<Null>(
         builder: (BuildContext context) {
           return SpeedAnnotationDialog(
@@ -812,19 +734,53 @@ class _NavigationPageState extends State<NavigationPage>
   }
 
   Future<void> _startAcquisition() async {
-    String _newDrive =
-        chosenDrive.value.substring(0, chosenDrive.value.indexOf('(')).trim();
-    mqttClientWrapper.publishMessage("['FOLDER', '$_newDrive']");
-    mqttClientWrapper.publishMessage("['FS', ${controllerFreq.value.text}]");
-    mqttClientWrapper
-        .publishMessage("['ID', '${widget.patientNotifier.value}']");
-    mqttClientWrapper.publishMessage("['SAVE RAW', '${saveRaw.value}']");
-    mqttClientWrapper.publishMessage("['EPI SERVICE', '${isBitalino.value}']");
+    if (connectionNotifier.value != MqttCurrentConnectionState.CONNECTED ||
+        (isBit1Enabled.value &&
+            macAddress1ConnectionNotifier.value != 'connected') ||
+        (isBit2Enabled.value &&
+            macAddress2ConnectionNotifier.value != 'connected')) {
+      if (context.loaderOverlay.visible) context.loaderOverlay.hide();
+      setState(() => overlayMessage.value = Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                Text(
+                  'Não foi possível iniciar',
+                  textAlign: TextAlign.center,
+                  style: MyTextStyle(
+                      color: DefaultColors.textColorOnLight, fontSize: 20),
+                ),
+                SizedBox(height: 20),
+                Text(
+                  'Verifique a conexão ao servidor e aos dispositivos de aquisição!',
+                  textAlign: TextAlign.center,
+                  style: MyTextStyle(
+                      color: DefaultColors.textColorOnLight, fontSize: 20),
+                ),
+                SizedBox(height: 20),
+              ]),
+            ),
+          ));
+      context.loaderOverlay.show();
+      Future.delayed(const Duration(seconds: 3), () {
+        setState(() => context.loaderOverlay.hide());
+      });
+    } else {
+      String _newDrive =
+          chosenDrive.value.substring(0, chosenDrive.value.indexOf('(')).trim();
+      mqttClientWrapper.publishMessage("['FOLDER', '$_newDrive']");
+      mqttClientWrapper.publishMessage("['FS', ${controllerFreq.value.text}]");
+      mqttClientWrapper
+          .publishMessage("['ID', '${widget.patientNotifier.value}']");
+      mqttClientWrapper.publishMessage("['SAVE RAW', '${saveRaw.value}']");
+      mqttClientWrapper
+          .publishMessage("['EPI SERVICE', '${isBitalino.value}']");
 
-    List<List<String>> _channels2Send = _getChannels2Send();
-    mqttClientWrapper.publishMessage("['CHANNELS', $_channels2Send]");
+      List<List<String>> _channels2Send = _getChannels2Send();
+      mqttClientWrapper.publishMessage("['CHANNELS', $_channels2Send]");
 
-    mqttClientWrapper.publishMessage("['START']");
+      mqttClientWrapper.publishMessage("['START']");
+    }
   }
 
   @override
@@ -1054,7 +1010,7 @@ class _NavigationPageState extends State<NavigationPage>
                       }),
                     ),
                     Align(
-                      alignment: Alignment(0.95, -0.65),
+                      alignment: Alignment(0.7, -0.65),
                       child: Builder(builder: (context) {
                         return ValueListenableBuilder(
                             valueListenable: connectionNotifier,
@@ -1074,13 +1030,46 @@ class _NavigationPageState extends State<NavigationPage>
                                             ? Colors.yellow[800]
                                             : Colors.red[800],
                                     radius: 20,
-                                    child: Icon(Icons.cast_connected_outlined,
+                                    child: Icon(Icons.wifi_tethering,
                                         color: Colors.white),
                                   ),
-                                  onPressed: () {
-                                    Scaffold.of(context).openDrawer();
-                                  });
+                                  onPressed: null);
                             });
+                      }),
+                    ),
+                    Align(
+                      alignment: Alignment(1.1, -0.65),
+                      child: Builder(builder: (context) {
+                        return ValueListenableBuilder2(
+                            macAddress1ConnectionNotifier,
+                            macAddress2ConnectionNotifier, builder:
+                                (BuildContext context, String state1,
+                                    String state2, Widget child) {
+                          return FloatingActionButton(
+                              backgroundColor: Colors.transparent,
+                              elevation: 0.0,
+                              child: CircleAvatar(
+                                  backgroundColor: ((state1 == 'disconnected' &&
+                                              state2 == 'disconnected') ||
+                                          (isBit1Enabled.value &&
+                                              state1 != 'connected') ||
+                                          (isBit2Enabled.value &&
+                                              state2 != 'connected'))
+                                      ? Colors.red[800]
+                                      : Colors.green[800],
+                                  radius: 20,
+                                  child: ((state1 == 'disconnected' &&
+                                              state2 == 'disconnected') ||
+                                          (isBit1Enabled.value &&
+                                              state1 != 'connected') ||
+                                          (isBit2Enabled.value &&
+                                              state2 != 'connected'))
+                                      ? Icon(Icons.bluetooth_disabled_rounded,
+                                          color: Colors.white)
+                                      : Icon(Icons.bluetooth_connected_rounded,
+                                          color: Colors.white)),
+                              onPressed: null);
+                        });
                       }),
                     )
                   ])
@@ -1091,8 +1080,6 @@ class _NavigationPageState extends State<NavigationPage>
                         return FloatingActionButton(
                             backgroundColor: Colors.transparent,
                             elevation: 0.0,
-                            //mini: true,
-                            //heroTag: null,
                             child: Icon(Icons.more_vert),
                             onPressed: () {
                               Scaffold.of(context).openDrawer();
@@ -1100,7 +1087,7 @@ class _NavigationPageState extends State<NavigationPage>
                       }),
                     ),
                     Align(
-                      alignment: Alignment(0.95, -0.65),
+                      alignment: Alignment(0.7, -0.65),
                       child: Builder(builder: (context) {
                         return ValueListenableBuilder(
                             valueListenable: connectionNotifier,
@@ -1120,13 +1107,46 @@ class _NavigationPageState extends State<NavigationPage>
                                             ? Colors.yellow[800]
                                             : Colors.red[800],
                                     radius: 20,
-                                    child: Icon(Icons.cast_connected_outlined,
+                                    child: Icon(Icons.wifi_tethering,
                                         color: Colors.white),
                                   ),
-                                  onPressed: () {
-                                    Scaffold.of(context).openDrawer();
-                                  });
+                                  onPressed: null);
                             });
+                      }),
+                    ),
+                    Align(
+                      alignment: Alignment(1.1, -0.65),
+                      child: Builder(builder: (context) {
+                        return ValueListenableBuilder2(
+                            macAddress1ConnectionNotifier,
+                            macAddress2ConnectionNotifier, builder:
+                                (BuildContext context, String state1,
+                                    String state2, Widget child) {
+                          return FloatingActionButton(
+                              backgroundColor: Colors.transparent,
+                              elevation: 0.0,
+                              child: CircleAvatar(
+                                  backgroundColor: ((state1 == 'disconnected' &&
+                                              state2 == 'disconnected') ||
+                                          (isBit1Enabled.value &&
+                                              state1 != 'connected') ||
+                                          (isBit2Enabled.value &&
+                                              state2 != 'connected'))
+                                      ? Colors.red[800]
+                                      : Colors.green[800],
+                                  radius: 20,
+                                  child: ((state1 == 'disconnected' &&
+                                              state2 == 'disconnected') ||
+                                          (isBit1Enabled.value &&
+                                              state1 != 'connected') ||
+                                          (isBit2Enabled.value &&
+                                              state2 != 'connected'))
+                                      ? Icon(Icons.bluetooth_disabled_rounded,
+                                          color: Colors.white)
+                                      : Icon(Icons.bluetooth_connected_rounded,
+                                          color: Colors.white)),
+                              onPressed: null);
+                        });
                       }),
                     ),
                     Align(

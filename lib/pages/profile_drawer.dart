@@ -96,7 +96,6 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                   return entry == mac;
                 });
               });
-              //setState(() => widget.annotationTypesD.value.remove(annot));
               _updateHistory();
             },
           ),

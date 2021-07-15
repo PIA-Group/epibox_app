@@ -4,9 +4,9 @@ import 'package:epibox/utils/models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
-class CustomOverlay extends StatelessWidget {
+class ServerCustomOverlay extends StatelessWidget {
   MqttCurrentConnectionState connectionState;
-  CustomOverlay({this.connectionState, Key key}) : super(key: key);
+  ServerCustomOverlay({this.connectionState, Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -44,21 +44,6 @@ class CustomOverlay extends StatelessWidget {
                 color: DefaultColors.textColorOnLight, fontSize: 20),
           ),
           SizedBox(height: 20),
-          /* ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  primary: DefaultColors.mainLColor, // background
-                  onPrimary: DefaultColors.textColorOnDark, // foreground
-                ),
-                child: Text(
-                  "WIFI",
-                  style: MyTextStyle(),
-                ),
-                onPressed: () {
-                  _isDialogOpen = false;
-                  AppSettings.openWIFISettings();
-                  Navigator.of(context).pop();
-                },
-              ), */
         ]),
       );
     } else {
