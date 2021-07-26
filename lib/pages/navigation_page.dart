@@ -122,7 +122,7 @@ class _NavigationPageState extends State<NavigationPage>
 
   ValueNotifier<List> annotationTypesD = ValueNotifier([]);
 
-  void setupHome() {
+  void setupHome() { // initiate MQTT client and message/state functions
     mqttClientWrapper = MQTTClientWrapper(
       client,
       () => {},
@@ -349,7 +349,7 @@ class _NavigationPageState extends State<NavigationPage>
     nameController.dispose();
   }
 
-  void gotNewMessage(String newMessage) {
+  void gotNewMessage(String newMessage) { // runs functions based on the received message
     print('NEW MESSAGE: $message');
     setState(() => message = newMessage);
     _isMACAddress(message);

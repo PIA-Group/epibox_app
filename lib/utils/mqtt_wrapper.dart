@@ -4,7 +4,7 @@ import 'constants.dart' as Constants;
 import 'package:mqtt_client/mqtt_client.dart';
 import 'models.dart';
 
-class MQTTClientWrapper {
+class MQTTClientWrapper { // MVP of MQTT. Handles all the connection to the server
   MqttCurrentConnectionState connectionState = MqttCurrentConnectionState.IDLE;
   MqttSubscriptionState subscriptionState = MqttSubscriptionState.IDLE;
 

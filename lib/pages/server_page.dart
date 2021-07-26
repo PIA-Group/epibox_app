@@ -159,7 +159,7 @@ class _ServerPageState extends State<ServerPage> {
     }
   }
 
-  Future<void> _setup() async {
+  Future<void> _setup() async { // connects the client instance to the server and topic
     await widget.mqttClientWrapper
         .prepareMqttClient(widget.hostnameNotifier.value)
         .then((value) {
