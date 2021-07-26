@@ -16,8 +16,8 @@ class MQTTClientWrapper { // MVP of MQTT. Handles all the connection to the serv
   MQTTClientWrapper(this.client, this.onConnectedCallback, this.onNewMessage,
       this.onNewConnection);
 
-  Future<void> prepareMqttClient(hostAddress) async {
-    _setupMqttClient(hostAddress);
+  Future<void> prepareMqttClient() async {
+    _setupMqttClient();
     await _connectClient();
   }
 
@@ -57,8 +57,8 @@ class MQTTClientWrapper { // MVP of MQTT. Handles all the connection to the serv
     }
   }
 
-  void _setupMqttClient(_hostAddress) {
-    client = MqttServerClient.withPort(_hostAddress, '#1', 1883);
+  void _setupMqttClient() {
+    client = MqttServerClient.withPort(Constants.hostname, '#1', 1883);
     client.logging(on: false);
     //client.autoReconnect = true;
     client.onAutoReconnected = _onReconnected;

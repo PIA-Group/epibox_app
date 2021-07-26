@@ -64,7 +64,7 @@ class _NavigationPageState extends State<NavigationPage>
 
   ValueNotifier<List<String>> driveListNotifier = ValueNotifier([' ']);
 
-  ValueNotifier<String> hostnameNotifier = ValueNotifier('192.168.0.10');
+
 
   ValueNotifier<String> acquisitionNotifier = ValueNotifier('off');
 
@@ -865,7 +865,6 @@ class _NavigationPageState extends State<NavigationPage>
                                 receivedMACNotifier: receivedMACNotifier,
                                 driveListNotifier: driveListNotifier,
                                 acquisitionNotifier: acquisitionNotifier,
-                                hostnameNotifier: hostnameNotifier,
                                 sentMACNotifier: sentMACNotifier,
                                 sentConfigNotifier: sentConfigNotifier,
                                 batteryBit1Notifier: batteryBit1Notifier,
