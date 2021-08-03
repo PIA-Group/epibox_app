@@ -1,6 +1,6 @@
 import 'package:property_change_notifier/property_change_notifier.dart';
 
-class MacDevices extends PropertyChangeNotifier<String> {
+class Devices extends PropertyChangeNotifier<String> {
 
   String _macAddress1 = 'xx:xx:xx:xx:xx:xx';
   String _macAddress2 = 'xx:xx:xx:xx:xx:xx';

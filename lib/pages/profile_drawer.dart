@@ -1,4 +1,4 @@
-import 'package:epibox/classes/mac_devices.dart';
+import 'package:epibox/classes/devices.dart';
 import 'package:epibox/utils/mqtt_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:epibox/decor/default_colors.dart';
@@ -10,14 +10,14 @@ class ProfileDrawer extends StatefulWidget {
   final ValueNotifier<String> patientNotifier;
   final ValueNotifier<List> annotationTypesD;
   final ValueNotifier<List<String>> historyMAC;
-  final MacDevices macDevices;
+  final Devices devices;
 
   ProfileDrawer({
     this.mqttClientWrapper,
     this.patientNotifier,
     this.annotationTypesD,
     this.historyMAC,
-    this.macDevices,
+    this.devices,
   });
 
   @override
@@ -33,7 +33,7 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
   @override
   void initState() {
     super.initState();
-    _radioValue = typeOfDevices[widget.macDevices.type];
+    _radioValue = typeOfDevices[widget.devices.type];
     annotationTypesS = List<String>.from(widget.annotationTypesD.value);
   }
 
@@ -51,7 +51,7 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
 
   void _updateDeviceType() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('deviceType', widget.macDevices.type);
+    await prefs.setString('deviceType', widget.devices.type);
   }
 
   Iterable<Widget> get annotationsWidgets sync* {
@@ -208,7 +208,7 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                         onChanged: (int value) {
                           setState(() {
                                 _radioValue = value;
-                                widget.macDevices.type = 'Bitalino';
+                                widget.devices.type = 'Bitalino';
                                 _updateDeviceType();
                               });
                             }),
@@ -226,7 +226,7 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                           onChanged: (int value) {
                             setState(() {
                                 _radioValue = value;
-                                widget.macDevices.type = 'Mini';
+                                widget.devices.type = 'Mini';
                                 _updateDeviceType();
                               });
                             }),
@@ -243,7 +243,7 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                             onChanged: (int value) {
                               setState(() {
                                 _radioValue = value;
-                                widget.macDevices.type = 'Sense';
+                                widget.devices.type = 'Sense';
                                 _updateDeviceType();
                               });
                             }),

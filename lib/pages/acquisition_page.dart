@@ -1,7 +1,6 @@
-
-import 'package:epibox/acquisition_navbar/destinations.dart';
 import 'package:epibox/classes/configurations.dart';
-import 'package:epibox/classes/mac_devices.dart';
+import 'package:epibox/classes/devices.dart';
+import 'package:epibox/classes/visualization.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
 import 'package:epibox/acquisition_navbar/visualization_destination.dart';
@@ -11,42 +10,24 @@ import 'package:flutter/material.dart';
 
 class AcquisitionPage extends StatelessWidget {
   AcquisitionPage({
-    this.macDevices,
+    this.devices,
     this.configurations,
-    this.dataMAC1Notifier,
-    this.dataMAC2Notifier,
-    this.channelsMAC1Notifier,
-    this.channelsMAC2Notifier,
-    this.sensorsMAC1Notifier,
-    this.sensorsMAC2Notifier,
+    this.visualizationMAC1,
+    this.visualizationMAC2,
     this.mqttClientWrapper,
-    this.acquisitionNotifier,
-    this.batteryBit1Notifier,
-    this.batteryBit2Notifier,
     this.patientNotifier,
     this.annotationTypesD,
     this.connectionNotifier,
     this.timedOut,
     this.startupError,
-    this.allDestinations,
   });
 
-  MacDevices macDevices;
+  Devices devices;
   Configurations configurations;
-
-  final ValueNotifier<List<List>> dataMAC1Notifier;
-  final ValueNotifier<List<List>> dataMAC2Notifier;
-  final ValueNotifier<List<List>> channelsMAC1Notifier;
-  final ValueNotifier<List<List>> channelsMAC2Notifier;
-  final ValueNotifier<List> sensorsMAC1Notifier;
-  final ValueNotifier<List> sensorsMAC2Notifier;
+  Visualization visualizationMAC1;
+  Visualization visualizationMAC2;
 
   final MQTTClientWrapper mqttClientWrapper;
-
-  final ValueNotifier<String> acquisitionNotifier;
-
-  final ValueNotifier<double> batteryBit1Notifier;
-  final ValueNotifier<double> batteryBit2Notifier;
 
   final ValueNotifier<String> patientNotifier;
 
@@ -54,8 +35,6 @@ class AcquisitionPage extends StatelessWidget {
 
   final ValueNotifier<String> timedOut;
   final ValueNotifier<bool> startupError;
-
-  final List<Destination> allDestinations;
 
   final ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
 
@@ -67,37 +46,44 @@ class AcquisitionPage extends StatelessWidget {
         TabBar(
           tabs: [
             Tab(
-              child: Text(macDevices.macAddress1, style: MyTextStyle(color: DefaultColors.textColorOnLight, fontSize: 15),),
+              child: Text(
+                devices.macAddress1,
+                style: MyTextStyle(
+                    color: DefaultColors.textColorOnLight, fontSize: 15),
+              ),
             ),
             Tab(
-              child: Text(macDevices.macAddress2, style: MyTextStyle(color: DefaultColors.textColorOnLight, fontSize: 15),),
+              child: Text(
+                devices.macAddress2,
+                style: MyTextStyle(
+                    color: DefaultColors.textColorOnLight, fontSize: 15),
+              ),
             ),
           ],
         ),
         Expanded(
-          child: TabBarView(
-            children: allDestinations.map<Widget>((Destination destination) {
-              return DestinationView(
-                destination: destination,
-                dataMAC1Notifier: dataMAC1Notifier,
-                dataMAC2Notifier: dataMAC2Notifier,
-                configurations: configurations,
-                channelsMAC1Notifier: channelsMAC1Notifier,
-                channelsMAC2Notifier: channelsMAC2Notifier,
-                sensorsMAC1Notifier: sensorsMAC1Notifier,
-                sensorsMAC2Notifier: sensorsMAC2Notifier,
-                mqttClientWrapper: mqttClientWrapper,
-                acquisitionNotifier: acquisitionNotifier,
-                batteryBit1Notifier: batteryBit1Notifier,
-                batteryBit2Notifier: batteryBit2Notifier,
-                patientNotifier: patientNotifier,
-                annotationTypesD: annotationTypesD,
-                connectionNotifier: connectionNotifier,
-                timedOut: timedOut,
-                startupError: startupError,
-              );
-            }).toList(),
-          ),
+          child: TabBarView(children: [
+            DestinationView(
+              configurations: configurations,
+              visualizationMAC: visualizationMAC1,
+              mqttClientWrapper: mqttClientWrapper,
+              patientNotifier: patientNotifier,
+              annotationTypesD: annotationTypesD,
+              connectionNotifier: connectionNotifier,
+              timedOut: timedOut,
+              startupError: startupError,
+            ),
+            DestinationView(
+              configurations: configurations,
+              visualizationMAC: visualizationMAC2,
+              mqttClientWrapper: mqttClientWrapper,
+              patientNotifier: patientNotifier,
+              annotationTypesD: annotationTypesD,
+              connectionNotifier: connectionNotifier,
+              timedOut: timedOut,
+              startupError: startupError,
+            ),
+          ]),
         ),
       ]),
     );

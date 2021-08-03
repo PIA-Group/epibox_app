@@ -1,5 +1,7 @@
 import 'package:barcode_scan/barcode_scan.dart';
-import 'package:epibox/classes/mac_devices.dart';
+import 'package:epibox/classes/devices.dart';
+import 'package:epibox/classes/error_handler.dart';
+import 'package:epibox/costum_overlays/devices_overlay.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
 import 'package:epibox/utils/masked_text.dart';
@@ -13,7 +15,8 @@ import 'package:property_change_notifier/property_change_notifier.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DevicesPage extends StatefulWidget {
-  MacDevices macDevices;
+  Devices devices;
+  ErrorHandler errorHandler;
 
   final ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
   final MQTTClientWrapper mqttClientWrapper;
@@ -30,7 +33,8 @@ class DevicesPage extends StatefulWidget {
   final ValueNotifier<bool> sentConfigNotifier;
 
   DevicesPage({
-    this.macDevices,
+    this.devices,
+    this.errorHandler,
     this.mqttClientWrapper,
     this.connectionNotifier,
     this.patientNotifier,
@@ -61,55 +65,51 @@ class _DevicesPageState extends State<DevicesPage> {
     super.initState();
 
     _controller1.addListener(() {
-      setState(() => widget.macDevices.macAddress1 = _controller1.text);
+      setState(() => widget.devices.macAddress1 = _controller1.text);
     });
     _controller2.addListener(() {
-      setState(() => widget.macDevices.macAddress2 = _controller2.text);
+      setState(() => widget.devices.macAddress2 = _controller2.text);
     });
 
-    if (widget.macDevices.macAddress1 == 'xx:xx:xx:xx:xx:xx') {
-      if (widget.macDevices.defaultMacAddress1 == '') {
+    if (widget.devices.macAddress1 == 'xx:xx:xx:xx:xx:xx') {
+      if (widget.devices.defaultMacAddress1 == '') {
         _controller1.text = ' ';
       } else {
-        _controller1.text = widget.macDevices.defaultMacAddress1;
+        _controller1.text = widget.devices.defaultMacAddress1;
       }
-      if (widget.macDevices.defaultMacAddress2 == '') {
+      if (widget.devices.defaultMacAddress2 == '') {
         _controller2.text = ' ';
       } else {
-        _controller2.text = widget.macDevices.defaultMacAddress2;
+        _controller2.text = widget.devices.defaultMacAddress2;
       }
     } else {
-      _controller1.text = widget.macDevices.macAddress1 == ''
-          ? ' '
-          : widget.macDevices.macAddress1;
-      _controller2.text = widget.macDevices.macAddress2 == ''
-          ? ' '
-          : widget.macDevices.macAddress2;
+      _controller1.text =
+          widget.devices.macAddress1 == '' ? ' ' : widget.devices.macAddress1;
+      _controller2.text =
+          widget.devices.macAddress2 == '' ? ' ' : widget.devices.macAddress2;
     }
 
     // show changes in default MAC recieved from the RPi
-    widget.macDevices.addListener(() {
-      if (widget.macDevices.defaultMacAddress1 == '')
+    widget.devices.addListener(() {
+      if (widget.devices.defaultMacAddress1 == '')
         setState(() => _controller1.text = ' ');
       else
-        setState(
-            () => _controller1.text = widget.macDevices.defaultMacAddress1);
+        setState(() => _controller1.text = widget.devices.defaultMacAddress1);
     }, ['defaultMacAddress1']);
-    widget.macDevices.addListener(() {
-      if (widget.macDevices.defaultMacAddress2 == '')
+    widget.devices.addListener(() {
+      if (widget.devices.defaultMacAddress2 == '')
         setState(() => _controller2.text = ' ');
       else
-        setState(
-            () => _controller2.text = widget.macDevices.defaultMacAddress2);
+        setState(() => _controller2.text = widget.devices.defaultMacAddress2);
     }, ['defaultMacAddress2']);
   }
 
   void _setNewDefault1() {
-    setState(() => widget.macDevices.defaultMacAddress1 = _controller1.text);
+    setState(() => widget.devices.defaultMacAddress1 = _controller1.text);
   }
 
   void _setNewDefault2() {
-    setState(() => widget.macDevices.defaultMacAddress2 = _controller2.text);
+    setState(() => widget.devices.defaultMacAddress2 = _controller2.text);
   }
 
   Future<void> _saveMAC(mac1, mac2) async {
@@ -155,7 +155,7 @@ class _DevicesPageState extends State<DevicesPage> {
         MediaQuery.of(context).viewInsets.right;
 
     return PropertyChangeProvider(
-      value: widget.macDevices,
+      value: widget.devices,
       child: ListView(children: <Widget>[
         Padding(
           padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
@@ -279,16 +279,16 @@ class _DevicesPageState extends State<DevicesPage> {
                       //onPrimary: Colors.white, // foreground
                     ),
                     onPressed: () {
-                      setState(() => widget.macDevices.macAddress1 =
+                      setState(() => widget.devices.macAddress1 =
                           _controller1.text.replaceAll(new RegExp(r"\s+"), ""));
-                      setState(() => widget.macDevices.macAddress2 =
+                      setState(() => widget.devices.macAddress2 =
                           _controller2.text.replaceAll(new RegExp(r"\s+"), ""));
 
                       _setNewDefault1();
                       _setNewDefault2();
 
                       widget.mqttClientWrapper.publishMessage(
-                          "['NEW MAC',{'MAC1':'${widget.macDevices.macAddress1}','MAC2':'${widget.macDevices.macAddress2}'}]");
+                          "['NEW MAC',{'MAC1':'${widget.devices.macAddress1}','MAC2':'${widget.devices.macAddress2}'}]");
                     },
                     child: new Text(
                       "Definir novo default",
@@ -298,7 +298,7 @@ class _DevicesPageState extends State<DevicesPage> {
                 ],
               ),
             ),
-            PropertyChangeConsumer<MacDevices>(
+            PropertyChangeConsumer<Devices>(
                 properties: ['macAddress1', 'macAddress1Connection'],
                 builder: (context, model, properties) {
                   return Padding(
@@ -323,14 +323,21 @@ class _DevicesPageState extends State<DevicesPage> {
                               color: Colors.white.withOpacity(0.0),
                               child: InkWell(
                                 onTap: () {
-                                  model.macAddress1Connection = 'connecting';
-                                  widget.mqttClientWrapper.publishMessage(
-                                      "['CONNECT', '${model.macAddress1}', '${widget.macDevices.type}']");
+                                  if (widget.connectionNotifier.value !=
+                                      MqttCurrentConnectionState.CONNECTED) {
+                                    setState(() =>
+                                        widget.errorHandler.overlayMessage =
+                                            DevicesCustomOverlay());
+                                  } else {
+                                    model.macAddress1Connection = 'connecting';
+                                    widget.mqttClientWrapper.publishMessage(
+                                        "['CONNECT', '${model.macAddress1}', '${widget.devices.type}']");
 
-                                  _saveMAC(
-                                      model.macAddress1, model.macAddress2);
-                                  _saveMACHistory(
-                                      model.macAddress1, model.macAddress2);
+                                    _saveMAC(
+                                        model.macAddress1, model.macAddress2);
+                                    _saveMACHistory(
+                                        model.macAddress1, model.macAddress2);
+                                  }
                                 },
                                 child: Container(
                                   child: ListTile(
@@ -417,7 +424,7 @@ class _DevicesPageState extends State<DevicesPage> {
                           ),
                   );
                 }),
-            PropertyChangeConsumer<MacDevices>(
+            PropertyChangeConsumer<Devices>(
                 properties: ['macAddress2', 'macAddress2Connection'],
                 builder: (context, model, properties) {
                   return Padding(
@@ -444,7 +451,7 @@ class _DevicesPageState extends State<DevicesPage> {
                                 onTap: () {
                                   model.macAddress2Connection = 'connecting';
                                   widget.mqttClientWrapper.publishMessage(
-                                      "['CONNECT', '${model.macAddress2}', '${widget.macDevices.type}']");
+                                      "['CONNECT', '${model.macAddress2}', '${widget.devices.type}']");
 
                                   _saveMAC(
                                       model.macAddress1, model.macAddress2);

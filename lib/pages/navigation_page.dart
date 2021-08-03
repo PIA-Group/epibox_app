@@ -1,6 +1,8 @@
-import 'package:epibox/acquisition_navbar/destinations.dart';
+import 'package:epibox/classes/acquisition.dart';
 import 'package:epibox/classes/configurations.dart';
-import 'package:epibox/classes/mac_devices.dart';
+import 'package:epibox/classes/devices.dart';
+import 'package:epibox/classes/error_handler.dart';
+import 'package:epibox/classes/visualization.dart';
 import 'package:epibox/costum_overlays/acquisition_overlay.dart';
 import 'package:epibox/costum_overlays/server_overlay.dart';
 import 'package:epibox/pages/acquisition_page.dart';
@@ -12,7 +14,6 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:loader_overlay/loader_overlay.dart';
@@ -37,35 +38,24 @@ class _NavigationPageState extends State<NavigationPage>
     with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  ValueNotifier<Widget> overlayMessage = ValueNotifier(
-    Center(
-      child: SpinKitFoldingCube(
-        color: DefaultColors.mainColor,
-        size: 70.0,
-      ),
-    ),
-  );
-
   ValueNotifier<MqttCurrentConnectionState> connectionNotifier =
       ValueNotifier(MqttCurrentConnectionState.DISCONNECTED);
 
-  MacDevices macDevices = MacDevices();
+  Devices devices = Devices();
   Configurations configurations = Configurations();
+  Acquisition acquisition = Acquisition();
+  Visualization visualizationMAC1 = Visualization();
+  Visualization visualizationMAC2 = Visualization();
+  ErrorHandler errorHandler = ErrorHandler();
 
   ValueNotifier<List<String>> driveListNotifier = ValueNotifier([' ']);
-
-  ValueNotifier<String> acquisitionNotifier = ValueNotifier('off');
 
   ValueNotifier<bool> receivedMACNotifier = ValueNotifier(false);
   ValueNotifier<bool> sentMACNotifier = ValueNotifier(false);
   ValueNotifier<bool> sentConfigNotifier = ValueNotifier(false);
 
-  ValueNotifier<double> batteryBit1Notifier = ValueNotifier(null);
-  ValueNotifier<double> batteryBit2Notifier = ValueNotifier(null);
-
   ValueNotifier<String> timedOut = ValueNotifier(null);
   ValueNotifier<bool> startupError = ValueNotifier(false);
-
 
   String message;
   Timer timer;
@@ -73,20 +63,11 @@ class _NavigationPageState extends State<NavigationPage>
 
   ValueNotifier<List<String>> historyMAC = ValueNotifier([]);
 
-  ValueNotifier<List<List>> dataMAC1Notifier = ValueNotifier([]);
-  ValueNotifier<List<List>> dataMAC2Notifier = ValueNotifier([]);
-  ValueNotifier<List<List>> channelsMAC1Notifier = ValueNotifier([]);
-  ValueNotifier<List<List>> channelsMAC2Notifier = ValueNotifier([]);
-  ValueNotifier<List> sensorsMAC1Notifier = ValueNotifier([]);
-  ValueNotifier<List> sensorsMAC2Notifier = ValueNotifier([]);
-
   ValueNotifier<bool> newAnnotation = ValueNotifier(false);
 
   MqttCurrentConnectionState connectionState;
   MQTTClientWrapper mqttClientWrapper;
   MqttClient client;
-
-  ValueNotifier<List<Destination>> allDestinations = ValueNotifier(null);
 
   final TextEditingController nameController = TextEditingController();
 
@@ -116,19 +97,16 @@ class _NavigationPageState extends State<NavigationPage>
   void initState() {
     super.initState();
 
-    macDevices.addListener(() {
-      print('MAC DEVICES CHANGED: ${macDevices.macAddress1}');
-    });
-
     connectionNotifier.addListener(() {
       if (connectionNotifier.value == MqttCurrentConnectionState.CONNECTING) {
-        setState(() => overlayMessage.value =
+        if (context.loaderOverlay.visible) context.loaderOverlay.hide();
+        setState(() => errorHandler.overlayMessage =
             ServerCustomOverlay(connectionState: connectionNotifier.value));
         context.loaderOverlay.show();
       } else if (connectionNotifier.value ==
           MqttCurrentConnectionState.CONNECTED) {
         if (context.loaderOverlay.visible) context.loaderOverlay.hide();
-        setState(() => overlayMessage.value =
+        setState(() => errorHandler.overlayMessage =
             ServerCustomOverlay(connectionState: connectionNotifier.value));
         context.loaderOverlay.show();
         Future.delayed(const Duration(seconds: 2), () {
@@ -137,54 +115,69 @@ class _NavigationPageState extends State<NavigationPage>
       } else if (connectionNotifier.value ==
           MqttCurrentConnectionState.ERROR_WHEN_CONNECTING) {
         if (context.loaderOverlay.visible) context.loaderOverlay.hide();
-
         setState(
-          () => overlayMessage.value =
+          () => errorHandler.overlayMessage =
               ServerCustomOverlay(connectionState: connectionNotifier.value),
         );
-
         context.loaderOverlay.show();
-
         Future.delayed(const Duration(seconds: 3), () {
           setState(() => context.loaderOverlay.hide());
         });
       }
     });
 
-    acquisitionNotifier.addListener(() {
-      print('---- change in acquisition state: ${acquisitionNotifier.value}');
+    errorHandler.addListener(() {
+      print('HERE: ${errorHandler.overlayMessage}');
+      if (context.loaderOverlay.visible) context.loaderOverlay.hide();
+      setState(() => context.loaderOverlay.show());
+      Future.delayed(const Duration(seconds: 3), () {
+          setState(() => context.loaderOverlay.hide());
+        });
+    }, ['overlayMessage']);
+    acquisition.addListener(() {
+      print(
+          '---- change in acquisition state: ${acquisition.acquisitionState}');
 
-      if (acquisitionNotifier.value == 'starting') {
-        setState(() => overlayMessage.value =
-            AcquisitionCustomOverlay(state: acquisitionNotifier.value));
+      if (acquisition.acquisitionState == 'starting') {
+        setState(() => errorHandler.overlayMessage =
+            AcquisitionCustomOverlay(state: acquisition.acquisitionState));
         context.loaderOverlay.show();
-      } else if (acquisitionNotifier.value == 'reconnecting') {
+      } else if (acquisition.acquisitionState == 'reconnecting') {
         if (context.loaderOverlay.visible) context.loaderOverlay.hide();
-        setState(() => overlayMessage.value =
-            AcquisitionCustomOverlay(state: acquisitionNotifier.value));
+        setState(() => errorHandler.overlayMessage =
+            AcquisitionCustomOverlay(state: acquisition.acquisitionState));
         context.loaderOverlay.show();
-      } else if (acquisitionNotifier.value == 'paused') {
+      } else if (acquisition.acquisitionState == 'paused') {
         if (context.loaderOverlay.visible) context.loaderOverlay.hide();
-        setState(() => overlayMessage.value =
-            AcquisitionCustomOverlay(state: acquisitionNotifier.value));
+        setState(() => errorHandler.overlayMessage =
+            AcquisitionCustomOverlay(state: acquisition.acquisitionState));
         context.loaderOverlay.show();
         Future.delayed(const Duration(seconds: 3), () {
           setState(() => context.loaderOverlay.hide());
         });
-      } else if (acquisitionNotifier.value == 'stopped') {
+      } else if (acquisition.acquisitionState == 'stopped') {
         if (context.loaderOverlay.visible) context.loaderOverlay.hide();
-        setState(() => overlayMessage.value =
-            AcquisitionCustomOverlay(state: acquisitionNotifier.value));
+        setState(() => errorHandler.overlayMessage =
+            AcquisitionCustomOverlay(state: acquisition.acquisitionState));
         context.loaderOverlay.show();
         Future.delayed(const Duration(seconds: 3), () {
           setState(() => context.loaderOverlay.hide());
         });
-      } else if (acquisitionNotifier.value == 'off') {
+      } else if (acquisition.acquisitionState == 'off') {
         print('do nothing');
       } else {
         if (context.loaderOverlay.visible) context.loaderOverlay.hide();
       }
-    });
+    }, ['acquisitionState']);
+
+    acquisition.addListener(() {
+      setState(() {
+        visualizationMAC1.dataMAC = acquisition.dataMAC1;
+      });
+      setState(() {
+        visualizationMAC2.dataMAC = acquisition.dataMAC2;
+      });
+    }, ['dataMAC1', 'dataMAC2']);
 
     timer = Timer.periodic(Duration(seconds: 15), (Timer t) => print('timer'));
 
@@ -195,30 +188,19 @@ class _NavigationPageState extends State<NavigationPage>
         android: initializationSettingsAndroid, iOS: initializationSettingsIOs);
     batteryNotification.initialize(initSetttings);
 
-    //acquisitionNotifier.value = 'off';
+    //acquisition.acquisitionState = 'off';
     setupHome();
     nameController.text = " ";
     getAnnotationTypes();
     getPreviousDevice();
     getLastMAC();
-    /* print(
-        'LAST MAC: ${macAddress1Notifier.value}, ${macAddress2Notifier.value}'); */
-    print('LAST MAC: ${macDevices.macAddress1}, ${macDevices.macAddress2}');
+    print('LAST MAC: ${devices.macAddress1}, ${devices.macAddress2}');
     getLastBatteries();
     print(
-        'LAST BATTERIES: ${batteryBit1Notifier.value}, ${batteryBit2Notifier.value}');
+        'LAST BATTERIES: ${acquisition.batteryBit1}, ${acquisition.batteryBit2}');
     getMACHistory();
 
-    allDestinations = ValueNotifier(<Destination>[
-      Destination(Icons.looks_one_outlined, LightColors.kRed, dataMAC1Notifier,
-          sensorsMAC1Notifier, channelsMAC1Notifier),
-      Destination(Icons.looks_two_outlined, LightColors.kBlue, dataMAC2Notifier,
-          sensorsMAC2Notifier, channelsMAC2Notifier),
-    ]);
-
     initialized = initialize();
-
-    print('TEST ------');
   }
 
   void getAnnotationTypes() async {
@@ -237,7 +219,7 @@ class _NavigationPageState extends State<NavigationPage>
     String device;
     try {
       device = prefs.getString('deviceType') ?? 'Bitalino';
-      setState(() => macDevices.type = device);
+      setState(() => devices.type = device);
       print('Device: $device');
     } catch (e) {
       print(e);
@@ -251,10 +233,10 @@ class _NavigationPageState extends State<NavigationPage>
         List<String> lastMAC = (value.getStringList('lastMAC').toList() ??
             ['xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx']);
         print('history; ${lastMAC[0]}');
-        setState(() => macDevices.macAddress1 = lastMAC[0]);
-        setState(() => macDevices.macAddress2 = lastMAC[1]);
+        setState(() => devices.macAddress1 = lastMAC[0]);
+        setState(() => devices.macAddress2 = lastMAC[1]);
       });
-      print('LAST MAC1: ${macDevices.macAddress1}, ${macDevices.macAddress2}');
+      print('LAST MAC1: ${devices.macAddress1}, ${devices.macAddress2}');
     });
   }
 
@@ -275,16 +257,16 @@ class _NavigationPageState extends State<NavigationPage>
       if (lastBatteries[0] != null) {
         print(lastBatteries[0]);
         print(num.tryParse(lastBatteries[0])?.toDouble());
-        setState(() => batteryBit1Notifier.value =
+        setState(() => acquisition.batteryBit1 =
             num.tryParse(lastBatteries[0])?.toDouble());
       }
       if (lastBatteries[1] != null) {
-        setState(() => batteryBit2Notifier.value =
+        setState(() => acquisition.batteryBit2 =
             num.tryParse(lastBatteries[1])?.toDouble());
       }
     });
     print(
-        'LAST BATTERY: ${batteryBit1Notifier.value}, ${batteryBit2Notifier.value}');
+        'LAST BATTERY: ${acquisition.batteryBit1}, ${acquisition.batteryBit2}');
   }
 
   Future<void> saveBatteries(battery1, battery2) async {
@@ -352,10 +334,10 @@ class _NavigationPageState extends State<NavigationPage>
   void _isMACState(String message) {
     if (message.contains('MAC STATE')) {
       List messageList = json.decode(message.replaceAll('\'', '\"'));
-      if (messageList[1] == macDevices.macAddress1) {
-        setState(() => macDevices.macAddress1Connection = messageList[2]);
-      } else if (messageList[1] == macDevices.macAddress2) {
-        setState(() => macDevices.macAddress2Connection = messageList[2]);
+      if (messageList[1] == devices.macAddress1) {
+        setState(() => devices.macAddress1Connection = messageList[2]);
+      } else if (messageList[1] == devices.macAddress2) {
+        setState(() => devices.macAddress2Connection = messageList[2]);
       } else {
         print('Not valid MAC address');
       }
@@ -375,10 +357,10 @@ class _NavigationPageState extends State<NavigationPage>
       try {
         final List<String> listMAC = message.split(",");
         setState(() {
-          macDevices.defaultMacAddress1 = listMAC[1].split("'")[1];
-          macDevices.defaultMacAddress2 = listMAC[2].split("'")[1];
-          macDevices.macAddress1 = listMAC[1].split("'")[1];
-          macDevices.macAddress2 = listMAC[2].split("'")[1];
+          devices.defaultMacAddress1 = listMAC[1].split("'")[1];
+          devices.defaultMacAddress2 = listMAC[2].split("'")[1];
+          devices.macAddress1 = listMAC[1].split("'")[1];
+          devices.macAddress2 = listMAC[2].split("'")[1];
 
           receivedMACNotifier.value = true;
         });
@@ -386,17 +368,17 @@ class _NavigationPageState extends State<NavigationPage>
         print(e);
       }
 
-      if (macDevices.defaultMacAddress1 == '' ||
-          macDevices.defaultMacAddress1 == ' ') {
-        setState(() => macDevices.isBit1Enabled = false);
+      if (devices.defaultMacAddress1 == '' ||
+          devices.defaultMacAddress1 == ' ') {
+        setState(() => devices.isBit1Enabled = false);
       } else {
-        setState(() => macDevices.isBit1Enabled = true);
+        setState(() => devices.isBit1Enabled = true);
       }
-      if (macDevices.defaultMacAddress2 == '' ||
-          macDevices.defaultMacAddress2 == ' ') {
-        setState(() => macDevices.isBit2Enabled = false);
+      if (devices.defaultMacAddress2 == '' ||
+          devices.defaultMacAddress2 == ' ') {
+        setState(() => devices.isBit2Enabled = false);
       } else {
-        setState(() => macDevices.isBit2Enabled = true);
+        setState(() => devices.isBit2Enabled = true);
       }
     }
   }
@@ -437,62 +419,50 @@ class _NavigationPageState extends State<NavigationPage>
 
   void _isAcquisitionState(String message) {
     if (message.contains('STARTING')) {
-      setState(() => acquisitionNotifier.value = 'starting');
+      setState(() => acquisition.acquisitionState = 'starting');
       print('ACQUISITION STARTING');
     } else if (message.contains('ACQUISITION ON')) {
-      //setState(() => acquisitionNotifier.value = 'acquiring');
+      //setState(() => acquisition.acquisitionState = 'acquiring');
       print('ACQUIRING');
     } else if (message.contains('RECONNECTING')) {
-      setState(() => acquisitionNotifier.value = 'reconnecting');
+      setState(() => acquisition.acquisitionState = 'reconnecting');
       print('RECONNECTING ACQUISITION');
     } else if (message.contains('PAIRING')) {
-      setState(() => acquisitionNotifier.value = 'pairing');
+      setState(() => acquisition.acquisitionState = 'pairing');
       print('PAIRING');
     } else if (message.contains('STOPPED')) {
-      setState(() => acquisitionNotifier.value = 'stopped');
+      setState(() => acquisition.acquisitionState = 'stopped');
       _restart(false);
       print('ACQUISITION STOPPED AND SAVED');
     } else if (message.contains('PAUSED')) {
-      setState(() => acquisitionNotifier.value = 'paused');
+      setState(() => acquisition.acquisitionState = 'paused');
       print('ACQUISITION PAUSED');
     }
   }
 
   void _isData(String message) {
     if (message.contains('DATA')) {
-      setState(() => acquisitionNotifier.value =
+      setState(() => acquisition.acquisitionState =
           'acquiring'); // if user leaves the app, this will enable the visualization nontheless
       List message2List = json.decode(message);
 
-      if (macDevices.macAddress1 == 'xx:xx:xx:xx:xx:xx') {
+      if (devices.macAddress1 == 'xx:xx:xx:xx:xx:xx') {
         getLastMAC();
       }
 
       List<List> dataMAC1 = [];
-      List<List> channelsMAC1 = [];
-      List sensorsMAC1 = [];
       List<List> dataMAC2 = [];
-      List<List> channelsMAC2 = [];
-      List sensorsMAC2 = [];
 
       message2List[2].asMap().forEach((index, channel) {
-        if (channel[0] == macDevices.macAddress1) {
+        if (channel[0] == devices.macAddress1) {
           dataMAC1.add(message2List[1][index]);
-          channelsMAC1.add(channel);
-          sensorsMAC1.add(message2List[3][index]);
         } else {
           dataMAC2.add(message2List[1][index]);
-          channelsMAC2.add(channel);
-          sensorsMAC2.add(message2List[3][index]);
         }
       });
 
-      setState(() => dataMAC1Notifier.value = dataMAC1);
-      setState(() => channelsMAC1Notifier.value = channelsMAC1);
-      setState(() => sensorsMAC1Notifier.value = sensorsMAC1);
-      setState(() => dataMAC2Notifier.value = dataMAC2);
-      setState(() => channelsMAC2Notifier.value = channelsMAC2);
-      setState(() => sensorsMAC2Notifier.value = sensorsMAC2);
+      setState(() => acquisition.dataMAC1 = dataMAC1);
+      setState(() => acquisition.dataMAC2 = dataMAC2);
     }
   }
 
@@ -512,20 +482,20 @@ class _NavigationPageState extends State<NavigationPage>
                 ? 0
                 : _levelRatio;
 
-        if (entry.key == macDevices.macAddress1) {
-          setState(() => batteryBit1Notifier.value = _level);
+        if (entry.key == devices.macAddress1) {
+          setState(() => acquisition.batteryBit1 = _level);
           if (entry.value <= 3.4) {
             showNotification('1');
           }
-        } else if (entry.key == macDevices.macAddress2) {
-          setState(() => batteryBit2Notifier.value = _level);
+        } else if (entry.key == devices.macAddress2) {
+          setState(() => acquisition.batteryBit2 = _level);
           if (entry.value <= 3.4) {
             showNotification('2');
           }
         }
       }
-      saveBatteries(batteryBit1Notifier.value.toString(),
-          batteryBit2Notifier.value.toString());
+      saveBatteries(acquisition.batteryBit1.toString(),
+          acquisition.batteryBit2.toString());
     }
   }
 
@@ -594,33 +564,29 @@ class _NavigationPageState extends State<NavigationPage>
     if (restart) {
       await mqttClientWrapper.diconnectClient();
       setState(() {
+        devices.defaultMacAddress1 = 'xx:xx:xx:xx:xx:xx';
+        devices.defaultMacAddress2 = 'xx:xx:xx:xx:xx:xx';
 
-        macDevices.defaultMacAddress1 = 'xx:xx:xx:xx:xx:xx';
-        macDevices.defaultMacAddress2 = 'xx:xx:xx:xx:xx:xx';
-
-        macDevices.macAddress1 = 'xx:xx:xx:xx:xx:xx';
-        macDevices.macAddress2 = 'xx:xx:xx:xx:xx:xx';
+        devices.macAddress1 = 'xx:xx:xx:xx:xx:xx';
+        devices.macAddress2 = 'xx:xx:xx:xx:xx:xx';
 
         driveListNotifier.value = [' '];
         configurations.chosenDrive = ' ';
         configurations.controllerFreq.text = ' ';
 
-        macDevices.isBit1Enabled = false;
-        macDevices.isBit2Enabled = false;
+        devices.isBit1Enabled = false;
+        devices.isBit2Enabled = false;
       });
     }
 
     setState(() {
-      /* macAddress1ConnectionNotifier.value = 'disconnected';
-      macAddress2ConnectionNotifier.value = 'disconnected'; */
+      devices.macAddress1Connection = 'disconnected';
+      devices.macAddress2Connection = 'disconnected';
 
-      macDevices.macAddress1Connection = 'disconnected';
-      macDevices.macAddress2Connection = 'disconnected';
+      acquisition.acquisitionState = 'off';
 
-      acquisitionNotifier.value = 'off';
-
-      batteryBit1Notifier.value = null;
-      batteryBit2Notifier.value = null;
+      acquisition.batteryBit1 = null;
+      acquisition.batteryBit2 = null;
     });
 
     saveBatteries(null, null);
@@ -697,38 +663,43 @@ class _NavigationPageState extends State<NavigationPage>
     mqttClientWrapper.publishMessage("['PAUSE ACQ']");
   }
 
-  List<List<String>> _getChannels2Send() {
+  List<List> _getChannels() {
     List<List<String>> _channels2Send = [];
+    List<List<String>> _channels2Save = [];
+    List<String> _sensors2Save = [];
+
     configurations.bit1Selections.asMap().forEach((channel, value) {
       if (value) {
         _channels2Send.add([
-          "'${macDevices.macAddress1}'",
+          "'${devices.macAddress1}'",
           "'${(channel + 1).toString()}'",
           "'${configurations.controllerSensors[channel].text}'"
         ]);
+        _channels2Save
+            .add(["${devices.macAddress1}", "${(channel + 1).toString()}"]);
+        _sensors2Save.add("${configurations.controllerSensors[channel].text}");
       }
     });
     configurations.bit2Selections.asMap().forEach((channel, value) {
       if (value) {
         _channels2Send.add([
-          "'${macDevices.macAddress2}'",
+          "'${devices.macAddress2}'",
           "'${(channel + 1).toString()}'",
           "'${configurations.controllerSensors[channel + 5].text}'"
         ]);
       }
     });
-    print('chn: $_channels2Send');
-    return _channels2Send;
+    return [_channels2Send, _channels2Save, _sensors2Save];
   }
 
   Future<void> _startAcquisition() async {
     if (connectionNotifier.value != MqttCurrentConnectionState.CONNECTED ||
-        (macDevices.isBit1Enabled &&
-            macDevices.macAddress1Connection != 'connected') ||
-        (macDevices.isBit2Enabled &&
-            macDevices.macAddress2Connection != 'connected')) {
+        (devices.isBit1Enabled &&
+            devices.macAddress1Connection != 'connected') ||
+        (devices.isBit2Enabled &&
+            devices.macAddress2Connection != 'connected')) {
       if (context.loaderOverlay.visible) context.loaderOverlay.hide();
-      setState(() => overlayMessage.value = Center(
+      setState(() => errorHandler.overlayMessage = Center(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 10),
               child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -754,18 +725,29 @@ class _NavigationPageState extends State<NavigationPage>
         setState(() => context.loaderOverlay.hide());
       });
     } else {
-      String _newDrive =
-          configurations.chosenDrive.substring(0, configurations.chosenDrive.indexOf('(')).trim();
+      String _newDrive = configurations.chosenDrive
+          .substring(0, configurations.chosenDrive.indexOf('('))
+          .trim();
       mqttClientWrapper.publishMessage("['FOLDER', '$_newDrive']");
-      mqttClientWrapper.publishMessage("['FS', ${configurations.controllerFreq.text}]");
+      mqttClientWrapper
+          .publishMessage("['FS', ${configurations.controllerFreq.text}]");
       mqttClientWrapper
           .publishMessage("['ID', '${widget.patientNotifier.value}']");
-      mqttClientWrapper.publishMessage("['SAVE RAW', '${configurations.saveRaw}']");
       mqttClientWrapper
-          .publishMessage("['EPI SERVICE', '${macDevices.type}']");
+          .publishMessage("['SAVE RAW', '${configurations.saveRaw}']");
+      mqttClientWrapper.publishMessage("['EPI SERVICE', '${devices.type}']");
 
-      List<List<String>> _channels2Send = _getChannels2Send();
+      List<List> _channels = _getChannels();
+      List<List<String>> _channels2Send = _channels[0];
       mqttClientWrapper.publishMessage("['CHANNELS', $_channels2Send]");
+
+      setState(() {
+        visualizationMAC1.channelsMAC = _channels[1];
+        visualizationMAC1.sensorsMAC = _channels[2];
+
+        visualizationMAC2.channelsMAC = _channels[1];
+        visualizationMAC2.sensorsMAC = _channels[2];
+      });
 
       mqttClientWrapper.publishMessage("['START']");
     }
@@ -775,19 +757,18 @@ class _NavigationPageState extends State<NavigationPage>
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: ProfileDrawer(
-        mqttClientWrapper: mqttClientWrapper,
-        patientNotifier: widget.patientNotifier,
-        annotationTypesD: annotationTypesD,
-        historyMAC: historyMAC,
-        macDevices: macDevices
-      ),
+          mqttClientWrapper: mqttClientWrapper,
+          patientNotifier: widget.patientNotifier,
+          annotationTypesD: annotationTypesD,
+          historyMAC: historyMAC,
+          devices: devices),
       backgroundColor: Colors.transparent,
       key: _scaffoldKey,
       body: LoaderOverlay(
         overlayOpacity: 0.8,
         overlayColor: Colors.white,
         useDefaultLoading: false,
-        overlayWidget: overlayMessage.value,
+        overlayWidget: errorHandler.overlayMessage,
         child: Stack(
           children: [
             Positioned(
@@ -833,30 +814,22 @@ class _NavigationPageState extends State<NavigationPage>
                       )),
                   child: IndexedStack(index: _navigationIndex.value, children: [
                     ServerPage(
-                      macDevices: macDevices,
+                      devices: devices,
+                      acquisition: acquisition,
                       mqttClientWrapper: mqttClientWrapper,
                       connectionNotifier: connectionNotifier,
                       receivedMACNotifier: receivedMACNotifier,
                       driveListNotifier: driveListNotifier,
-                      acquisitionNotifier: acquisitionNotifier,
                       sentMACNotifier: sentMACNotifier,
                       sentConfigNotifier: sentConfigNotifier,
-                      batteryBit1Notifier: batteryBit1Notifier,
-                      batteryBit2Notifier: batteryBit2Notifier,
-                      dataMAC1Notifier: dataMAC1Notifier,
-                      dataMAC2Notifier: dataMAC2Notifier,
-                      channelsMAC1Notifier: channelsMAC1Notifier,
-                      channelsMAC2Notifier: channelsMAC2Notifier,
-                      sensorsMAC1Notifier: sensorsMAC1Notifier,
-                      sensorsMAC2Notifier: sensorsMAC2Notifier,
                       patientNotifier: widget.patientNotifier,
                       annotationTypesD: annotationTypesD,
                       timedOut: timedOut,
                       startupError: startupError,
-                      allDestinations: allDestinations.value,
                     ),
                     DevicesPage(
-                      macDevices: macDevices,
+                      devices: devices,
+                      errorHandler: errorHandler,
                       patientNotifier: widget.patientNotifier,
                       mqttClientWrapper: mqttClientWrapper,
                       connectionNotifier: connectionNotifier,
@@ -867,7 +840,7 @@ class _NavigationPageState extends State<NavigationPage>
                       historyMAC: historyMAC,
                     ),
                     ConfigPage(
-                      macDevices: macDevices,
+                      devices: devices,
                       configurations: configurations,
                       mqttClientWrapper: mqttClientWrapper,
                       connectionNotifier: connectionNotifier,
@@ -875,24 +848,16 @@ class _NavigationPageState extends State<NavigationPage>
                       sentConfigNotifier: sentConfigNotifier,
                     ),
                     AcquisitionPage(
-                      macDevices: macDevices,
+                      devices: devices,
                       configurations: configurations,
-                      dataMAC1Notifier: dataMAC1Notifier,
-                      dataMAC2Notifier: dataMAC2Notifier,
-                      channelsMAC1Notifier: channelsMAC1Notifier,
-                      channelsMAC2Notifier: channelsMAC2Notifier,
-                      sensorsMAC1Notifier: sensorsMAC1Notifier,
-                      sensorsMAC2Notifier: sensorsMAC2Notifier,
+                      visualizationMAC1: visualizationMAC1,
+                      visualizationMAC2: visualizationMAC2,
                       mqttClientWrapper: mqttClientWrapper,
-                      acquisitionNotifier: acquisitionNotifier,
-                      batteryBit1Notifier: batteryBit1Notifier,
-                      batteryBit2Notifier: batteryBit2Notifier,
                       patientNotifier: widget.patientNotifier,
                       annotationTypesD: annotationTypesD,
                       connectionNotifier: connectionNotifier,
                       timedOut: timedOut,
                       startupError: startupError,
-                      allDestinations: allDestinations.value,
                     ),
                   ])),
             ),
@@ -925,227 +890,237 @@ class _NavigationPageState extends State<NavigationPage>
         ],
       ),
       floatingActionButton: PropertyChangeProvider(
-        value: macDevices,
-        child: ValueListenableBuilder(
-            valueListenable: _navigationIndex,
-            builder: (BuildContext context, int index, Widget child) {
-              return index != 3
-                  ? Stack(children: [
-                      Align(
-                        alignment: Alignment(-0.9, -0.65),
-                        child: Builder(builder: (context) {
-                          return FloatingActionButton(
-                              backgroundColor: Colors.transparent,
-                              elevation: 0.0,
-                              //mini: true,
-                              //heroTag: null,
-                              child: Icon(Icons.more_vert),
-                              onPressed: () {
-                                Scaffold.of(context).openDrawer();
-                              });
-                        }),
-                      ),
-                      Align(
-                        alignment: Alignment(0.7, -0.65),
-                        child: Builder(builder: (context) {
-                          return ValueListenableBuilder(
-                              valueListenable: connectionNotifier,
-                              builder: (BuildContext context,
-                                  MqttCurrentConnectionState state,
-                                  Widget child) {
-                                return FloatingActionButton(
-                                    backgroundColor: Colors.transparent,
-                                    elevation: 0.0,
-                                    child: CircleAvatar(
-                                      backgroundColor: state ==
-                                              MqttCurrentConnectionState
-                                                  .CONNECTED
-                                          ? Colors.green[800]
-                                          : state ==
-                                                  MqttCurrentConnectionState
-                                                      .CONNECTING
-                                              ? Colors.yellow[800]
-                                              : Colors.red[800],
-                                      radius: 20,
-                                      child: Icon(Icons.wifi_tethering,
-                                          color: Colors.white),
-                                    ),
-                                    onPressed: null);
-                              });
-                        }),
-                      ),
-                      Align(
-                        alignment: Alignment(1.1, -0.65),
-                        child: Builder(builder: (context) {
-                          return PropertyChangeConsumer<MacDevices>(
-                              properties: [
-                                'macAddress1Connection',
-                                'macAddress2Connection',
-                                'isBit1Enabled',
-                                'isBit2Enabled'
-                              ],
-                              builder: (context, macdevices, properties) {
-                                return FloatingActionButton(
-                                    backgroundColor: Colors.transparent,
-                                    elevation: 0.0,
-                                    child: CircleAvatar(
-                                        backgroundColor: ((macdevices.macAddress1Connection == 'disconnected' &&
-                                                    macdevices.macAddress2Connection ==
-                                                        'disconnected') ||
-                                                (macdevices.isBit1Enabled &&
-                                                    macdevices.macAddress1Connection !=
-                                                        'connected') ||
-                                                (macdevices.isBit2Enabled &&
-                                                    macdevices.macAddress2Connection !=
-                                                        'connected'))
-                                            ? Colors.red[800]
-                                            : Colors.green[800],
-                                        radius: 20,
-                                        child: ((macdevices.macAddress1Connection == 'disconnected' &&
-                                                    macdevices.macAddress2Connection ==
-                                                        'disconnected') ||
-                                                (macdevices.isBit1Enabled &&
-                                                    macdevices.macAddress1Connection !=
-                                                        'connected') ||
-                                                (macdevices.isBit2Enabled &&
-                                                    macdevices.macAddress2Connection != 'connected'))
-                                            ? Icon(Icons.bluetooth_disabled_rounded, color: Colors.white)
-                                            : Icon(Icons.bluetooth_connected_rounded, color: Colors.white)),
-                                    onPressed: null);
-                              });
-                        }),
-                      )
-                    ])
-                  : Stack(children: [
-                      Align(
-                        alignment: Alignment(-0.9, -0.65),
-                        child: Builder(builder: (context) {
-                          return FloatingActionButton(
-                              backgroundColor: Colors.transparent,
-                              elevation: 0.0,
-                              child: Icon(Icons.more_vert),
-                              onPressed: () {
-                                Scaffold.of(context).openDrawer();
-                              });
-                        }),
-                      ),
-                      Align(
-                        alignment: Alignment(0.7, -0.65),
-                        child: Builder(builder: (context) {
-                          return ValueListenableBuilder(
-                              valueListenable: connectionNotifier,
-                              builder: (BuildContext context,
-                                  MqttCurrentConnectionState state,
-                                  Widget child) {
-                                return FloatingActionButton(
-                                    backgroundColor: Colors.transparent,
-                                    elevation: 0.0,
-                                    child: CircleAvatar(
-                                      backgroundColor: state ==
-                                              MqttCurrentConnectionState
-                                                  .CONNECTED
-                                          ? Colors.green[800]
-                                          : state ==
-                                                  MqttCurrentConnectionState
-                                                      .CONNECTING
-                                              ? Colors.yellow[800]
-                                              : Colors.red[800],
-                                      radius: 20,
-                                      child: Icon(Icons.wifi_tethering,
-                                          color: Colors.white),
-                                    ),
-                                    onPressed: null);
-                              });
-                        }),
-                      ),
-                      Align(
-                        alignment: Alignment(1.1, -0.65),
-                        child: Builder(builder: (context) {
-                          return PropertyChangeConsumer<MacDevices>(
-                              properties: [
-                                'macAddress1Connection',
-                                'macAddress2Connection',
-                                'isBit1Enabled',
-                                'isBit2Enabled'
-                              ],
-                              builder: (context, macdevices, properties) {
-                                return FloatingActionButton(
-                                    backgroundColor: Colors.transparent,
-                                    elevation: 0.0,
-                                    child: CircleAvatar(
-                                        backgroundColor: ((macdevices.macAddress1Connection == 'disconnected' &&
-                                                    macdevices.macAddress2Connection ==
-                                                        'disconnected') ||
-                                                (macdevices.isBit1Enabled &&
-                                                    macdevices.macAddress1Connection !=
-                                                        'connected') ||
-                                                (macdevices.isBit2Enabled &&
-                                                    macdevices.macAddress2Connection !=
-                                                        'connected'))
-                                            ? Colors.red[800]
-                                            : Colors.green[800],
-                                        radius: 20,
-                                        child: ((macdevices.macAddress1Connection == 'disconnected' &&
-                                                    macdevices.macAddress2Connection ==
-                                                        'disconnected') ||
-                                                (macdevices.isBit1Enabled &&
-                                                    macdevices.macAddress1Connection !=
-                                                        'connected') ||
-                                                (macdevices.isBit2Enabled &&
-                                                    macdevices.macAddress2Connection != 'connected'))
-                                            ? Icon(Icons.bluetooth_disabled_rounded, color: Colors.white)
-                                            : Icon(Icons.bluetooth_connected_rounded, color: Colors.white)),
-                                    onPressed: null);
-                              });
-                        }),
-                      ),
-                      Align(
-                        alignment: Alignment(-0.8, 1.0),
-                        child: FloatingActionButton(
-                          mini: true,
-                          heroTag: null,
-                          onPressed: () => _speedAnnotation(),
-                          child: Icon(MdiIcons.lightningBolt),
+        value: acquisition,
+        child: PropertyChangeProvider(
+          value: devices,
+          child: ValueListenableBuilder(
+              valueListenable: _navigationIndex,
+              builder: (BuildContext context, int index, Widget child) {
+                return index != 3
+                    ? Stack(children: [
+                        Align(
+                          alignment: Alignment(-0.9, -0.65),
+                          child: Builder(builder: (context) {
+                            return FloatingActionButton(
+                                backgroundColor: Colors.transparent,
+                                elevation: 0.0,
+                                //mini: true,
+                                //heroTag: null,
+                                child: Icon(Icons.more_vert),
+                                onPressed: () {
+                                  Scaffold.of(context).openDrawer();
+                                });
+                          }),
                         ),
-                      ),
-                      Align(
-                          alignment: Alignment(0.2, 1.0),
-                          child: ValueListenableBuilder(
-                              valueListenable: acquisitionNotifier,
-                              builder: (BuildContext context, String state,
-                                  Widget child) {
-                                return FloatingActionButton(
-                                  mini: true,
-                                  onPressed: state == 'paused'
-                                      ? () => _resumeAcquisition()
-                                      : () => _pauseAcquisition(),
-                                  child: state == 'paused'
-                                      ? Icon(Icons.play_arrow)
-                                      : Icon(Icons.pause),
+                        Align(
+                          alignment: Alignment(0.7, -0.65),
+                          child: Builder(builder: (context) {
+                            return ValueListenableBuilder(
+                                valueListenable: connectionNotifier,
+                                builder: (BuildContext context,
+                                    MqttCurrentConnectionState state,
+                                    Widget child) {
+                                  return FloatingActionButton(
+                                      backgroundColor: Colors.transparent,
+                                      elevation: 0.0,
+                                      child: CircleAvatar(
+                                        backgroundColor: state ==
+                                                MqttCurrentConnectionState
+                                                    .CONNECTED
+                                            ? Colors.green[800]
+                                            : state ==
+                                                    MqttCurrentConnectionState
+                                                        .CONNECTING
+                                                ? Colors.yellow[800]
+                                                : Colors.red[800],
+                                        radius: 20,
+                                        child: Icon(Icons.wifi_tethering,
+                                            color: Colors.white),
+                                      ),
+                                      onPressed: null);
+                                });
+                          }),
+                        ),
+                        Align(
+                          alignment: Alignment(1.1, -0.65),
+                          child: Builder(builder: (context) {
+                            return PropertyChangeConsumer<Devices>(
+                                properties: [
+                                  'macAddress1Connection',
+                                  'macAddress2Connection',
+                                  'isBit1Enabled',
+                                  'isBit2Enabled'
+                                ],
+                                builder: (context, devices, properties) {
+                                  return FloatingActionButton(
+                                      backgroundColor: Colors.transparent,
+                                      elevation: 0.0,
+                                      child: CircleAvatar(
+                                          backgroundColor:
+                                              ((devices.macAddress1Connection == 'disconnected' &&
+                                                          devices.macAddress2Connection ==
+                                                              'disconnected') ||
+                                                      (devices.isBit1Enabled &&
+                                                          devices.macAddress1Connection !=
+                                                              'connected') ||
+                                                      (devices.isBit2Enabled &&
+                                                          devices.macAddress2Connection !=
+                                                              'connected'))
+                                                  ? Colors.red[800]
+                                                  : Colors.green[800],
+                                          radius: 20,
+                                          child: ((devices.macAddress1Connection == 'disconnected' &&
+                                                      devices.macAddress2Connection ==
+                                                          'disconnected') ||
+                                                  (devices.isBit1Enabled &&
+                                                      devices.macAddress1Connection !=
+                                                          'connected') ||
+                                                  (devices.isBit2Enabled &&
+                                                      devices.macAddress2Connection != 'connected'))
+                                              ? Icon(Icons.bluetooth_disabled_rounded, color: Colors.white)
+                                              : Icon(Icons.bluetooth_connected_rounded, color: Colors.white)),
+                                      onPressed: null);
+                                });
+                          }),
+                        )
+                      ])
+                    : Stack(children: [
+                        Align(
+                          alignment: Alignment(-0.9, -0.65),
+                          child: Builder(builder: (context) {
+                            return FloatingActionButton(
+                                backgroundColor: Colors.transparent,
+                                elevation: 0.0,
+                                child: Icon(Icons.more_vert),
+                                onPressed: () {
+                                  Scaffold.of(context).openDrawer();
+                                });
+                          }),
+                        ),
+                        Align(
+                          alignment: Alignment(0.7, -0.65),
+                          child: Builder(builder: (context) {
+                            return ValueListenableBuilder(
+                                valueListenable: connectionNotifier,
+                                builder: (BuildContext context,
+                                    MqttCurrentConnectionState state,
+                                    Widget child) {
+                                  return FloatingActionButton(
+                                      backgroundColor: Colors.transparent,
+                                      elevation: 0.0,
+                                      child: CircleAvatar(
+                                        backgroundColor: state ==
+                                                MqttCurrentConnectionState
+                                                    .CONNECTED
+                                            ? Colors.green[800]
+                                            : state ==
+                                                    MqttCurrentConnectionState
+                                                        .CONNECTING
+                                                ? Colors.yellow[800]
+                                                : Colors.red[800],
+                                        radius: 20,
+                                        child: Icon(Icons.wifi_tethering,
+                                            color: Colors.white),
+                                      ),
+                                      onPressed: null);
+                                });
+                          }),
+                        ),
+                        Align(
+                          alignment: Alignment(1.1, -0.65),
+                          child: Builder(builder: (context) {
+                            return PropertyChangeConsumer<Devices>(
+                                properties: [
+                                  'macAddress1Connection',
+                                  'macAddress2Connection',
+                                  'isBit1Enabled',
+                                  'isBit2Enabled'
+                                ],
+                                builder: (context, devices, properties) {
+                                  return FloatingActionButton(
+                                      backgroundColor: Colors.transparent,
+                                      elevation: 0.0,
+                                      child: CircleAvatar(
+                                          backgroundColor:
+                                              ((devices.macAddress1Connection == 'disconnected' &&
+                                                          devices.macAddress2Connection ==
+                                                              'disconnected') ||
+                                                      (devices.isBit1Enabled &&
+                                                          devices.macAddress1Connection !=
+                                                              'connected') ||
+                                                      (devices.isBit2Enabled &&
+                                                          devices.macAddress2Connection !=
+                                                              'connected'))
+                                                  ? Colors.red[800]
+                                                  : Colors.green[800],
+                                          radius: 20,
+                                          child: ((devices.macAddress1Connection == 'disconnected' &&
+                                                      devices.macAddress2Connection ==
+                                                          'disconnected') ||
+                                                  (devices.isBit1Enabled &&
+                                                      devices.macAddress1Connection !=
+                                                          'connected') ||
+                                                  (devices.isBit2Enabled &&
+                                                      devices.macAddress2Connection != 'connected'))
+                                              ? Icon(Icons.bluetooth_disabled_rounded, color: Colors.white)
+                                              : Icon(Icons.bluetooth_connected_rounded, color: Colors.white)),
+                                      onPressed: null);
+                                });
+                          }),
+                        ),
+                        Align(
+                          alignment: Alignment(-0.8, 1.0),
+                          child: FloatingActionButton(
+                            mini: true,
+                            heroTag: null,
+                            onPressed: () => _speedAnnotation(),
+                            child: Icon(MdiIcons.lightningBolt),
+                          ),
+                        ),
+                        Align(
+                            alignment: Alignment(0.2, 1.0),
+                            child: PropertyChangeConsumer<Acquisition>(
+                                properties: ['acquisitionState'],
+                                builder: (context, acquisition, properties) {
+                                  return FloatingActionButton(
+                                    mini: true,
+                                    onPressed:
+                                        acquisition.acquisitionState == 'paused'
+                                            ? () => _resumeAcquisition()
+                                            : () => _pauseAcquisition(),
+                                    child:
+                                        acquisition.acquisitionState == 'paused'
+                                            ? Icon(Icons.play_arrow)
+                                            : Icon(Icons.pause),
+                                  );
+                                })),
+                        Align(
+                          alignment: Alignment.bottomRight,
+                          child: PropertyChangeConsumer<Acquisition>(
+                              properties: ['acquisitionState'],
+                              builder: (context, acquisition, properties) {
+                                return FloatingActionButton.extended(
+                                  onPressed: (acquisition.acquisitionState ==
+                                              'stopped' ||
+                                          acquisition.acquisitionState == 'off')
+                                      ? () => _startAcquisition()
+                                      : () => _stopAcquisition(),
+                                  label: (acquisition.acquisitionState ==
+                                              'stopped' ||
+                                          acquisition.acquisitionState == 'off')
+                                      ? Text('Iniciar')
+                                      : Text('Parar'),
+                                  icon: (acquisition.acquisitionState ==
+                                              'stopped' ||
+                                          acquisition.acquisitionState == 'off')
+                                      ? Icon(Icons.play_arrow_rounded)
+                                      : Icon(Icons.stop),
                                 );
-                              })),
-                      Align(
-                        alignment: Alignment.bottomRight,
-                        child: ValueListenableBuilder(
-                            valueListenable: acquisitionNotifier,
-                            builder: (BuildContext context, String state,
-                                Widget child) {
-                              return FloatingActionButton.extended(
-                                onPressed:
-                                    (state == 'stopped' || state == 'off')
-                                        ? () => _startAcquisition()
-                                        : () => _stopAcquisition(),
-                                label: (state == 'stopped' || state == 'off')
-                                    ? Text('Iniciar')
-                                    : Text('Parar'),
-                                icon: (state == 'stopped' || state == 'off')
-                                    ? Icon(Icons.play_arrow_rounded)
-                                    : Icon(Icons.stop),
-                              );
-                            }),
-                      ),
-                    ]);
-            }),
+                              }),
+                        ),
+                      ]);
+              }),
+        ),
       ),
     );
   }

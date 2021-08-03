@@ -1,5 +1,6 @@
-import 'package:epibox/acquisition_navbar/destinations.dart';
-import 'package:epibox/classes/mac_devices.dart';
+
+import 'package:epibox/classes/acquisition.dart';
+import 'package:epibox/classes/devices.dart';
 import 'package:flutter/material.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
@@ -9,7 +10,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ServerPage extends StatefulWidget {
 
-  MacDevices macDevices;
+  Devices devices;
+  Acquisition acquisition;
   
   final ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
   final MQTTClientWrapper mqttClientWrapper;
@@ -17,22 +19,10 @@ class ServerPage extends StatefulWidget {
   final ValueNotifier<List<String>> driveListNotifier;
 
   final ValueNotifier<bool> receivedMACNotifier;
-  final ValueNotifier<String> acquisitionNotifier;
   final ValueNotifier<String> hostnameNotifier;
 
   final ValueNotifier<bool> sentMACNotifier;
   final ValueNotifier<bool> sentConfigNotifier;
-
-  final ValueNotifier<double> batteryBit1Notifier;
-  final ValueNotifier<double> batteryBit2Notifier;
-
-
-  final ValueNotifier<List<List>> dataMAC1Notifier;
-  final ValueNotifier<List<List>> dataMAC2Notifier;
-  final ValueNotifier<List<List>> channelsMAC1Notifier;
-  final ValueNotifier<List<List>> channelsMAC2Notifier;
-  final ValueNotifier<List> sensorsMAC1Notifier;
-  final ValueNotifier<List> sensorsMAC2Notifier;
 
   final ValueNotifier<String> patientNotifier;
 
@@ -41,34 +31,23 @@ class ServerPage extends StatefulWidget {
   final ValueNotifier<String> timedOut;
   final ValueNotifier<bool> startupError;
 
-  final List<Destination> allDestinations;
-
   ValueNotifier<String> chosenDrive;
   ValueNotifier<TextEditingController> controllerFreq;
 
   ServerPage({
-    this.macDevices,
+    this.devices,
+    this.acquisition,
     this.mqttClientWrapper,
     this.connectionNotifier,
     this.receivedMACNotifier,
     this.driveListNotifier,
-    this.acquisitionNotifier,
     this.hostnameNotifier,
     this.sentMACNotifier,
     this.sentConfigNotifier,
-    this.batteryBit1Notifier,
-    this.batteryBit2Notifier,
-    this.dataMAC1Notifier,
-    this.dataMAC2Notifier,
-    this.channelsMAC1Notifier,
-    this.channelsMAC2Notifier,
-    this.sensorsMAC1Notifier,
-    this.sensorsMAC2Notifier,
     this.patientNotifier,
     this.annotationTypesD,
     this.timedOut,
     this.startupError,
-    this.allDestinations,
     this.chosenDrive,
     this.controllerFreq,
   });
@@ -92,30 +71,30 @@ class _ServerPageState extends State<ServerPage> {
       await widget.mqttClientWrapper.diconnectClient();
       setState(() {
 
-        widget.macDevices.defaultMacAddress1 = 'xx:xx:xx:xx:xx:xx';
-        widget.macDevices.defaultMacAddress2 = 'xx:xx:xx:xx:xx:xx';
+        widget.devices.defaultMacAddress1 = 'xx:xx:xx:xx:xx:xx';
+        widget.devices.defaultMacAddress2 = 'xx:xx:xx:xx:xx:xx';
 
-        widget.macDevices.macAddress1 = 'xx:xx:xx:xx:xx:xx';
-        widget.macDevices.macAddress2 = 'xx:xx:xx:xx:xx:xx';
+        widget.devices.macAddress1 = 'xx:xx:xx:xx:xx:xx';
+        widget.devices.macAddress2 = 'xx:xx:xx:xx:xx:xx';
 
         widget.driveListNotifier.value = [' '];
         widget.chosenDrive.value = ' ';
         widget.controllerFreq.value.text = ' ';
 
-        widget.macDevices.isBit1Enabled = false;
-        widget.macDevices.isBit1Enabled = false;
+        widget.devices.isBit1Enabled = false;
+        widget.devices.isBit1Enabled = false;
       });
     }
 
     setState(() {
 
-      widget.macDevices.macAddress1Connection = 'disconnected';
-      widget.macDevices.macAddress2Connection = 'disconnected';
+      widget.devices.macAddress1Connection = 'disconnected';
+      widget.devices.macAddress2Connection = 'disconnected';
 
-      widget.acquisitionNotifier.value = 'off';
+      widget.acquisition.acquisitionState = 'off';
 
-      widget.batteryBit1Notifier.value = null;
-      widget.batteryBit2Notifier.value = null;
+      widget.acquisition.batteryBit1 = null;
+      widget.acquisition.batteryBit2 = null;
     });
 
     saveBatteries(null, null);

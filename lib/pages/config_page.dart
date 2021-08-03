@@ -1,5 +1,5 @@
 import 'package:epibox/classes/configurations.dart';
-import 'package:epibox/classes/mac_devices.dart';
+import 'package:epibox/classes/devices.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
 import 'package:epibox/utils/models.dart';
@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:property_change_notifier/property_change_notifier.dart';
 
 class ConfigPage extends StatefulWidget {
-  MacDevices macDevices;
+  Devices devices;
   Configurations configurations;
 
   final MQTTClientWrapper mqttClientWrapper;
@@ -20,7 +20,7 @@ class ConfigPage extends StatefulWidget {
 
   ConfigPage({
     this.configurations,
-    this.macDevices,
+    this.devices,
     this.mqttClientWrapper,
     this.connectionNotifier,
     this.driveListNotifier,
@@ -128,21 +128,21 @@ class _ConfigPageState extends State<ConfigPage> {
       }, ['configDefault']);
     }
 
-    widget.macDevices.addListener(() {
-      if (widget.macDevices.macAddress1 == '' ||
-          widget.macDevices.macAddress1 == ' ') {
-        setState(() => widget.macDevices.isBit1Enabled = false);
+    widget.devices.addListener(() {
+      if (widget.devices.macAddress1 == '' ||
+          widget.devices.macAddress1 == ' ') {
+        setState(() => widget.devices.isBit1Enabled = false);
       } else {
-        setState(() => widget.macDevices.isBit1Enabled = true);
+        setState(() => widget.devices.isBit1Enabled = true);
       }
     }, ['macAddress1']);
 
-    widget.macDevices.addListener(() {
-      if (widget.macDevices.macAddress2 == '' ||
-          widget.macDevices.macAddress2 == ' ') {
-        setState(() => widget.macDevices.isBit2Enabled = false);
+    widget.devices.addListener(() {
+      if (widget.devices.macAddress2 == '' ||
+          widget.devices.macAddress2 == ' ') {
+        setState(() => widget.devices.isBit2Enabled = false);
       } else {
-        setState(() => widget.macDevices.isBit2Enabled = true);
+        setState(() => widget.devices.isBit2Enabled = true);
       }
     }, ['macAddress2']);
 
@@ -159,10 +159,10 @@ class _ConfigPageState extends State<ConfigPage> {
     List<bool> _aux2Selections = List.generate(6, (_) => false);
 
     channels.asMap().forEach((i, triplet) {
-      if (triplet[0] == widget.macDevices.defaultMacAddress1) {
+      if (triplet[0] == widget.devices.defaultMacAddress1) {
         _aux1Selections[int.parse(triplet[1]) - 1] = true;
       }
-      if (triplet[0] == widget.macDevices.defaultMacAddress2) {
+      if (triplet[0] == widget.devices.defaultMacAddress2) {
         _aux2Selections[int.parse(triplet[1]) - 1] = true;
       }
     });
@@ -174,11 +174,11 @@ class _ConfigPageState extends State<ConfigPage> {
     //List<String>
 
     channels.asMap().forEach((i, triplet) {
-      if (triplet[0] == widget.macDevices.defaultMacAddress1) {
+      if (triplet[0] == widget.devices.defaultMacAddress1) {
         widget.configurations.controllerSensors[int.parse(triplet[1]) - 1]
             .text = triplet[2];
       }
-      if (triplet[0] == widget.macDevices.defaultMacAddress2) {
+      if (triplet[0] == widget.devices.defaultMacAddress2) {
         widget.configurations.controllerSensors[int.parse(triplet[1]) + 5]
             .text = triplet[2];
       }
@@ -190,7 +190,7 @@ class _ConfigPageState extends State<ConfigPage> {
     widget.configurations.bit1Selections.asMap().forEach((channel, value) {
       if (value) {
         _channels2Send.add([
-          "'${widget.macDevices.macAddress1}'",
+          "'${widget.devices.macAddress1}'",
           "'${(channel + 1).toString()}'",
           "'${widget.configurations.controllerSensors[channel].text}'"
         ]);
@@ -199,7 +199,7 @@ class _ConfigPageState extends State<ConfigPage> {
     widget.configurations.bit2Selections.asMap().forEach((channel, value) {
       if (value) {
         _channels2Send.add([
-          "'${widget.macDevices.macAddress2}'",
+          "'${widget.devices.macAddress2}'",
           "'${(channel + 1).toString()}'",
           "'${widget.configurations.controllerSensors[channel + 5].text}'"
         ]);
@@ -231,7 +231,7 @@ class _ConfigPageState extends State<ConfigPage> {
     return PropertyChangeProvider(
       value: widget.configurations,
       child: PropertyChangeProvider(
-        value: widget.macDevices,
+        value: widget.devices,
         child: ListView(
           children: <Widget>[
             Padding(
@@ -436,9 +436,9 @@ class _ConfigPageState extends State<ConfigPage> {
                                     properties: ['bit1Selections'],
                                     builder:
                                         (context, configurations, properties) {
-                                      return PropertyChangeConsumer<MacDevices>(
+                                      return PropertyChangeConsumer<Devices>(
                                           properties: ['isBit1Enabled'],
-                                          builder: (context, macdevices,
+                                          builder: (context, devices,
                                               properties) {
                                             return ToggleButtons(
                                               constraints: BoxConstraints(
@@ -468,7 +468,7 @@ class _ConfigPageState extends State<ConfigPage> {
                                                     false
                                                   ],
                                               onPressed:
-                                                  macdevices.isBit1Enabled
+                                                  devices.isBit1Enabled
                                                       ? (int index) {
                                                           setState(() {
                                                             widget.configurations
@@ -499,9 +499,9 @@ class _ConfigPageState extends State<ConfigPage> {
                                     properties: ['bit2Selections'],
                                     builder:
                                         (context, configurations, properties) {
-                                      return PropertyChangeConsumer<MacDevices>(
+                                      return PropertyChangeConsumer<Devices>(
                                           properties: ['isBit2Enabled'],
-                                          builder: (context, macdevices,
+                                          builder: (context, devices,
                                               properties) {
                                             return ToggleButtons(
                                               constraints: BoxConstraints(
@@ -531,7 +531,7 @@ class _ConfigPageState extends State<ConfigPage> {
                                                     false
                                                   ],
                                               onPressed:
-                                                  macdevices.isBit2Enabled
+                                                  devices.isBit2Enabled
                                                       ? (int index) {
                                                           setState(() {
                                                             widget.configurations
@@ -555,9 +555,9 @@ class _ConfigPageState extends State<ConfigPage> {
                                   color: DefaultColors.textColorOnLight),
                             ),
                           ),
-                          PropertyChangeConsumer<MacDevices>(
+                          PropertyChangeConsumer<Devices>(
                               properties: ['isBit1Enabled'],
-                              builder: (context, macdevices, properties) {
+                              builder: (context, devices, properties) {
                                 return PropertyChangeConsumer<Configurations>(
                                     properties: ['controllerSensors'],
                                     builder:
@@ -572,42 +572,42 @@ class _ConfigPageState extends State<ConfigPage> {
                                                 sensorItems: sensorItems,
                                                 position: 'cornerL',
                                                 isBitEnabled:
-                                                    macdevices.isBit1Enabled),
+                                                    devices.isBit1Enabled),
                                             SensorContainer(
                                                 controller: configurations
                                                     .controllerSensors[1],
                                                 sensorItems: sensorItems,
                                                 position: 'secondL',
                                                 isBitEnabled:
-                                                    macdevices.isBit1Enabled),
+                                                    devices.isBit1Enabled),
                                             SensorContainer(
                                                 controller: configurations
                                                     .controllerSensors[2],
                                                 sensorItems: sensorItems,
                                                 position: 'middle',
                                                 isBitEnabled:
-                                                    macdevices.isBit1Enabled),
+                                                    devices.isBit1Enabled),
                                             SensorContainer(
                                                 controller: configurations
                                                     .controllerSensors[3],
                                                 sensorItems: sensorItems,
                                                 position: 'middle',
                                                 isBitEnabled:
-                                                    macdevices.isBit1Enabled),
+                                                    devices.isBit1Enabled),
                                             SensorContainer(
                                                 controller: configurations
                                                     .controllerSensors[4],
                                                 sensorItems: sensorItems,
                                                 position: 'middle',
                                                 isBitEnabled:
-                                                    macdevices.isBit1Enabled),
+                                                    devices.isBit1Enabled),
                                             SensorContainer(
                                                 controller: configurations
                                                     .controllerSensors[5],
                                                 sensorItems: sensorItems,
                                                 position: 'cornerR',
                                                 isBitEnabled:
-                                                    macdevices.isBit1Enabled),
+                                                    devices.isBit1Enabled),
                                           ]);
                                     });
                               }),
@@ -619,9 +619,9 @@ class _ConfigPageState extends State<ConfigPage> {
                                   color: DefaultColors.textColorOnLight),
                             ),
                           ),
-                          PropertyChangeConsumer<MacDevices>(
+                          PropertyChangeConsumer<Devices>(
                               properties: ['isBit2Enabled'],
-                              builder: (context, macdevices, properties) {
+                              builder: (context, devices, properties) {
                                 return PropertyChangeConsumer<Configurations>(
                                     properties: ['controllerSensors'],
                                     builder:
@@ -636,42 +636,42 @@ class _ConfigPageState extends State<ConfigPage> {
                                                 sensorItems: sensorItems,
                                                 position: 'cornerL',
                                                 isBitEnabled:
-                                                    macdevices.isBit2Enabled),
+                                                    devices.isBit2Enabled),
                                             SensorContainer(
                                                 controller: configurations
                                                     .controllerSensors[7],
                                                 sensorItems: sensorItems,
                                                 position: 'secondL',
                                                 isBitEnabled:
-                                                    macdevices.isBit2Enabled),
+                                                    devices.isBit2Enabled),
                                             SensorContainer(
                                                 controller: configurations
                                                     .controllerSensors[8],
                                                 sensorItems: sensorItems,
                                                 position: 'middle',
                                                 isBitEnabled:
-                                                    macdevices.isBit2Enabled),
+                                                    devices.isBit2Enabled),
                                             SensorContainer(
                                                 controller: configurations
                                                     .controllerSensors[9],
                                                 sensorItems: sensorItems,
                                                 position: 'middle',
                                                 isBitEnabled:
-                                                    macdevices.isBit2Enabled),
+                                                    devices.isBit2Enabled),
                                             SensorContainer(
                                                 controller: configurations
                                                     .controllerSensors[10],
                                                 sensorItems: sensorItems,
                                                 position: 'middle',
                                                 isBitEnabled:
-                                                    macdevices.isBit2Enabled),
+                                                    devices.isBit2Enabled),
                                             SensorContainer(
                                                 controller: configurations
                                                     .controllerSensors[11],
                                                 sensorItems: sensorItems,
                                                 position: 'cornerR',
                                                 isBitEnabled:
-                                                    macdevices.isBit2Enabled),
+                                                    devices.isBit2Enabled),
                                           ]);
                                     });
                               }),
