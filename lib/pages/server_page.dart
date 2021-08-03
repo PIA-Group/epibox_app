@@ -43,8 +43,6 @@ class ServerPage extends StatefulWidget {
 
   final List<Destination> allDestinations;
 
-  final ValueNotifier<bool> saveRaw;
-
   ValueNotifier<String> chosenDrive;
   ValueNotifier<TextEditingController> controllerFreq;
 
@@ -71,7 +69,6 @@ class ServerPage extends StatefulWidget {
     this.timedOut,
     this.startupError,
     this.allDestinations,
-    this.saveRaw,
     this.chosenDrive,
     this.controllerFreq,
   });
@@ -86,7 +83,6 @@ class _ServerPageState extends State<ServerPage> {
   @override
   void initState() {
     super.initState();
-    print('SAVE RAW: ${widget.saveRaw}');
   }
 
   Future<void> _restart(bool restart) async {

@@ -28,13 +28,6 @@ class DevicesPage extends StatefulWidget {
 
   final ValueNotifier<List<String>> driveListNotifier;
   final ValueNotifier<bool> sentConfigNotifier;
-  final ValueNotifier<String> chosenDrive;
-  final ValueNotifier<List<bool>> bit1Selections;
-  final ValueNotifier<List<bool>> bit2Selections;
-  final ValueNotifier<List<TextEditingController>> controllerSensors;
-  final ValueNotifier<TextEditingController> controllerFreq;
-  final ValueNotifier<bool> saveRaw;
-  final ValueNotifier<String> isBitalino;
 
   DevicesPage({
     this.macDevices,
@@ -45,14 +38,7 @@ class DevicesPage extends StatefulWidget {
     this.sentMACNotifier,
     this.driveListNotifier,
     this.sentConfigNotifier,
-    this.chosenDrive,
-    this.bit1Selections,
-    this.bit2Selections,
-    this.controllerSensors,
-    this.controllerFreq,
     this.historyMAC,
-    this.saveRaw,
-    this.isBitalino,
   });
 
   @override
@@ -339,7 +325,7 @@ class _DevicesPageState extends State<DevicesPage> {
                                 onTap: () {
                                   model.macAddress1Connection = 'connecting';
                                   widget.mqttClientWrapper.publishMessage(
-                                      "['CONNECT', '${model.macAddress1}', '${widget.isBitalino.value}']");
+                                      "['CONNECT', '${model.macAddress1}', '${widget.macDevices.type}']");
 
                                   _saveMAC(
                                       model.macAddress1, model.macAddress2);
@@ -458,7 +444,7 @@ class _DevicesPageState extends State<DevicesPage> {
                                 onTap: () {
                                   model.macAddress2Connection = 'connecting';
                                   widget.mqttClientWrapper.publishMessage(
-                                      "['CONNECT', '${model.macAddress2}', '${widget.isBitalino.value}']");
+                                      "['CONNECT', '${model.macAddress2}', '${widget.macDevices.type}']");
 
                                   _saveMAC(
                                       model.macAddress1, model.macAddress2);

@@ -8,7 +8,6 @@ import 'package:epibox/pages/config_page.dart';
 import 'package:epibox/pages/profile_drawer.dart';
 import 'package:epibox/pages/server_page.dart';
 import 'package:epibox/pages/speed_annotation.dart';
-import 'package:epibox/utils/multiple_value_listnable.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -51,7 +50,6 @@ class _NavigationPageState extends State<NavigationPage>
       ValueNotifier(MqttCurrentConnectionState.DISCONNECTED);
 
   MacDevices macDevices = MacDevices();
-
   Configurations configurations = Configurations();
 
   ValueNotifier<List<String>> driveListNotifier = ValueNotifier([' ']);
@@ -62,23 +60,12 @@ class _NavigationPageState extends State<NavigationPage>
   ValueNotifier<bool> sentMACNotifier = ValueNotifier(false);
   ValueNotifier<bool> sentConfigNotifier = ValueNotifier(false);
 
-  ValueNotifier<Map<String, dynamic>> configDefaultNotifier = ValueNotifier({});
-
-
   ValueNotifier<double> batteryBit1Notifier = ValueNotifier(null);
   ValueNotifier<double> batteryBit2Notifier = ValueNotifier(null);
 
   ValueNotifier<String> timedOut = ValueNotifier(null);
   ValueNotifier<bool> startupError = ValueNotifier(false);
 
-  ValueNotifier<String> chosenDrive = ValueNotifier(' ');
-  ValueNotifier<List<bool>> bit1Selections = ValueNotifier(null);
-  ValueNotifier<List<bool>> bit2Selections = ValueNotifier(null);
-  ValueNotifier<List<TextEditingController>> controllerSensors =
-      ValueNotifier(List.generate(12, (i) => TextEditingController()));
-  ValueNotifier<TextEditingController> controllerFreq =
-      ValueNotifier(TextEditingController(text: ' '));
-  ValueNotifier<bool> saveRaw = ValueNotifier(true);
 
   String message;
   Timer timer;
@@ -102,8 +89,6 @@ class _NavigationPageState extends State<NavigationPage>
   ValueNotifier<List<Destination>> allDestinations = ValueNotifier(null);
 
   final TextEditingController nameController = TextEditingController();
-
-  final ValueNotifier<String> isBitalino = ValueNotifier('');
 
   FlutterLocalNotificationsPlugin batteryNotification =
       FlutterLocalNotificationsPlugin();
@@ -252,7 +237,7 @@ class _NavigationPageState extends State<NavigationPage>
     String device;
     try {
       device = prefs.getString('deviceType') ?? 'Bitalino';
-      setState(() => isBitalino.value = device);
+      setState(() => macDevices.type = device);
       print('Device: $device');
     } catch (e) {
       print(e);
@@ -260,7 +245,7 @@ class _NavigationPageState extends State<NavigationPage>
   }
 
   void getLastMAC() async {
-    /* await Future.delayed(Duration.zero);
+    await Future.delayed(Duration.zero);
     Future.delayed(Duration.zero, () async {
       await SharedPreferences.getInstance().then((value) {
         List<String> lastMAC = (value.getStringList('lastMAC').toList() ??
@@ -270,7 +255,7 @@ class _NavigationPageState extends State<NavigationPage>
         setState(() => macDevices.macAddress2 = lastMAC[1]);
       });
       print('LAST MAC1: ${macDevices.macAddress1}, ${macDevices.macAddress2}');
-    }); */
+    });
   }
 
   Future<void> saveMAC(mac1, mac2) async {
@@ -390,7 +375,6 @@ class _NavigationPageState extends State<NavigationPage>
       try {
         final List<String> listMAC = message.split(",");
         setState(() {
-
           macDevices.defaultMacAddress1 = listMAC[1].split("'")[1];
           macDevices.defaultMacAddress2 = listMAC[2].split("'")[1];
           macDevices.macAddress1 = listMAC[1].split("'")[1];
@@ -435,7 +419,7 @@ class _NavigationPageState extends State<NavigationPage>
   void _isDefaultConfig(String message) {
     if (message.contains('DEFAULT CONFIG')) {
       List message2List = json.decode(message);
-      setState(() => configDefaultNotifier.value = message2List[1]);
+      setState(() => configurations.configDefault = message2List[1]);
     }
   }
 
@@ -610,11 +594,6 @@ class _NavigationPageState extends State<NavigationPage>
     if (restart) {
       await mqttClientWrapper.diconnectClient();
       setState(() {
-        /* defaultMacAddress1Notifier.value = 'xx:xx:xx:xx:xx:xx';
-        defaultMacAddress2Notifier.value = 'xx:xx:xx:xx:xx:xx';
-
-        macAddress1Notifier.value = 'xx:xx:xx:xx:xx:xx';
-        macAddress2Notifier.value = 'xx:xx:xx:xx:xx:xx'; */
 
         macDevices.defaultMacAddress1 = 'xx:xx:xx:xx:xx:xx';
         macDevices.defaultMacAddress2 = 'xx:xx:xx:xx:xx:xx';
@@ -623,8 +602,8 @@ class _NavigationPageState extends State<NavigationPage>
         macDevices.macAddress2 = 'xx:xx:xx:xx:xx:xx';
 
         driveListNotifier.value = [' '];
-        chosenDrive.value = ' ';
-        controllerFreq.value.text = ' ';
+        configurations.chosenDrive = ' ';
+        configurations.controllerFreq.text = ' ';
 
         macDevices.isBit1Enabled = false;
         macDevices.isBit2Enabled = false;
@@ -720,21 +699,21 @@ class _NavigationPageState extends State<NavigationPage>
 
   List<List<String>> _getChannels2Send() {
     List<List<String>> _channels2Send = [];
-    bit1Selections.value.asMap().forEach((channel, value) {
+    configurations.bit1Selections.asMap().forEach((channel, value) {
       if (value) {
         _channels2Send.add([
           "'${macDevices.macAddress1}'",
           "'${(channel + 1).toString()}'",
-          "'${controllerSensors.value[channel].text}'"
+          "'${configurations.controllerSensors[channel].text}'"
         ]);
       }
     });
-    bit2Selections.value.asMap().forEach((channel, value) {
+    configurations.bit2Selections.asMap().forEach((channel, value) {
       if (value) {
         _channels2Send.add([
           "'${macDevices.macAddress2}'",
           "'${(channel + 1).toString()}'",
-          "'${controllerSensors.value[channel + 5].text}'"
+          "'${configurations.controllerSensors[channel + 5].text}'"
         ]);
       }
     });
@@ -776,14 +755,14 @@ class _NavigationPageState extends State<NavigationPage>
       });
     } else {
       String _newDrive =
-          chosenDrive.value.substring(0, chosenDrive.value.indexOf('(')).trim();
+          configurations.chosenDrive.substring(0, configurations.chosenDrive.indexOf('(')).trim();
       mqttClientWrapper.publishMessage("['FOLDER', '$_newDrive']");
-      mqttClientWrapper.publishMessage("['FS', ${controllerFreq.value.text}]");
+      mqttClientWrapper.publishMessage("['FS', ${configurations.controllerFreq.text}]");
       mqttClientWrapper
           .publishMessage("['ID', '${widget.patientNotifier.value}']");
-      mqttClientWrapper.publishMessage("['SAVE RAW', '${saveRaw.value}']");
+      mqttClientWrapper.publishMessage("['SAVE RAW', '${configurations.saveRaw}']");
       mqttClientWrapper
-          .publishMessage("['EPI SERVICE', '${isBitalino.value}']");
+          .publishMessage("['EPI SERVICE', '${macDevices.type}']");
 
       List<List<String>> _channels2Send = _getChannels2Send();
       mqttClientWrapper.publishMessage("['CHANNELS', $_channels2Send]");
@@ -800,7 +779,7 @@ class _NavigationPageState extends State<NavigationPage>
         patientNotifier: widget.patientNotifier,
         annotationTypesD: annotationTypesD,
         historyMAC: historyMAC,
-        isBitalino: isBitalino,
+        macDevices: macDevices
       ),
       backgroundColor: Colors.transparent,
       key: _scaffoldKey,
@@ -852,97 +831,70 @@ class _NavigationPageState extends State<NavigationPage>
                         topLeft: const Radius.circular(30.0),
                         topRight: const Radius.circular(30.0),
                       )),
-                  child:
-                      /* FutureBuilder<bool>(
-                        future: initialized,
-                        builder: (BuildContext context,
-                            AsyncSnapshot<bool> snapshot) {
-                          if (!snapshot.hasData) {
-                            return Container();
-                          } else {
-                            return */ /*  */ IndexedStack(
-                          index: _navigationIndex.value,
-                          children: [
-                        ServerPage(
-                          macDevices: macDevices,
-                          mqttClientWrapper: mqttClientWrapper,
-                          connectionNotifier: connectionNotifier,
-                          receivedMACNotifier: receivedMACNotifier,
-                          driveListNotifier: driveListNotifier,
-                          acquisitionNotifier: acquisitionNotifier,
-                          sentMACNotifier: sentMACNotifier,
-                          sentConfigNotifier: sentConfigNotifier,
-                          batteryBit1Notifier: batteryBit1Notifier,
-                          batteryBit2Notifier: batteryBit2Notifier,
-                          dataMAC1Notifier: dataMAC1Notifier,
-                          dataMAC2Notifier: dataMAC2Notifier,
-                          channelsMAC1Notifier: channelsMAC1Notifier,
-                          channelsMAC2Notifier: channelsMAC2Notifier,
-                          sensorsMAC1Notifier: sensorsMAC1Notifier,
-                          sensorsMAC2Notifier: sensorsMAC2Notifier,
-                          patientNotifier: widget.patientNotifier,
-                          annotationTypesD: annotationTypesD,
-                          timedOut: timedOut,
-                          startupError: startupError,
-                          allDestinations: allDestinations.value,
-                          saveRaw: saveRaw,
-                        ),
-                        DevicesPage(
-                          macDevices: macDevices,
-                          patientNotifier: widget.patientNotifier,
-                          mqttClientWrapper: mqttClientWrapper,
-                          connectionNotifier: connectionNotifier,
-                          receivedMACNotifier: receivedMACNotifier,
-                          sentMACNotifier: sentMACNotifier,
-                          driveListNotifier: driveListNotifier,
-                          sentConfigNotifier: sentConfigNotifier,
-                          chosenDrive: chosenDrive,
-                          bit1Selections: bit1Selections,
-                          bit2Selections: bit2Selections,
-                          controllerSensors: controllerSensors,
-                          controllerFreq: controllerFreq,
-                          historyMAC: historyMAC,
-                          saveRaw: saveRaw,
-                          isBitalino: isBitalino,
-                        ),
-                        ConfigPage(
-                          macDevices: macDevices,
-                          configurations: configurations,
-                          mqttClientWrapper: mqttClientWrapper,
-                          connectionNotifier: connectionNotifier,
-                          driveListNotifier: driveListNotifier,
-                          sentConfigNotifier: sentConfigNotifier,
-                          configDefault: configDefaultNotifier,
-                          chosenDrive: chosenDrive,
-                          controllerSensors: controllerSensors,
-                          controllerFreq: controllerFreq,
-                          saveRaw: saveRaw,
-                          isBitalino: isBitalino,
-                        ),
-                        AcquisitionPage(
-                          macDevices: macDevices,
-                          dataMAC1Notifier: dataMAC1Notifier,
-                          dataMAC2Notifier: dataMAC2Notifier,
-                          channelsMAC1Notifier: channelsMAC1Notifier,
-                          channelsMAC2Notifier: channelsMAC2Notifier,
-                          sensorsMAC1Notifier: sensorsMAC1Notifier,
-                          sensorsMAC2Notifier: sensorsMAC2Notifier,
-                          mqttClientWrapper: mqttClientWrapper,
-                          acquisitionNotifier: acquisitionNotifier,
-                          batteryBit1Notifier: batteryBit1Notifier,
-                          batteryBit2Notifier: batteryBit2Notifier,
-                          patientNotifier: widget.patientNotifier,
-                          annotationTypesD: annotationTypesD,
-                          connectionNotifier: connectionNotifier,
-                          timedOut: timedOut,
-                          startupError: startupError,
-                          allDestinations: allDestinations.value,
-                          saveRaw: saveRaw,
-                        ),
-                      ])
-                  /* }
-                        }), */
-                  ),
+                  child: IndexedStack(index: _navigationIndex.value, children: [
+                    ServerPage(
+                      macDevices: macDevices,
+                      mqttClientWrapper: mqttClientWrapper,
+                      connectionNotifier: connectionNotifier,
+                      receivedMACNotifier: receivedMACNotifier,
+                      driveListNotifier: driveListNotifier,
+                      acquisitionNotifier: acquisitionNotifier,
+                      sentMACNotifier: sentMACNotifier,
+                      sentConfigNotifier: sentConfigNotifier,
+                      batteryBit1Notifier: batteryBit1Notifier,
+                      batteryBit2Notifier: batteryBit2Notifier,
+                      dataMAC1Notifier: dataMAC1Notifier,
+                      dataMAC2Notifier: dataMAC2Notifier,
+                      channelsMAC1Notifier: channelsMAC1Notifier,
+                      channelsMAC2Notifier: channelsMAC2Notifier,
+                      sensorsMAC1Notifier: sensorsMAC1Notifier,
+                      sensorsMAC2Notifier: sensorsMAC2Notifier,
+                      patientNotifier: widget.patientNotifier,
+                      annotationTypesD: annotationTypesD,
+                      timedOut: timedOut,
+                      startupError: startupError,
+                      allDestinations: allDestinations.value,
+                    ),
+                    DevicesPage(
+                      macDevices: macDevices,
+                      patientNotifier: widget.patientNotifier,
+                      mqttClientWrapper: mqttClientWrapper,
+                      connectionNotifier: connectionNotifier,
+                      receivedMACNotifier: receivedMACNotifier,
+                      sentMACNotifier: sentMACNotifier,
+                      driveListNotifier: driveListNotifier,
+                      sentConfigNotifier: sentConfigNotifier,
+                      historyMAC: historyMAC,
+                    ),
+                    ConfigPage(
+                      macDevices: macDevices,
+                      configurations: configurations,
+                      mqttClientWrapper: mqttClientWrapper,
+                      connectionNotifier: connectionNotifier,
+                      driveListNotifier: driveListNotifier,
+                      sentConfigNotifier: sentConfigNotifier,
+                    ),
+                    AcquisitionPage(
+                      macDevices: macDevices,
+                      configurations: configurations,
+                      dataMAC1Notifier: dataMAC1Notifier,
+                      dataMAC2Notifier: dataMAC2Notifier,
+                      channelsMAC1Notifier: channelsMAC1Notifier,
+                      channelsMAC2Notifier: channelsMAC2Notifier,
+                      sensorsMAC1Notifier: sensorsMAC1Notifier,
+                      sensorsMAC2Notifier: sensorsMAC2Notifier,
+                      mqttClientWrapper: mqttClientWrapper,
+                      acquisitionNotifier: acquisitionNotifier,
+                      batteryBit1Notifier: batteryBit1Notifier,
+                      batteryBit2Notifier: batteryBit2Notifier,
+                      patientNotifier: widget.patientNotifier,
+                      annotationTypesD: annotationTypesD,
+                      connectionNotifier: connectionNotifier,
+                      timedOut: timedOut,
+                      startupError: startupError,
+                      allDestinations: allDestinations.value,
+                    ),
+                  ])),
             ),
           ],
         ),
@@ -1032,31 +984,31 @@ class _NavigationPageState extends State<NavigationPage>
                                 'isBit1Enabled',
                                 'isBit2Enabled'
                               ],
-                              builder: (context, model, properties) {
+                              builder: (context, macdevices, properties) {
                                 return FloatingActionButton(
                                     backgroundColor: Colors.transparent,
                                     elevation: 0.0,
                                     child: CircleAvatar(
-                                        backgroundColor: ((model.macAddress1Connection == 'disconnected' &&
-                                                    model.macAddress2Connection ==
+                                        backgroundColor: ((macdevices.macAddress1Connection == 'disconnected' &&
+                                                    macdevices.macAddress2Connection ==
                                                         'disconnected') ||
-                                                (model.isBit1Enabled &&
-                                                    model.macAddress1Connection !=
+                                                (macdevices.isBit1Enabled &&
+                                                    macdevices.macAddress1Connection !=
                                                         'connected') ||
-                                                (model.isBit2Enabled &&
-                                                    model.macAddress2Connection !=
+                                                (macdevices.isBit2Enabled &&
+                                                    macdevices.macAddress2Connection !=
                                                         'connected'))
                                             ? Colors.red[800]
                                             : Colors.green[800],
                                         radius: 20,
-                                        child: ((model.macAddress1Connection == 'disconnected' &&
-                                                    model.macAddress2Connection ==
+                                        child: ((macdevices.macAddress1Connection == 'disconnected' &&
+                                                    macdevices.macAddress2Connection ==
                                                         'disconnected') ||
-                                                (model.isBit1Enabled &&
-                                                    model.macAddress1Connection !=
+                                                (macdevices.isBit1Enabled &&
+                                                    macdevices.macAddress1Connection !=
                                                         'connected') ||
-                                                (model.isBit2Enabled &&
-                                                    model.macAddress2Connection != 'connected'))
+                                                (macdevices.isBit2Enabled &&
+                                                    macdevices.macAddress2Connection != 'connected'))
                                             ? Icon(Icons.bluetooth_disabled_rounded, color: Colors.white)
                                             : Icon(Icons.bluetooth_connected_rounded, color: Colors.white)),
                                     onPressed: null);
@@ -1116,31 +1068,31 @@ class _NavigationPageState extends State<NavigationPage>
                                 'isBit1Enabled',
                                 'isBit2Enabled'
                               ],
-                              builder: (context, model, properties) {
+                              builder: (context, macdevices, properties) {
                                 return FloatingActionButton(
                                     backgroundColor: Colors.transparent,
                                     elevation: 0.0,
                                     child: CircleAvatar(
-                                        backgroundColor: ((model.macAddress1Connection == 'disconnected' &&
-                                                    model.macAddress2Connection ==
+                                        backgroundColor: ((macdevices.macAddress1Connection == 'disconnected' &&
+                                                    macdevices.macAddress2Connection ==
                                                         'disconnected') ||
-                                                (model.isBit1Enabled &&
-                                                    model.macAddress1Connection !=
+                                                (macdevices.isBit1Enabled &&
+                                                    macdevices.macAddress1Connection !=
                                                         'connected') ||
-                                                (model.isBit2Enabled &&
-                                                    model.macAddress2Connection !=
+                                                (macdevices.isBit2Enabled &&
+                                                    macdevices.macAddress2Connection !=
                                                         'connected'))
                                             ? Colors.red[800]
                                             : Colors.green[800],
                                         radius: 20,
-                                        child: ((model.macAddress1Connection == 'disconnected' &&
-                                                    model.macAddress2Connection ==
+                                        child: ((macdevices.macAddress1Connection == 'disconnected' &&
+                                                    macdevices.macAddress2Connection ==
                                                         'disconnected') ||
-                                                (model.isBit1Enabled &&
-                                                    model.macAddress1Connection !=
+                                                (macdevices.isBit1Enabled &&
+                                                    macdevices.macAddress1Connection !=
                                                         'connected') ||
-                                                (model.isBit2Enabled &&
-                                                    model.macAddress2Connection != 'connected'))
+                                                (macdevices.isBit2Enabled &&
+                                                    macdevices.macAddress2Connection != 'connected'))
                                             ? Icon(Icons.bluetooth_disabled_rounded, color: Colors.white)
                                             : Icon(Icons.bluetooth_connected_rounded, color: Colors.white)),
                                     onPressed: null);

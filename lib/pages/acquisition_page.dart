@@ -1,5 +1,6 @@
 
 import 'package:epibox/acquisition_navbar/destinations.dart';
+import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/mac_devices.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
@@ -11,6 +12,7 @@ import 'package:flutter/material.dart';
 class AcquisitionPage extends StatelessWidget {
   AcquisitionPage({
     this.macDevices,
+    this.configurations,
     this.dataMAC1Notifier,
     this.dataMAC2Notifier,
     this.channelsMAC1Notifier,
@@ -27,10 +29,10 @@ class AcquisitionPage extends StatelessWidget {
     this.timedOut,
     this.startupError,
     this.allDestinations,
-    this.saveRaw,
   });
 
   MacDevices macDevices;
+  Configurations configurations;
 
   final ValueNotifier<List<List>> dataMAC1Notifier;
   final ValueNotifier<List<List>> dataMAC2Notifier;
@@ -57,8 +59,6 @@ class AcquisitionPage extends StatelessWidget {
 
   final ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
 
-  final ValueNotifier<bool> saveRaw;
-
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -81,6 +81,7 @@ class AcquisitionPage extends StatelessWidget {
                 destination: destination,
                 dataMAC1Notifier: dataMAC1Notifier,
                 dataMAC2Notifier: dataMAC2Notifier,
+                configurations: configurations,
                 channelsMAC1Notifier: channelsMAC1Notifier,
                 channelsMAC2Notifier: channelsMAC2Notifier,
                 sensorsMAC1Notifier: sensorsMAC1Notifier,
@@ -94,7 +95,6 @@ class AcquisitionPage extends StatelessWidget {
                 connectionNotifier: connectionNotifier,
                 timedOut: timedOut,
                 startupError: startupError,
-                saveRaw: saveRaw,
               );
             }).toList(),
           ),

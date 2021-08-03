@@ -4,29 +4,24 @@ class MacDevices extends PropertyChangeNotifier<String> {
 
   String _macAddress1 = 'xx:xx:xx:xx:xx:xx';
   String _macAddress2 = 'xx:xx:xx:xx:xx:xx';
-
   String _defaultMacAddress1 = 'xx:xx:xx:xx:xx:xx';
   String _defaultMacAddress2 = 'xx:xx:xx:xx:xx:xx';
-
   String _macAddress1Connection = 'disconnected';
   String _macAddress2Connection = 'disconnected';
-
-  
   bool _isBit1Enabled = false;
   bool _isBit2Enabled = false;
+  String _type = '';
 
 
   String get macAddress1 => _macAddress1;
   String get macAddress2 => _macAddress2;
-
   String get defaultMacAddress1 => _defaultMacAddress1;
   String get defaultMacAddress2 => _defaultMacAddress2;
-
   String get macAddress1Connection => _macAddress1Connection;
   String get macAddress2Connection => _macAddress2Connection;
-
   bool get isBit1Enabled => _isBit1Enabled;
   bool get isBit2Enabled => _isBit2Enabled;
+  String get type => _type;
 
 
   set macAddress1(String value) {
@@ -68,5 +63,11 @@ class MacDevices extends PropertyChangeNotifier<String> {
     _isBit2Enabled = value;
     notifyListeners('isBit2Enabled');
   }
+
+  set type(String value) {
+    _type = value;
+    notifyListeners('type');
+  }
+
 
 }

@@ -1,4 +1,5 @@
 import 'package:epibox/acquisition_navbar/destinations.dart';
+import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +11,7 @@ class DestinationView extends StatefulWidget {
   DestinationView({
     Key key,
     this.destination,
-    this.macAddress1Notifier,
+    this.configurations,
     this.dataMAC1Notifier,
     this.dataMAC2Notifier,
     this.channelsMAC1Notifier,
@@ -26,11 +27,11 @@ class DestinationView extends StatefulWidget {
     this.timedOut,
     this.startupError,
     this.connectionNotifier,
-    this.saveRaw,
   }) : super(key: key);
 
   final Destination destination;
-  final ValueNotifier<String> macAddress1Notifier;
+
+  Configurations configurations;
 
   final ValueNotifier<List<List>> dataMAC1Notifier;
   final ValueNotifier<List<List>> dataMAC2Notifier;
@@ -38,8 +39,6 @@ class DestinationView extends StatefulWidget {
   final ValueNotifier<List<List>> channelsMAC2Notifier;
   final ValueNotifier<List> sensorsMAC1Notifier;
   final ValueNotifier<List> sensorsMAC2Notifier;
-
-  final ValueNotifier<bool> saveRaw;
 
   final MQTTClientWrapper mqttClientWrapper;
 
@@ -104,7 +103,7 @@ class _DestinationViewState extends State<DestinationView> {
   void _initRange(sensorsMAC) {
     for (int i = 0; i < sensorsMAC.length; i++) {
       List<double> auxList;
-      if (widget.saveRaw.value) {
+      if (widget.configurations.saveRaw) {
         auxList = [-1, 10, 0];
       } else {
         auxList = _getRangeFromSensor(sensorsMAC[i]);
