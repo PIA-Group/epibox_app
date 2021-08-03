@@ -1,5 +1,6 @@
 
 import 'package:epibox/acquisition_navbar/destinations.dart';
+import 'package:epibox/classes/mac_devices.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
 import 'package:epibox/acquisition_navbar/visualization_destination.dart';
@@ -9,6 +10,7 @@ import 'package:flutter/material.dart';
 
 class AcquisitionPage extends StatelessWidget {
   AcquisitionPage({
+    this.macDevices,
     this.dataMAC1Notifier,
     this.dataMAC2Notifier,
     this.channelsMAC1Notifier,
@@ -24,14 +26,11 @@ class AcquisitionPage extends StatelessWidget {
     this.connectionNotifier,
     this.timedOut,
     this.startupError,
-    this.macAddress1Notifier,
-    this.macAddress2Notifier,
     this.allDestinations,
     this.saveRaw,
   });
 
-  final ValueNotifier<String> macAddress1Notifier;
-  final ValueNotifier<String> macAddress2Notifier;
+  MacDevices macDevices;
 
   final ValueNotifier<List<List>> dataMAC1Notifier;
   final ValueNotifier<List<List>> dataMAC2Notifier;
@@ -68,10 +67,10 @@ class AcquisitionPage extends StatelessWidget {
         TabBar(
           tabs: [
             Tab(
-              child: Text(macAddress1Notifier.value, style: MyTextStyle(color: DefaultColors.textColorOnLight, fontSize: 15),),
+              child: Text(macDevices.macAddress1, style: MyTextStyle(color: DefaultColors.textColorOnLight, fontSize: 15),),
             ),
             Tab(
-              child: Text(macAddress2Notifier.value, style: MyTextStyle(color: DefaultColors.textColorOnLight, fontSize: 15),),
+              child: Text(macDevices.macAddress2, style: MyTextStyle(color: DefaultColors.textColorOnLight, fontSize: 15),),
             ),
           ],
         ),

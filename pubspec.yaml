@@ -49,6 +49,7 @@ dependencies:
   list_tile_switch: ^1.0.0 
   loader_overlay: ^2.0.2
   animated_check: ^1.0.2
+  property_change_notifier: ^0.2.0
   # wifi_flutter: ^0.1.0+1
   
   # The following adds the Cupertino Icons font to your application.

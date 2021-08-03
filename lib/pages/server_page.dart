@@ -1,4 +1,5 @@
 import 'package:epibox/acquisition_navbar/destinations.dart';
+import 'package:epibox/classes/mac_devices.dart';
 import 'package:flutter/material.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
@@ -7,14 +8,11 @@ import 'package:epibox/utils/mqtt_wrapper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ServerPage extends StatefulWidget {
+
+  MacDevices macDevices;
+  
   final ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
   final MQTTClientWrapper mqttClientWrapper;
-
-  final ValueNotifier<String> defaultMacAddress1Notifier;
-  final ValueNotifier<String> defaultMacAddress2Notifier;
-
-  final ValueNotifier<String> macAddress1Notifier;
-  final ValueNotifier<String> macAddress2Notifier;
 
   final ValueNotifier<List<String>> driveListNotifier;
 
@@ -28,8 +26,6 @@ class ServerPage extends StatefulWidget {
   final ValueNotifier<double> batteryBit1Notifier;
   final ValueNotifier<double> batteryBit2Notifier;
 
-  final ValueNotifier<bool> isBit1Enabled;
-  final ValueNotifier<bool> isBit2Enabled;
 
   final ValueNotifier<List<List>> dataMAC1Notifier;
   final ValueNotifier<List<List>> dataMAC2Notifier;
@@ -49,19 +45,13 @@ class ServerPage extends StatefulWidget {
 
   final ValueNotifier<bool> saveRaw;
 
-  ValueNotifier<String> macAddress1ConnectionNotifier;
-  ValueNotifier<String> macAddress2ConnectionNotifier;
-
   ValueNotifier<String> chosenDrive;
   ValueNotifier<TextEditingController> controllerFreq;
 
   ServerPage({
+    this.macDevices,
     this.mqttClientWrapper,
     this.connectionNotifier,
-    this.defaultMacAddress1Notifier,
-    this.defaultMacAddress2Notifier,
-    this.macAddress1Notifier,
-    this.macAddress2Notifier,
     this.receivedMACNotifier,
     this.driveListNotifier,
     this.acquisitionNotifier,
@@ -70,8 +60,6 @@ class ServerPage extends StatefulWidget {
     this.sentConfigNotifier,
     this.batteryBit1Notifier,
     this.batteryBit2Notifier,
-    this.isBit1Enabled,
-    this.isBit2Enabled,
     this.dataMAC1Notifier,
     this.dataMAC2Notifier,
     this.channelsMAC1Notifier,
@@ -84,8 +72,6 @@ class ServerPage extends StatefulWidget {
     this.startupError,
     this.allDestinations,
     this.saveRaw,
-    this.macAddress1ConnectionNotifier,
-    this.macAddress2ConnectionNotifier,
     this.chosenDrive,
     this.controllerFreq,
   });
@@ -109,24 +95,26 @@ class _ServerPageState extends State<ServerPage> {
     if (restart) {
       await widget.mqttClientWrapper.diconnectClient();
       setState(() {
-        widget.defaultMacAddress1Notifier.value = 'xx:xx:xx:xx:xx:xx';
-        widget.defaultMacAddress2Notifier.value = 'xx:xx:xx:xx:xx:xx';
 
-        widget.macAddress1Notifier.value = 'xx:xx:xx:xx:xx:xx';
-        widget.macAddress2Notifier.value = 'xx:xx:xx:xx:xx:xx';
+        widget.macDevices.defaultMacAddress1 = 'xx:xx:xx:xx:xx:xx';
+        widget.macDevices.defaultMacAddress2 = 'xx:xx:xx:xx:xx:xx';
+
+        widget.macDevices.macAddress1 = 'xx:xx:xx:xx:xx:xx';
+        widget.macDevices.macAddress2 = 'xx:xx:xx:xx:xx:xx';
 
         widget.driveListNotifier.value = [' '];
         widget.chosenDrive.value = ' ';
         widget.controllerFreq.value.text = ' ';
 
-        widget.isBit1Enabled.value = false;
-        widget.isBit1Enabled.value = false;
+        widget.macDevices.isBit1Enabled = false;
+        widget.macDevices.isBit1Enabled = false;
       });
     }
 
     setState(() {
-      widget.macAddress1ConnectionNotifier.value = 'disconnected';
-      widget.macAddress2ConnectionNotifier.value = 'disconnected';
+
+      widget.macDevices.macAddress1Connection = 'disconnected';
+      widget.macDevices.macAddress2Connection = 'disconnected';
 
       widget.acquisitionNotifier.value = 'off';
 
