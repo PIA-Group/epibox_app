@@ -1,5 +1,5 @@
+import 'package:epibox/navigation/navigation_page.dart';
 import 'package:flutter/material.dart';
-import 'package:epibox/pages/homepage.dart';
 import 'package:epibox/pages/scan_page.dart';
 
 class IDWrapper extends StatelessWidget {
@@ -15,7 +15,7 @@ class IDWrapper extends StatelessWidget {
         builder: (BuildContext context, String state, Widget child) {
           return patientNotifier.value == null
               ? ScanPage(patientNotifier: patientNotifier)
-              : HomeHPage(patientNotifier: patientNotifier);
+              : NavigationPage(patientNotifier: patientNotifier);
         });
   }
 }

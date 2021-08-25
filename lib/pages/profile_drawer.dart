@@ -1,3 +1,4 @@
+import 'package:epibox/classes/devices.dart';
 import 'package:epibox/utils/mqtt_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:epibox/decor/default_colors.dart';
@@ -9,14 +10,14 @@ class ProfileDrawer extends StatefulWidget {
   final ValueNotifier<String> patientNotifier;
   final ValueNotifier<List> annotationTypesD;
   final ValueNotifier<List<String>> historyMAC;
-  final ValueNotifier<String> isBitalino;
+  final Devices devices;
 
   ProfileDrawer({
     this.mqttClientWrapper,
     this.patientNotifier,
     this.annotationTypesD,
     this.historyMAC,
-    this.isBitalino,
+    this.devices,
   });
 
   @override
@@ -32,7 +33,7 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
   @override
   void initState() {
     super.initState();
-    _radioValue = typeOfDevices[widget.isBitalino.value];
+    _radioValue = typeOfDevices[widget.devices.type];
     annotationTypesS = List<String>.from(widget.annotationTypesD.value);
   }
 
@@ -50,7 +51,7 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
 
   void _updateDeviceType() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('deviceType', widget.isBitalino.value);
+    await prefs.setString('deviceType', widget.devices.type);
   }
 
   Iterable<Widget> get annotationsWidgets sync* {
@@ -96,7 +97,6 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                   return entry == mac;
                 });
               });
-              //setState(() => widget.annotationTypesD.value.remove(annot));
               _updateHistory();
             },
           ),
@@ -208,7 +208,7 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                         onChanged: (int value) {
                           setState(() {
                                 _radioValue = value;
-                                widget.isBitalino.value = 'Bitalino';
+                                widget.devices.type = 'Bitalino';
                                 _updateDeviceType();
                               });
                             }),
@@ -226,12 +226,12 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                           onChanged: (int value) {
                             setState(() {
                                 _radioValue = value;
-                                widget.isBitalino.value = 'Mini';
+                                widget.devices.type = 'Mini';
                                 _updateDeviceType();
                               });
                             }),
                       ]),
-                  /* Column(
+                  Column(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         Text('Sense',
@@ -243,11 +243,11 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                             onChanged: (int value) {
                               setState(() {
                                 _radioValue = value;
-                                widget.isBitalino.value = 'Sense';
+                                widget.devices.type = 'Sense';
                                 _updateDeviceType();
                               });
                             }),
-                      ]), */
+                      ]),
                 ],
               ),
             ),
