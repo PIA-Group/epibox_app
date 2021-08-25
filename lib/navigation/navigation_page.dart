@@ -24,7 +24,7 @@ import 'package:epibox/utils/mqtt_wrapper.dart';
 import 'package:property_change_notifier/property_change_notifier.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:epibox/decor/custom_icons.dart';
-import 'devices_page.dart';
+import '../pages/devices_page.dart';
 
 class NavigationPage extends StatefulWidget {
   final ValueNotifier<String> patientNotifier;

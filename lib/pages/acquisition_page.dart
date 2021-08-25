@@ -3,7 +3,7 @@ import 'package:epibox/classes/devices.dart';
 import 'package:epibox/classes/visualization.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
-import 'package:epibox/acquisition_navbar/visualization_destination.dart';
+import 'package:epibox/navigation/visualization_destination.dart';
 import 'package:epibox/utils/models.dart';
 import 'package:epibox/utils/mqtt_wrapper.dart';
 import 'package:flutter/material.dart';
@@ -22,10 +22,10 @@ class AcquisitionPage extends StatelessWidget {
     this.startupError,
   });
 
-  Devices devices;
-  Configurations configurations;
-  Visualization visualizationMAC1;
-  Visualization visualizationMAC2;
+  final Devices devices;
+  final Configurations configurations;
+  final Visualization visualizationMAC1;
+  final Visualization visualizationMAC2;
 
   final MQTTClientWrapper mqttClientWrapper;
 

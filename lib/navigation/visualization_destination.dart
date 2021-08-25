@@ -9,20 +9,9 @@ import 'package:epibox/utils/plot_data.dart';
 import 'package:property_change_notifier/property_change_notifier.dart';
 
 class DestinationView extends StatefulWidget {
-  DestinationView({
-    Key key,
-    this.visualizationMAC,
-    this.configurations,
-    this.mqttClientWrapper,
-    this.patientNotifier,
-    this.annotationTypesD,
-    this.timedOut,
-    this.startupError,
-    this.connectionNotifier,
-  }) : super(key: key);
 
-  Configurations configurations;
-  Visualization visualizationMAC;
+  final Configurations configurations;
+  final Visualization visualizationMAC;
 
   final MQTTClientWrapper mqttClientWrapper;
 
@@ -34,6 +23,18 @@ class DestinationView extends StatefulWidget {
   final ValueNotifier<bool> startupError;
 
   final ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
+
+  DestinationView({
+    Key key,
+    this.visualizationMAC,
+    this.configurations,
+    this.mqttClientWrapper,
+    this.patientNotifier,
+    this.annotationTypesD,
+    this.timedOut,
+    this.startupError,
+    this.connectionNotifier,
+  }) : super(key: key);
 
   @override
   _DestinationViewState createState() => _DestinationViewState();

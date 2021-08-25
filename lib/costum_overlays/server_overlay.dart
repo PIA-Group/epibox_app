@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class ServerCustomOverlay extends StatelessWidget {
-  MqttCurrentConnectionState connectionState;
+  final MqttCurrentConnectionState connectionState;
   ServerCustomOverlay({this.connectionState, Key key}) : super(key: key);
 
   @override

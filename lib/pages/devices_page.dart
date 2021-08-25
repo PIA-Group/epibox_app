@@ -15,12 +15,12 @@ import 'package:property_change_notifier/property_change_notifier.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DevicesPage extends StatefulWidget {
-  Devices devices;
-  ErrorHandler errorHandler;
+  final Devices devices;
+  final ErrorHandler errorHandler;
 
   final ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
   final MQTTClientWrapper mqttClientWrapper;
-  MqttCurrentConnectionState connectionState;
+  final MqttCurrentConnectionState connectionState;
 
   final ValueNotifier<String> patientNotifier;
 
@@ -36,6 +36,7 @@ class DevicesPage extends StatefulWidget {
     this.devices,
     this.errorHandler,
     this.mqttClientWrapper,
+    this.connectionState,
     this.connectionNotifier,
     this.patientNotifier,
     this.receivedMACNotifier,

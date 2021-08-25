@@ -10,8 +10,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ServerPage extends StatefulWidget {
 
-  Devices devices;
-  Acquisition acquisition;
+  final Devices devices;
+  final Acquisition acquisition;
   
   final ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
   final MQTTClientWrapper mqttClientWrapper;
@@ -31,8 +31,7 @@ class ServerPage extends StatefulWidget {
   final ValueNotifier<String> timedOut;
   final ValueNotifier<bool> startupError;
 
-  ValueNotifier<String> chosenDrive;
-  ValueNotifier<TextEditingController> controllerFreq;
+  final ValueNotifier<TextEditingController> controllerFreq;
 
   ServerPage({
     this.devices,
@@ -48,7 +47,6 @@ class ServerPage extends StatefulWidget {
     this.annotationTypesD,
     this.timedOut,
     this.startupError,
-    this.chosenDrive,
     this.controllerFreq,
   });
 
@@ -78,7 +76,6 @@ class _ServerPageState extends State<ServerPage> {
         widget.devices.macAddress2 = 'xx:xx:xx:xx:xx:xx';
 
         widget.driveListNotifier.value = [' '];
-        widget.chosenDrive.value = ' ';
         widget.controllerFreq.value.text = ' ';
 
         widget.devices.isBit1Enabled = false;

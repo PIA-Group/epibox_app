@@ -4,13 +4,12 @@ import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
 import 'package:epibox/utils/models.dart';
 import 'package:epibox/utils/mqtt_wrapper.dart';
-import 'package:epibox/utils/multiple_value_listnable.dart';
 import 'package:flutter/material.dart';
 import 'package:property_change_notifier/property_change_notifier.dart';
 
 class ConfigPage extends StatefulWidget {
-  Devices devices;
-  Configurations configurations;
+  final Devices devices;
+  final Configurations configurations;
 
   final MQTTClientWrapper mqttClientWrapper;
   final ValueNotifier<MqttCurrentConnectionState> connectionNotifier;

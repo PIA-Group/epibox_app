@@ -1,4 +1,4 @@
-import 'package:epibox/pages/navigation_page.dart';
+import 'package:epibox/navigation/navigation_page.dart';
 import 'package:flutter/material.dart';
 import 'package:epibox/pages/scan_page.dart';
 
