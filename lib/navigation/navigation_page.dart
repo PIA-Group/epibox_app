@@ -5,6 +5,7 @@ import 'package:epibox/classes/error_handler.dart';
 import 'package:epibox/classes/visualization.dart';
 import 'package:epibox/costum_overlays/acquisition_overlay.dart';
 import 'package:epibox/costum_overlays/server_overlay.dart';
+import 'package:epibox/mqtt/message_handler.dart';
 import 'package:epibox/pages/acquisition_page.dart';
 import 'package:epibox/pages/config_page.dart';
 import 'package:epibox/pages/profile_drawer.dart';
@@ -131,8 +132,8 @@ class _NavigationPageState extends State<NavigationPage>
       if (context.loaderOverlay.visible) context.loaderOverlay.hide();
       setState(() => context.loaderOverlay.show());
       Future.delayed(const Duration(seconds: 3), () {
-          setState(() => context.loaderOverlay.hide());
-        });
+        setState(() => context.loaderOverlay.hide());
+      });
     }, ['overlayMessage']);
     acquisition.addListener(() {
       print(
@@ -188,7 +189,6 @@ class _NavigationPageState extends State<NavigationPage>
         android: initializationSettingsAndroid, iOS: initializationSettingsIOs);
     batteryNotification.initialize(initSetttings);
 
-    //acquisition.acquisitionState = 'off';
     setupHome();
     nameController.text = " ";
     getAnnotationTypes();
@@ -244,6 +244,34 @@ class _NavigationPageState extends State<NavigationPage>
     SharedPreferences prefs = await SharedPreferences.getInstance();
     try {
       await prefs.setStringList('lastMAC', [mac1, mac2]);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+
+  Future<void> saveMACHistory(mac1, mac2) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      if (mac1 != '' &&
+          mac1 != ' ' &&
+          mac1 != 'xx:xx:xx:xx:xx:xx' &&
+          !historyMAC.value.contains(mac1)) {
+        historyMAC.value.add(mac1);
+        await prefs.setStringList('historyMAC', historyMAC.value);
+      }
+    } catch (e) {
+      print(e);
+    }
+
+    try {
+      if (mac2 != '' &&
+          mac2 != ' ' &&
+          mac2 != 'xx:xx:xx:xx:xx:xx' &&
+          !historyMAC.value.contains(mac2)) {
+        historyMAC.value.add(mac2);
+        await prefs.setStringList('historyMAC', historyMAC.value);
+      }
     } catch (e) {
       print(e);
     }
@@ -317,7 +345,7 @@ class _NavigationPageState extends State<NavigationPage>
     // runs functions based on the received message
     print('NEW MESSAGE: $message');
     setState(() => message = newMessage);
-    _isMACAddress(message);
+    isMACAddress(message, devices);
     _isMACState(message);
     _isDrivesList(message);
     _isDefaultConfig(message);
@@ -333,7 +361,9 @@ class _NavigationPageState extends State<NavigationPage>
 
   void _isMACState(String message) {
     if (message.contains('MAC STATE')) {
+      
       List messageList = json.decode(message.replaceAll('\'', '\"'));
+      print('This is the new MAC connection state ${messageList[2]}');
       if (messageList[1] == devices.macAddress1) {
         setState(() => devices.macAddress1Connection = messageList[2]);
       } else if (messageList[1] == devices.macAddress2) {
@@ -352,7 +382,7 @@ class _NavigationPageState extends State<NavigationPage>
     print('This is the new connection state ${connectionNotifier.value}');
   }
 
-  void _isMACAddress(String message) {
+  /* void _isMACAddress(String message) {
     if (message.contains('DEFAULT MAC')) {
       try {
         final List<String> listMAC = message.split(",");
@@ -381,7 +411,7 @@ class _NavigationPageState extends State<NavigationPage>
         setState(() => devices.isBit2Enabled = true);
       }
     }
-  }
+  } */
 
   void _isDrivesList(String message) {
     if (message.contains('DRIVES')) {
@@ -750,6 +780,9 @@ class _NavigationPageState extends State<NavigationPage>
       });
 
       mqttClientWrapper.publishMessage("['START']");
+
+      saveMAC(devices.macAddress1, devices.macAddress2);
+      saveMACHistory(devices.macAddress1, devices.macAddress2);
     }
   }
 

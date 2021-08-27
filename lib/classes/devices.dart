@@ -1,7 +1,6 @@
 import 'package:property_change_notifier/property_change_notifier.dart';
 
 class Devices extends PropertyChangeNotifier<String> {
-
   String _macAddress1 = 'xx:xx:xx:xx:xx:xx';
   String _macAddress2 = 'xx:xx:xx:xx:xx:xx';
   String _defaultMacAddress1 = 'xx:xx:xx:xx:xx:xx';
@@ -11,7 +10,6 @@ class Devices extends PropertyChangeNotifier<String> {
   bool _isBit1Enabled = false;
   bool _isBit2Enabled = false;
   String _type = '';
-
 
   String get macAddress1 => _macAddress1;
   String get macAddress2 => _macAddress2;
@@ -23,6 +21,12 @@ class Devices extends PropertyChangeNotifier<String> {
   bool get isBit2Enabled => _isBit2Enabled;
   String get type => _type;
 
+  dynamic get(String key) => <String, dynamic>{
+        'macAddress1': _macAddress1,
+        'macAddress2': _macAddress2,
+        'macAddress1Connection': _macAddress1Connection,
+        'macAddress2Connection': _macAddress2Connection,
+      }[key];
 
   set macAddress1(String value) {
     _macAddress1 = value;
@@ -68,6 +72,4 @@ class Devices extends PropertyChangeNotifier<String> {
     _type = value;
     notifyListeners('type');
   }
-
-
 }

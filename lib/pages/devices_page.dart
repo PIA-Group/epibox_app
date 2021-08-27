@@ -51,13 +51,13 @@ class DevicesPage extends StatefulWidget {
 }
 
 class _DevicesPageState extends State<DevicesPage> {
-  TextEditingController _controller1 = TextEditingController();
-  TextEditingController _controller2 = TextEditingController();
+  TextEditingController controller1 = TextEditingController();
+  TextEditingController controller2 = TextEditingController();
 
   @override
   void dispose() {
-    _controller1.dispose();
-    _controller2.dispose();
+    controller1.dispose();
+    controller2.dispose();
     super.dispose();
   }
 
@@ -65,89 +65,150 @@ class _DevicesPageState extends State<DevicesPage> {
   void initState() {
     super.initState();
 
-    _controller1.addListener(() {
-      setState(() => widget.devices.macAddress1 = _controller1.text);
+    controller1.addListener(() {
+      widget.devices.macAddress1 = controller1.text;
     });
-    _controller2.addListener(() {
-      setState(() => widget.devices.macAddress2 = _controller2.text);
+    controller2.addListener(() {
+      widget.devices.macAddress2 = controller2.text;
     });
 
     if (widget.devices.macAddress1 == 'xx:xx:xx:xx:xx:xx') {
       if (widget.devices.defaultMacAddress1 == '') {
-        _controller1.text = ' ';
+        controller1.text = ' ';
       } else {
-        _controller1.text = widget.devices.defaultMacAddress1;
+        controller1.text = widget.devices.defaultMacAddress1;
       }
       if (widget.devices.defaultMacAddress2 == '') {
-        _controller2.text = ' ';
+        controller2.text = ' ';
       } else {
-        _controller2.text = widget.devices.defaultMacAddress2;
+        controller2.text = widget.devices.defaultMacAddress2;
       }
     } else {
-      _controller1.text =
+      controller1.text =
           widget.devices.macAddress1 == '' ? ' ' : widget.devices.macAddress1;
-      _controller2.text =
+      controller2.text =
           widget.devices.macAddress2 == '' ? ' ' : widget.devices.macAddress2;
     }
 
     // show changes in default MAC recieved from the RPi
     widget.devices.addListener(() {
       if (widget.devices.defaultMacAddress1 == '')
-        setState(() => _controller1.text = ' ');
+        controller1.text = ' ';
       else
-        setState(() => _controller1.text = widget.devices.defaultMacAddress1);
+        controller1.text = widget.devices.defaultMacAddress1;
     }, ['defaultMacAddress1']);
     widget.devices.addListener(() {
       if (widget.devices.defaultMacAddress2 == '')
-        setState(() => _controller2.text = ' ');
+        controller2.text = ' ';
       else
-        setState(() => _controller2.text = widget.devices.defaultMacAddress2);
+        controller2.text = widget.devices.defaultMacAddress2;
     }, ['defaultMacAddress2']);
   }
 
   void _setNewDefault1() {
-    setState(() => widget.devices.defaultMacAddress1 = _controller1.text);
+    widget.devices.defaultMacAddress1 = controller1.text;
   }
 
   void _setNewDefault2() {
-    setState(() => widget.devices.defaultMacAddress2 = _controller2.text);
+    widget.devices.defaultMacAddress2 = controller2.text;
   }
 
-  Future<void> _saveMAC(mac1, mac2) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    try {
-      await prefs.setStringList('lastMAC', [mac1, mac2]);
-    } catch (e) {
-      print(e);
-    }
-  }
+  @override
+  Widget build(BuildContext context) {
+    const double _horizontalSpacing = 20.0;
+    const double verticalSpacing = 20.0;
 
-  Future<void> _saveMACHistory(mac1, mac2) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    try {
-      if (mac1 != '' &&
-          mac1 != ' ' &&
-          mac1 != 'xx:xx:xx:xx:xx:xx' &&
-          !widget.historyMAC.value.contains(mac1)) {
-        setState(() => widget.historyMAC.value.add(_controller1.text));
-        await prefs.setStringList('historyMAC', widget.historyMAC.value);
-      }
-    } catch (e) {
-      print(e);
-    }
+    return PropertyChangeProvider(
+      value: widget.devices,
+      child: ListView(children: <Widget>[
+        SizedBox(
+          height: verticalSpacing,
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: _horizontalSpacing),
+          child: Column(children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                child: Text(
+                  'Selecionar dispositivo(s) de aquisição',
+                  textAlign: TextAlign.left,
+                  style: MyTextStyle(
+                    color: DefaultColors.textColorOnLight,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(
+              height: verticalSpacing,
+            ),
+            SelectDevicesBlock(
+              controller1: controller1,
+              controller2: controller2,
+              historyMAC: widget.historyMAC,
+            ),
+            SizedBox(
+              height: verticalSpacing,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    primary: DefaultColors.mainLColor, // background
+                    //onPrimary: Colors.white, // foreground
+                  ),
+                  onPressed: () {
+                    widget.devices.macAddress1 =
+                        controller1.text.replaceAll(new RegExp(r"\s+"), "");
+                    widget.devices.macAddress2 =
+                        controller2.text.replaceAll(new RegExp(r"\s+"), "");
 
-    try {
-      if (mac2 != '' &&
-          mac2 != ' ' &&
-          mac2 != 'xx:xx:xx:xx:xx:xx' &&
-          !widget.historyMAC.value.contains(mac2)) {
-        setState(() => widget.historyMAC.value.add(mac2));
-        await prefs.setStringList('historyMAC', widget.historyMAC.value);
-      }
-    } catch (e) {
-      print(e);
-    }
+                    _setNewDefault1();
+                    _setNewDefault2();
+
+                    widget.mqttClientWrapper.publishMessage(
+                        "['NEW MAC',{'MAC1':'${widget.devices.macAddress1}','MAC2':'${widget.devices.macAddress2}'}]");
+                  },
+                  child: new Text(
+                    "Definir novo default",
+                    style: MyTextStyle(),
+                  ),
+                ),
+              ],
+            ),
+            DeviceStateConnectionBlock(
+              mqttClientWrapper: widget.mqttClientWrapper,
+              devices: widget.devices,
+              deviceID: 1,
+              controller: controller1,
+              verticalSpacing: verticalSpacing,
+              errorHandler: widget.errorHandler,
+              connectionNotifier: widget.connectionNotifier,
+            ),
+            DeviceStateConnectionBlock(
+              mqttClientWrapper: widget.mqttClientWrapper,
+              devices: widget.devices,
+              deviceID: 2,
+              controller: controller2,
+              verticalSpacing: verticalSpacing,
+              errorHandler: widget.errorHandler,
+              connectionNotifier: widget.connectionNotifier,
+            ),
+          ]),
+        ),
+      ]),
+    );
   }
+}
+
+class SelectDevicesBlock extends StatelessWidget {
+  final TextEditingController controller1;
+  final TextEditingController controller2;
+  final ValueNotifier<List<String>> historyMAC;
+
+  SelectDevicesBlock({this.controller1, this.controller2, this.historyMAC});
 
   @override
   Widget build(BuildContext context) {
@@ -155,398 +216,66 @@ class _DevicesPageState extends State<DevicesPage> {
         MediaQuery.of(context).viewInsets.left -
         MediaQuery.of(context).viewInsets.right;
 
-    return PropertyChangeProvider(
-      value: widget.devices,
-      child: ListView(children: <Widget>[
-        Padding(
-          padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
-          child: Column(children: [
-            Padding(
-              padding: EdgeInsets.fromLTRB(20.0, 0.0, 0.0, 20.0),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Container(
-                  child: Text(
-                    'Selecionar dispositivo(s) de aquisição',
-                    textAlign: TextAlign.left,
-                    style: MyTextStyle(
-                      color: DefaultColors.textColorOnLight,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Container(
-              height: 150.0,
-              width: 0.95 * bodyWidth,
-              color: Colors.transparent,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.rectangle,
-                  borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                  boxShadow: [
-                    BoxShadow(
-                        color: Colors.grey[200], offset: new Offset(5.0, 5.0))
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
-                      child: Row(children: [
-                        Expanded(
-                          child: MaskedTextField(
-                            maskedTextFieldController: _controller1,
-                            mask: 'xx:xx:xx:xx:xx:xx',
-                            maxLength: 17,
-                            inputDecoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              counterText: "",
-                              labelText: "MAC 1",
-                            ),
-                          ),
-                        ),
-                        PopupMenuButton<String>(
-                          icon: const Icon(Icons.arrow_drop_down),
-                          onSelected: (String value) {
-                            _controller1.text = value;
-                          },
-                          itemBuilder: (BuildContext context) {
-                            return widget.historyMAC.value
-                                .map<PopupMenuItem<String>>((String value) {
-                              return new PopupMenuItem(
-                                  child: new Text(value), value: value);
-                            }).toList();
-                          },
-                        ),
-                        IconButton(
-                            icon: Icon(
-                              MdiIcons.qrcode,
-                            ),
-                            onPressed: () => scan(_controller1))
-                      ]),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(5.0, 0.0, 5.0, 0.0),
-                      child: Row(children: [
-                        Expanded(
-                          child: MaskedTextField(
-                            maskedTextFieldController: _controller2,
-                            mask: 'xx:xx:xx:xx:xx:xx',
-                            maxLength: 17,
-                            inputDecoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              counterText: "",
-                              labelText: "MAC 2",
-                            ),
-                          ),
-                        ),
-                        PopupMenuButton<String>(
-                          icon: const Icon(Icons.arrow_drop_down),
-                          onSelected: (String value) {
-                            _controller2.text = value;
-                          },
-                          itemBuilder: (BuildContext context) {
-                            return widget.historyMAC.value
-                                .map<PopupMenuItem<String>>((String value) {
-                              return new PopupMenuItem(
-                                  child: new Text(value), value: value);
-                            }).toList();
-                          },
-                        ),
-                        IconButton(
-                            icon: Icon(
-                              MdiIcons.qrcode,
-                            ),
-                            onPressed: () => scan(_controller2))
-                      ]),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      primary: DefaultColors.mainLColor, // background
-                      //onPrimary: Colors.white, // foreground
-                    ),
-                    onPressed: () {
-                      setState(() => widget.devices.macAddress1 =
-                          _controller1.text.replaceAll(new RegExp(r"\s+"), ""));
-                      setState(() => widget.devices.macAddress2 =
-                          _controller2.text.replaceAll(new RegExp(r"\s+"), ""));
+    Map<String, TextEditingController> macMap = {
+      'MAC 1': controller1,
+      'MAC 2': controller2
+    };
 
-                      _setNewDefault1();
-                      _setNewDefault2();
-
-                      widget.mqttClientWrapper.publishMessage(
-                          "['NEW MAC',{'MAC1':'${widget.devices.macAddress1}','MAC2':'${widget.devices.macAddress2}'}]");
-                    },
-                    child: new Text(
-                      "Definir novo default",
-                      style: MyTextStyle(),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            PropertyChangeConsumer<Devices>(
-                properties: ['macAddress1', 'macAddress1Connection'],
-                builder: (context, model, properties) {
-                  return Padding(
-                    padding: EdgeInsets.fromLTRB(5, 20, 5, 0),
-                    child: (model.macAddress1 == 'xx:xx:xx:xx:xx:xx' ||
-                            model.macAddress1.trim() == '')
-                        ? Container()
-                        : Container(
-                            width: 0.95 * bodyWidth,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.rectangle,
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(8.0)),
-                              boxShadow: [
-                                BoxShadow(
-                                    color: Colors.grey[200],
-                                    offset: new Offset(5.0, 5.0))
-                              ],
-                            ),
-                            child: Material(
-                              color: Colors.white.withOpacity(0.0),
-                              child: InkWell(
-                                onTap: () {
-                                  if (widget.connectionNotifier.value !=
-                                      MqttCurrentConnectionState.CONNECTED) {
-                                    setState(() =>
-                                        widget.errorHandler.overlayMessage =
-                                            DevicesCustomOverlay());
-                                  } else {
-                                    model.macAddress1Connection = 'connecting';
-                                    widget.mqttClientWrapper.publishMessage(
-                                        "['CONNECT', '${model.macAddress1}', '${widget.devices.type}']");
-
-                                    _saveMAC(
-                                        model.macAddress1, model.macAddress2);
-                                    _saveMACHistory(
-                                        model.macAddress1, model.macAddress2);
-                                  }
-                                },
-                                child: Container(
-                                  child: ListTile(
-                                    leading: model.macAddress1Connection ==
-                                            'connected'
-                                        ? Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                                CircleAvatar(
-                                                  backgroundColor:
-                                                      Colors.green[800],
-                                                  radius: 15,
-                                                  child: Icon(
-                                                      Icons
-                                                          .bluetooth_connected_rounded,
-                                                      color: Colors.white),
-                                                ),
-                                              ])
-                                        : model.macAddress1Connection ==
-                                                'connecting'
-                                            ? Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                    SizedBox(
-                                                      width: 40,
-                                                      height: 40,
-                                                      child:
-                                                          SpinKitFadingCircle(
-                                                        size: 40,
-                                                        color: DefaultColors
-                                                            .mainColor,
-                                                      ),
-                                                    ),
-                                                  ])
-                                            : Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                    CircleAvatar(
-                                                      backgroundColor:
-                                                          Colors.red[800],
-                                                      radius: 15,
-                                                      child: Icon(
-                                                          Icons
-                                                              .bluetooth_disabled_rounded,
-                                                          color: Colors.white),
-                                                    ),
-                                                  ]),
-                                    title: Text(_controller1.text,
-                                        style: MyTextStyle(
-                                            color:
-                                                DefaultColors.textColorOnLight,
-                                            fontWeight: FontWeight.bold)),
-                                    subtitle: model.macAddress1Connection ==
-                                            'connected'
-                                        ? Text('Dispositivo conectado!',
-                                            style: MyTextStyle(
-                                                color: DefaultColors
-                                                    .textColorOnLight))
-                                        : model.macAddress1Connection ==
-                                                'connecting'
-                                            ? Text('A conectar...',
-                                                style: MyTextStyle(
-                                                    color: DefaultColors
-                                                        .textColorOnLight))
-                                            : model.macAddress1Connection ==
-                                                    'failed'
-                                                ? Text('Falha na conexão',
-                                                    style: MyTextStyle(
-                                                        color: DefaultColors
-                                                            .textColorOnLight))
-                                                : Text(
-                                                    'Dispositivo desconectado',
-                                                    style: MyTextStyle(
-                                                        color: DefaultColors
-                                                            .textColorOnLight)),
-                                    //isThreeLine: true,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                  );
-                }),
-            PropertyChangeConsumer<Devices>(
-                properties: ['macAddress2', 'macAddress2Connection'],
-                builder: (context, model, properties) {
-                  return Padding(
-                    padding: EdgeInsets.fromLTRB(5, 20, 5, 0),
-                    child: (model.macAddress2 == 'xx:xx:xx:xx:xx:xx' ||
-                            model.macAddress2.trim() == '')
-                        ? Container()
-                        : Container(
-                            width: 0.95 * bodyWidth,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.rectangle,
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(8.0)),
-                              boxShadow: [
-                                BoxShadow(
-                                    color: Colors.grey[200],
-                                    offset: new Offset(5.0, 5.0))
-                              ],
-                            ),
-                            child: Material(
-                              color: Colors.white.withOpacity(0.0),
-                              child: InkWell(
-                                onTap: () {
-                                  model.macAddress2Connection = 'connecting';
-                                  widget.mqttClientWrapper.publishMessage(
-                                      "['CONNECT', '${model.macAddress2}', '${widget.devices.type}']");
-
-                                  _saveMAC(
-                                      model.macAddress1, model.macAddress2);
-                                  _saveMACHistory(
-                                      model.macAddress1, model.macAddress2);
-                                },
-                                child: Container(
-                                  child: ListTile(
-                                    leading: model.macAddress2Connection ==
-                                            'connected'
-                                        ? Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                                CircleAvatar(
-                                                  backgroundColor:
-                                                      Colors.green[800],
-                                                  radius: 15,
-                                                  child: Icon(
-                                                      Icons
-                                                          .bluetooth_connected_rounded,
-                                                      color: Colors.white),
-                                                ),
-                                              ])
-                                        : model.macAddress2Connection ==
-                                                'connecting'
-                                            ? Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                    SizedBox(
-                                                      width: 40,
-                                                      height: 40,
-                                                      child:
-                                                          SpinKitFadingCircle(
-                                                        size: 40,
-                                                        color: DefaultColors
-                                                            .mainColor,
-                                                      ),
-                                                    ),
-                                                  ])
-                                            : Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                    CircleAvatar(
-                                                      backgroundColor:
-                                                          Colors.red[800],
-                                                      radius: 15,
-                                                      child: Icon(
-                                                          Icons
-                                                              .bluetooth_disabled_rounded,
-                                                          color: Colors.white),
-                                                    ),
-                                                  ]),
-                                    title: Text(_controller1.text,
-                                        style: MyTextStyle(
-                                            color:
-                                                DefaultColors.textColorOnLight,
-                                            fontWeight: FontWeight.bold)),
-                                    subtitle: model.macAddress2Connection ==
-                                            'connected'
-                                        ? Text('Dispositivo conectado!',
-                                            style: MyTextStyle(
-                                                color: DefaultColors
-                                                    .textColorOnLight))
-                                        : model.macAddress2Connection ==
-                                                'connecting'
-                                            ? Text('A conectar...',
-                                                style: MyTextStyle(
-                                                    color: DefaultColors
-                                                        .textColorOnLight))
-                                            : model.macAddress2Connection ==
-                                                    'failed'
-                                                ? Text('Falha na conexão',
-                                                    style: MyTextStyle(
-                                                        color: DefaultColors
-                                                            .textColorOnLight))
-                                                : Text(
-                                                    'Dispositivo desconectado',
-                                                    style: MyTextStyle(
-                                                        color: DefaultColors
-                                                            .textColorOnLight)),
-                                    //isThreeLine: true,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                  );
-                }),
-          ]),
+    return Container(
+      height: 150.0,
+      width: 0.95 * bodyWidth,
+      color: Colors.transparent,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.rectangle,
+          borderRadius: BorderRadius.all(Radius.circular(8.0)),
+          boxShadow: [
+            BoxShadow(color: Colors.grey[200], offset: new Offset(5.0, 5.0))
+          ],
         ),
-      ]),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: macMap.entries.map((entry) {
+            return Padding(
+              padding: EdgeInsets.symmetric(horizontal: 5.0),
+              child: Row(children: [
+                Expanded(
+                  child: MaskedTextField(
+                    maskedTextFieldController: entry.value,
+                    mask: 'xx:xx:xx:xx:xx:xx',
+                    maxLength: 17,
+                    inputDecoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      counterText: "",
+                      labelText: entry.key,
+                    ),
+                  ),
+                ),
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.arrow_drop_down),
+                  onSelected: (String value) {
+                    entry.value.text = value;
+                  },
+                  itemBuilder: (BuildContext context) {
+                    return historyMAC.value
+                        .map<PopupMenuItem<String>>((String value) {
+                      return new PopupMenuItem(
+                          child: new Text(value), value: value);
+                    }).toList();
+                  },
+                ),
+                IconButton(
+                    icon: Icon(
+                      MdiIcons.qrcode,
+                    ),
+                    onPressed: () => scan(entry.value))
+              ]),
+            );
+          }).toList(),
+        ),
+      ),
     );
   }
 
@@ -554,9 +283,130 @@ class _DevicesPageState extends State<DevicesPage> {
     try {
       var scan = (await BarcodeScanner.scan());
       String scanString = scan.rawContent;
-      setState(() => controller.text = scanString);
+      controller.text = scanString;
     } on PlatformException catch (e) {
       print(e);
     }
+  }
+}
+
+class DeviceStateConnectionBlock extends StatelessWidget {
+  final MQTTClientWrapper mqttClientWrapper;
+  final Devices devices;
+  final int deviceID;
+  final TextEditingController controller;
+  final double verticalSpacing;
+  final ErrorHandler errorHandler;
+  final ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
+
+  DeviceStateConnectionBlock({
+    this.mqttClientWrapper,
+    this.devices,
+    this.deviceID,
+    this.controller,
+    this.verticalSpacing,
+    this.errorHandler,
+    this.connectionNotifier,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bodyWidth = MediaQuery.of(context).size.width -
+        MediaQuery.of(context).viewInsets.left -
+        MediaQuery.of(context).viewInsets.right;
+
+    const Map<String, String> _connectionStateText = {
+      'connected': 'Dispositivo conectado!',
+      'connecting': 'A conectar...',
+      'failed': 'Falha na conexão',
+      'other': 'Dispositivo desconectado',
+    };
+
+    const Map<String, Widget> _connectionStateIcon = {
+      'connected': CircleAvatar(
+        backgroundColor: Color(0xFF2E7D32),
+        radius: 15,
+        child: Icon(Icons.bluetooth_connected_rounded, color: Colors.white),
+      ),
+      'connecting': SizedBox(
+        width: 40,
+        height: 40,
+        child: SpinKitFadingCircle(
+          size: 40,
+          color: DefaultColors.mainColor,
+        ),
+      ),
+      'other': CircleAvatar(
+        backgroundColor: Color(0xFFC62828),
+        radius: 15,
+        child: Icon(Icons.bluetooth_disabled_rounded, color: Colors.white),
+      ),
+    };
+
+    return PropertyChangeConsumer<Devices>(
+      properties: ['macAddress$deviceID', 'macAddress${deviceID}Connection'],
+      builder: (context, model, properties) {
+        return Padding(
+          padding: EdgeInsets.fromLTRB(5.0, verticalSpacing, 5.0, 0.0),
+          child: (model.get('macAddress$deviceID') == 'xx:xx:xx:xx:xx:xx' ||
+                  model.get('macAddress$deviceID').trim() == '')
+              ? Container()
+              : Container(
+                  width: 0.95 * bodyWidth,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.rectangle,
+                    borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.grey[200], offset: new Offset(5.0, 5.0))
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.white.withOpacity(0.0),
+                    child: InkWell(
+                      onTap: () {
+                        if (connectionNotifier.value !=
+                            MqttCurrentConnectionState.CONNECTED) {
+                          errorHandler.overlayMessage = DevicesCustomOverlay();
+                        } else {
+                          deviceID == 1
+                              ? model.macAddress1Connection = 'connecting'
+                              : model.macAddress2Connection = 'connecting';
+                          mqttClientWrapper.publishMessage(
+                              "['CONNECT', '${model.macAddress1}', '${devices.type}']");
+                        }
+                      },
+                      child: Container(
+                        child: ListTile(
+                          leading: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _connectionStateIcon.containsKey(model
+                                        .get('macAddress${deviceID}Connection'))
+                                    ? _connectionStateIcon[model
+                                        .get('macAddress${deviceID}Connection')]
+                                    : _connectionStateIcon['other'],
+                              ]),
+                          title: Text(controller.text,
+                              style: MyTextStyle(
+                                  color: DefaultColors.textColorOnLight,
+                                  fontWeight: FontWeight.bold)),
+                          subtitle: Text(
+                              _connectionStateText.containsKey(model
+                                      .get('macAddress${deviceID}Connection'))
+                                  ? _connectionStateText[model
+                                      .get('macAddress${deviceID}Connection')]
+                                  : _connectionStateText['other'],
+                              style: MyTextStyle(
+                                  color: DefaultColors.textColorOnLight)),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+        );
+      },
+    );
   }
 }
