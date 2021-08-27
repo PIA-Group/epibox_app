@@ -4,8 +4,8 @@ import 'package:epibox/classes/devices.dart';
 import 'package:flutter/material.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
-import 'package:epibox/utils/models.dart';
-import 'package:epibox/utils/mqtt_wrapper.dart';
+import 'package:epibox/mqtt/mqtt_states.dart';
+import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ServerPage extends StatefulWidget {
@@ -22,7 +22,6 @@ class ServerPage extends StatefulWidget {
   final ValueNotifier<String> hostnameNotifier;
 
   final ValueNotifier<bool> sentMACNotifier;
-  final ValueNotifier<bool> sentConfigNotifier;
 
   final ValueNotifier<String> patientNotifier;
 
@@ -33,6 +32,8 @@ class ServerPage extends StatefulWidget {
 
   final ValueNotifier<TextEditingController> controllerFreq;
 
+  final ValueNotifier<bool> shouldRestart;
+
   ServerPage({
     this.devices,
     this.acquisition,
@@ -42,12 +43,12 @@ class ServerPage extends StatefulWidget {
     this.driveListNotifier,
     this.hostnameNotifier,
     this.sentMACNotifier,
-    this.sentConfigNotifier,
     this.patientNotifier,
     this.annotationTypesD,
     this.timedOut,
     this.startupError,
     this.controllerFreq,
+    this.shouldRestart,
   });
 
   @override
@@ -60,42 +61,6 @@ class _ServerPageState extends State<ServerPage> {
   @override
   void initState() {
     super.initState();
-  }
-
-  Future<void> _restart(bool restart) async {
-    widget.mqttClientWrapper.publishMessage("['RESTART']");
-
-    if (restart) {
-      await widget.mqttClientWrapper.diconnectClient();
-      setState(() {
-
-        widget.devices.defaultMacAddress1 = 'xx:xx:xx:xx:xx:xx';
-        widget.devices.defaultMacAddress2 = 'xx:xx:xx:xx:xx:xx';
-
-        widget.devices.macAddress1 = 'xx:xx:xx:xx:xx:xx';
-        widget.devices.macAddress2 = 'xx:xx:xx:xx:xx:xx';
-
-        widget.driveListNotifier.value = [' '];
-        widget.controllerFreq.value.text = ' ';
-
-        widget.devices.isBit1Enabled = false;
-        widget.devices.isBit1Enabled = false;
-      });
-    }
-
-    setState(() {
-
-      widget.devices.macAddress1Connection = 'disconnected';
-      widget.devices.macAddress2Connection = 'disconnected';
-
-      widget.acquisition.acquisitionState = 'off';
-
-      widget.acquisition.batteryBit1 = null;
-      widget.acquisition.batteryBit2 = null;
-    });
-
-    saveBatteries(null, null);
-    saveMAC('xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx');
   }
 
   Future<void> saveMAC(mac1, mac2) async {
@@ -217,7 +182,7 @@ class _ServerPageState extends State<ServerPage> {
                       //onPrimary: Colors.white, // foreground
                     ),
                     onPressed: () {
-                      _restart(true);
+                      widget.shouldRestart.value = true;
                       _setup();
                     },
                     child: new Text(

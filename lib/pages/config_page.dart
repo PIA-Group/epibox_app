@@ -2,8 +2,8 @@ import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/devices.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
-import 'package:epibox/utils/models.dart';
-import 'package:epibox/utils/mqtt_wrapper.dart';
+import 'package:epibox/mqtt/mqtt_states.dart';
+import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:property_change_notifier/property_change_notifier.dart';
 
@@ -15,15 +15,12 @@ class ConfigPage extends StatefulWidget {
   final ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
   final ValueNotifier<List<String>> driveListNotifier;
 
-  final ValueNotifier<bool> sentConfigNotifier;
-
   ConfigPage({
     this.configurations,
     this.devices,
     this.mqttClientWrapper,
     this.connectionNotifier,
     this.driveListNotifier,
-    this.sentConfigNotifier,
   });
 
   @override

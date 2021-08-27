@@ -1,5 +1,5 @@
 import 'package:epibox/classes/devices.dart';
-import 'package:epibox/utils/mqtt_wrapper.dart';
+import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';

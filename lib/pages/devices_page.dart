@@ -5,14 +5,13 @@ import 'package:epibox/costum_overlays/devices_overlay.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
 import 'package:epibox/utils/masked_text.dart';
-import 'package:epibox/utils/models.dart';
-import 'package:epibox/utils/mqtt_wrapper.dart';
+import 'package:epibox/mqtt/mqtt_states.dart';
+import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:property_change_notifier/property_change_notifier.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class DevicesPage extends StatefulWidget {
   final Devices devices;
@@ -23,9 +22,6 @@ class DevicesPage extends StatefulWidget {
   final MqttCurrentConnectionState connectionState;
 
   final ValueNotifier<String> patientNotifier;
-
-  final ValueNotifier<bool> receivedMACNotifier;
-  final ValueNotifier<bool> sentMACNotifier;
 
   final ValueNotifier<List<String>> historyMAC;
 
@@ -39,8 +35,6 @@ class DevicesPage extends StatefulWidget {
     this.connectionState,
     this.connectionNotifier,
     this.patientNotifier,
-    this.receivedMACNotifier,
-    this.sentMACNotifier,
     this.driveListNotifier,
     this.sentConfigNotifier,
     this.historyMAC,

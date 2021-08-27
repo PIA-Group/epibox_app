@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
 import 'constants.dart' as Constants;
 import 'package:mqtt_client/mqtt_client.dart';
-import 'models.dart';
+import 'mqtt_states.dart';
 
 class MQTTClientWrapper { // MVP of MQTT. Handles all the connection to the server
   MqttCurrentConnectionState connectionState = MqttCurrentConnectionState.IDLE;

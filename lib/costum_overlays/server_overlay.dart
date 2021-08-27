@@ -1,6 +1,6 @@
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
-import 'package:epibox/utils/models.dart';
+import 'package:epibox/mqtt/mqtt_states.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 

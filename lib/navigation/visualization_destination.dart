@@ -3,8 +3,8 @@ import 'package:epibox/classes/visualization.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
 import 'package:flutter/material.dart';
-import 'package:epibox/utils/models.dart';
-import 'package:epibox/utils/mqtt_wrapper.dart';
+import 'package:epibox/mqtt/mqtt_states.dart';
+import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'package:epibox/utils/plot_data.dart';
 import 'package:property_change_notifier/property_change_notifier.dart';
 

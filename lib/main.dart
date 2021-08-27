@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:epibox/utils/authentication.dart';
-import 'package:provider/provider.dart';
 import 'package:epibox/utils/id_wrapper.dart';
 import 'package:epibox/decor/default_colors.dart';
 
@@ -14,53 +12,50 @@ class InterfaceRPi extends StatelessWidget {
     SystemChrome.setSystemUIOverlayStyle(
         SystemUiOverlayStyle(statusBarColor: Colors.white));
     // Provider allows to make available information (eg: Stream) to all of its descendents
-    return StreamProvider<User>.value(
-      value: Auth().user,
-      child: MaterialApp(
-        theme: ThemeData(
-            canvasColor: DefaultColors.backgroundColor,
-            scaffoldBackgroundColor: DefaultColors.backgroundColor,
+    return MaterialApp(
+      theme: ThemeData(
+          canvasColor: DefaultColors.backgroundColor,
+          scaffoldBackgroundColor: DefaultColors.backgroundColor,
 
-            // Define the default brightness and colors.
-            brightness: Brightness.light,
-            hintColor: DefaultColors.mainLColor,
-            primaryColor: DefaultColors.mainColor,
-            accentColor: DefaultColors.mainLColor,
-            primaryColorDark: DefaultColors.mainLColor,
-            //splashColor: Colors.white,
-            // Define the default font family.
-            fontFamily: 'Hind',
+          // Define the default brightness and colors.
+          brightness: Brightness.light,
+          hintColor: DefaultColors.mainLColor,
+          primaryColor: DefaultColors.mainColor,
+          accentColor: DefaultColors.mainLColor,
+          primaryColorDark: DefaultColors.mainLColor,
+          //splashColor: Colors.white,
+          // Define the default font family.
+          fontFamily: 'Hind',
 
-            // Define the default TextTheme. Use this to specify the default
-            // text styling for headlines, titles, bodies of text, and more.
-            textTheme: TextTheme(
-              headline1: TextStyle(
-                fontSize: 72.0,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1,
-                fontFamily: 'Hind',
-                //color: Colors.grey[800]),
-              ),
-              headline6: TextStyle(
-                fontSize: 36.0,
-                fontStyle: FontStyle.italic,
-                letterSpacing: 1,
-                fontFamily: 'Hind',
-              ),
+          // Define the default TextTheme. Use this to specify the default
+          // text styling for headlines, titles, bodies of text, and more.
+          textTheme: TextTheme(
+            headline1: TextStyle(
+              fontSize: 72.0,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1,
+              fontFamily: 'Hind',
               //color: Colors.grey[800]),
-              bodyText2: TextStyle(
-                //fontWeight: FontWeight.bold,
-                fontSize: 16,
-                letterSpacing: 1,
-                fontFamily: 'Hind',
-                //color: Colors.grey[800]
-              ),
-            )),
-        //showPerformanceOverlay: true,
-        title: 'EpiBOX',
-        debugShowCheckedModeBanner: false,
-        home: IDWrapper(),
-      ),
+            ),
+            headline6: TextStyle(
+              fontSize: 36.0,
+              fontStyle: FontStyle.italic,
+              letterSpacing: 1,
+              fontFamily: 'Hind',
+            ),
+            //color: Colors.grey[800]),
+            bodyText2: TextStyle(
+              //fontWeight: FontWeight.bold,
+              fontSize: 16,
+              letterSpacing: 1,
+              fontFamily: 'Hind',
+              //color: Colors.grey[800]
+            ),
+          )),
+      //showPerformanceOverlay: true,
+      title: 'EpiBOX',
+      debugShowCheckedModeBanner: false,
+      home: IDWrapper(),
     );
   }
 }

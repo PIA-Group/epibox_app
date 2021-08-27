@@ -1,21 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:epibox/decor/default_colors.dart';
-import 'package:epibox/utils/mqtt_wrapper.dart';
+import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SpeedAnnotationDialog extends StatefulWidget {
   final ValueNotifier<List> annotationTypesD;
   final List<String> annotationTypes;
   final ValueNotifier<String> patientNotifier;
-  final ValueNotifier<bool> newAnnotation;
   final MQTTClientWrapper mqttClientWrapper;
 
   SpeedAnnotationDialog({
     this.annotationTypesD,
     this.annotationTypes,
     this.patientNotifier,
-    this.newAnnotation,
     this.mqttClientWrapper,
   });
 
