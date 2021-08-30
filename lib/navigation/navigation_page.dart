@@ -77,37 +77,47 @@ class _NavigationPageState extends State<NavigationPage>
 
   Future<bool> initialized;
 
-
+  Map<String, Function> listeners = {
+    'connectionNotifier': null,
+    'shouldRestart': null,
+    'acquisitionState': null,
+    'overlayMessage': null,
+    'dataMAC': null,
+  };
 
   @override
   void initState() {
     super.initState();
 
-    shouldRestart.addListener(() {
+    listeners['connectionNotifier'] = () {
+      serverConnectionHandler(context, connectionNotifier, errorHandler);
+    };
+    listeners['shouldRestart'] = () {
       if (shouldRestart.value != null)
         restart(shouldRestart.value, mqttClientWrapper, devices, acquisition,
             configurations, driveListNotifier);
-    });
-
-    connectionNotifier.addListener(() =>
-        serverConnectionHandler(context, connectionNotifier, errorHandler));
-
-    acquisition.addListener(
-        () => acquisitionHandler(context, acquisition, errorHandler),
-        ['acquisitionState']);
-
-    errorHandler.addListener(() {
+    };
+    listeners['acquisitionState'] = () {
+      acquisitionHandler(context, acquisition, errorHandler);
+    };
+    listeners['overlayMessage'] = () {
       if (context.loaderOverlay.visible) context.loaderOverlay.hide();
       context.loaderOverlay.show();
       Future.delayed(const Duration(seconds: 3), () {
         context.loaderOverlay.hide();
       });
-    }, ['overlayMessage']);
-
-    acquisition.addListener(() {
+    };
+    listeners['dataMAC'] = () {
       visualizationMAC1.dataMAC = acquisition.dataMAC1;
       visualizationMAC2.dataMAC = acquisition.dataMAC2;
-    }, ['dataMAC1', 'dataMAC2']);
+    };
+
+    connectionNotifier.addListener(listeners['connectionNotifier']);
+    shouldRestart.addListener(listeners['shouldRestart']);
+    acquisition
+        .addListener(listeners['acquisitionState'], ['acquisitionState']);
+    errorHandler.addListener(listeners['overlayMessage'], ['overlayMessage']);
+    acquisition.addListener(listeners['dataMAC'], ['dataMAC1', 'dataMAC2']);
 
     timer = Timer.periodic(Duration(seconds: 15), (Timer t) => print('timer'));
 
@@ -143,6 +153,12 @@ class _NavigationPageState extends State<NavigationPage>
   @override
   void dispose() {
     timer?.cancel();
+    connectionNotifier.removeListener(listeners['connectionNotifier']);
+    shouldRestart.removeListener(listeners['shouldRestart']);
+    acquisition
+        .removeListener(listeners['acquisitionState'], ['acquisitionState']);
+    errorHandler.removeListener(listeners['overlayMessage'], ['overlayMessage']);
+    acquisition.removeListener(listeners['dataMAC'], ['dataMAC1', 'dataMAC2']);
     super.dispose();
   }
 

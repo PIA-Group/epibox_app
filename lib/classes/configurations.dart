@@ -6,7 +6,7 @@ class Configurations extends PropertyChangeNotifier<String> {
   List<bool> _bit1Selections = [false, false, false, false, false, false];
   List<bool> _bit2Selections = [false, false, false, false, false, false];
   Map<String, dynamic> _configDefault = {};
-  List<TextEditingController> _controllerSensors = List.generate(12, (i) => TextEditingController());
+  List<TextEditingController> _controllerSensors = List.generate(12, (i) => TextEditingController(text: '-'));
   String _chosenDrive = ' ';
   TextEditingController _controllerFreq = TextEditingController(text: ' ');
   bool _saveRaw = true;

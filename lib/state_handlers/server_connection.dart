@@ -8,6 +8,7 @@ void serverConnectionHandler(
     BuildContext context,
     ValueNotifier<MqttCurrentConnectionState> connectionNotifier,
     ErrorHandler errorHandler) {
+      
   if (connectionNotifier.value == MqttCurrentConnectionState.CONNECTING) {
     if (context.loaderOverlay.visible) context.loaderOverlay.hide();
     errorHandler.overlayMessage =

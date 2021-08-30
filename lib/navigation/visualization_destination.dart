@@ -46,8 +46,7 @@ class _DestinationViewState extends State<DestinationView> {
 
   bool _rangeInitiated;
   bool _isTimedOutOpen = false;
-  var f;
-
+  
   int secondsSinceStart = 0;
   DateTime startTime;
 

@@ -48,16 +48,32 @@ class _DevicesPageState extends State<DevicesPage> {
   TextEditingController controller1 = TextEditingController();
   TextEditingController controller2 = TextEditingController();
 
-  @override
-  void dispose() {
-    controller1.dispose();
-    controller2.dispose();
-    super.dispose();
-  }
+  Map<String, Function> listeners = {
+    'defaultMacAddress1': null,
+    'defaultMacAddress2': null,
+  };
 
   @override
   void initState() {
     super.initState();
+
+    listeners['defaultMacAddress1'] = () {
+      if (widget.devices.defaultMacAddress1 == '')
+        controller1.text = ' ';
+      else
+        controller1.text = widget.devices.defaultMacAddress1;
+    };
+    listeners['defaultMacAddress2'] = () {
+      if (widget.devices.defaultMacAddress2 == '')
+        controller2.text = ' ';
+      else
+        controller2.text = widget.devices.defaultMacAddress2;
+    };
+
+    // show changes in default MAC recieved from the RPi
+    widget.devices.addListener(listeners['defaultMacAddress1'], ['defaultMacAddress1']);
+    widget.devices.addListener(listeners['defaultMacAddress2'], ['defaultMacAddress2']);
+
 
     controller1.addListener(() {
       widget.devices.macAddress1 = controller1.text;
@@ -83,20 +99,16 @@ class _DevicesPageState extends State<DevicesPage> {
       controller2.text =
           widget.devices.macAddress2 == '' ? ' ' : widget.devices.macAddress2;
     }
+  }
 
-    // show changes in default MAC recieved from the RPi
-    widget.devices.addListener(() {
-      if (widget.devices.defaultMacAddress1 == '')
-        controller1.text = ' ';
-      else
-        controller1.text = widget.devices.defaultMacAddress1;
-    }, ['defaultMacAddress1']);
-    widget.devices.addListener(() {
-      if (widget.devices.defaultMacAddress2 == '')
-        controller2.text = ' ';
-      else
-        controller2.text = widget.devices.defaultMacAddress2;
-    }, ['defaultMacAddress2']);
+
+  @override
+  void dispose() {
+    controller1.dispose();
+    controller2.dispose();
+    widget.devices.removeListener(listeners['defaultMacAddress1'], ['defaultMacAddress1']);
+    widget.devices.removeListener(listeners['defaultMacAddress2'], ['defaultMacAddress2']);
+    super.dispose();
   }
 
   void _setNewDefault1() {

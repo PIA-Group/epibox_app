@@ -70,6 +70,13 @@ class _ConfigPageState extends State<ConfigPage> {
     'Sensores dispositivo'
   ];
 
+  Map<String, Function> listeners = {
+    'configDefault': null,
+    'macAddress1': null,
+    'macAddress2': null,
+    'driveListNotifier': null,
+  };
+
   bool _isDefaultDriveInList() {
     bool _isInList = false;
     widget.driveListNotifier.value.forEach((element) {
@@ -85,87 +92,71 @@ class _ConfigPageState extends State<ConfigPage> {
   void initState() {
     super.initState();
 
-    if (widget.configurations.bit1Selections == null &&
-        widget.configurations.bit2Selections == null) {
-      try {
-        _getDefaultChannels(widget.configurations.configDefault['channels']);
-      } catch (e) {
-        print(e);
+    listeners['configDefault'] = () {
+      // Storage
+      // if the currently available drives doesn't include the previous default drive:
+      if (!_isDefaultDriveInList()) {
+        widget.configurations.chosenDrive = widget.driveListNotifier.value[0];
+      } else {
+        // if it does, include the available space in that drive:
+        widget.driveListNotifier.value.forEach((element) {
+          if (element
+              .contains(widget.configurations.configDefault['initial_dir'])) {
+            widget.configurations.chosenDrive = element;
+          }
+        });
       }
-    }
+      //
+      // Sampling frequency
+      widget.configurations.controllerFreq.text =
+          widget.configurations.configDefault['fs'].toString();
+      //
+      // Save raw
+      widget.configurations.saveRaw =
+          widget.configurations.configDefault['saveRaw'] == 'true';
 
-    if (widget.configurations.controllerSensors[0].text == "") {
-      try {
-        for (int i = 0;
-            i < widget.configurations.controllerSensors.length;
-            i++) {
-          widget.configurations.controllerSensors[i].text = '-';
-        }
-        _getDefaultSensors(widget.configurations.configDefault[2]);
-      } catch (e) {
-        print(e);
-        for (int i = 0;
-            i < widget.configurations.controllerSensors.length;
-            i++) {
-          widget.configurations.controllerSensors[i].text = '-';
-        }
-      }
-
-      // update values upon receiving default configurations from RPi
-
-      widget.configurations.addListener(() {
-        // Storage
-        // if the currently available drives doesn't include the previous default drive:
-        if (!_isDefaultDriveInList()) {
-          widget.configurations.chosenDrive = widget.driveListNotifier.value[0];
-        } else {
-          // if it does, include the available space in that drive:
-          widget.driveListNotifier.value.forEach((element) {
-            if (element
-                .contains(widget.configurations.configDefault['initial_dir'])) {
-              widget.configurations.chosenDrive = element;
-            }
-          });
-        }
-        //
-        // Sampling frequency
-        setState(() => widget.configurations.controllerFreq.text =
-            widget.configurations.configDefault['fs'].toString());
-        //
-        // Save raw
-        setState(() => widget.configurations.saveRaw =
-            widget.configurations.configDefault['saveRaw'] == 'true');
-
-        // Channels & sensors
-        _getDefaultChannels(widget.configurations.configDefault['channels']);
-        _getDefaultSensors(widget.configurations.configDefault['channels']);
-      }, ['configDefault']);
-    }
-
-    widget.devices.addListener(() {
+      // Channels & sensors
+      _getDefaultChannels(widget.configurations.configDefault['channels']);
+      _getDefaultSensors(widget.configurations.configDefault['channels']);
+    };
+    listeners['macAddress1'] = () {
       if (widget.devices.macAddress1 == '' ||
           widget.devices.macAddress1 == ' ') {
-        setState(() => widget.devices.isBit1Enabled = false);
+        widget.devices.isBit1Enabled = false;
       } else {
-        setState(() => widget.devices.isBit1Enabled = true);
+        widget.devices.isBit1Enabled = true;
       }
-    }, ['macAddress1']);
-
-    widget.devices.addListener(() {
+    };
+    listeners['macAddress2'] = () {
       if (widget.devices.macAddress2 == '' ||
           widget.devices.macAddress2 == ' ') {
-        setState(() => widget.devices.isBit2Enabled = false);
+        widget.devices.isBit2Enabled = false;
       } else {
-        setState(() => widget.devices.isBit2Enabled = true);
+        widget.devices.isBit2Enabled = true;
       }
-    }, ['macAddress2']);
-
-    widget.driveListNotifier.addListener(() {
+    };
+    listeners['driveListNotifier'] = () {
       if (!widget.driveListNotifier.value
           .contains(widget.configurations.chosenDrive))
-        setState(() => widget.configurations.chosenDrive =
-            widget.driveListNotifier.value[0]);
-    });
+        widget.configurations.chosenDrive = widget.driveListNotifier.value[0];
+    };
+
+    // update values upon receiving default configurations from RPi
+    widget.configurations
+        .addListener(listeners['configDefault'], ['configDefault']);
+    widget.devices.addListener(listeners['macAddress1'], ['macAddress1']);
+    widget.devices.addListener(listeners['macAddress2'], ['macAddress2']);
+    widget.driveListNotifier.addListener(listeners['driveListNotifier']);
+  }
+
+  @override
+  void dispose() {
+    widget.configurations
+        .removeListener(listeners['configDefault'], ['configDefault']);
+    widget.devices.removeListener(listeners['macAddress1'], ['macAddress1']);
+    widget.devices.removeListener(listeners['macAddress2'], ['macAddress2']);
+    widget.driveListNotifier.removeListener(listeners['driveListNotifier']);
+    super.dispose();
   }
 
   void _getDefaultChannels(List channels) {
@@ -175,7 +166,6 @@ class _ConfigPageState extends State<ConfigPage> {
     channels.forEach((triplet) {
       if (triplet[0] == widget.devices.defaultMacAddress1) {
         _aux1Selections[int.parse(triplet[1]) - 1] = true;
-        print(_aux1Selections);
       }
       if (triplet[0] == widget.devices.defaultMacAddress2) {
         _aux2Selections[int.parse(triplet[1]) - 1] = true;
