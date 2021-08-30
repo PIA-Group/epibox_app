@@ -24,9 +24,7 @@ import 'package:flutter/material.dart';
 ///
 /// NB: This is not a Time Domain trace, the update frequency of the supplied [dataSet] determines the trace speed.
 
-
 class Oscilloscope extends StatefulWidget {
-
   final List<double> dataSet;
   final double yAxisMin;
   final double yAxisMax;
@@ -51,33 +49,35 @@ class Oscilloscope extends StatefulWidget {
 }
 
 class _OscilloscopeState extends State<Oscilloscope> {
-
   @override
   void initState() {
     super.initState();
-    
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.fromLTRB(4.0, 0.0, widget.padding, 0.0),
-      width: MediaQuery.of(context).size.width,
-      height: double.infinity,
-      color: widget.backgroundColor,
-      child: ClipRect(
-        child: CustomPaint(
-          painter: _TracePainter(
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: 5.0),
+        child: Container(
+        height: double.infinity,
+        width: double.infinity,
+        color: widget.backgroundColor,
+        child: ClipRect(
+          child: CustomPaint(
+            painter: _TracePainter(
               showCanvas: widget.showCanvas,
               yAxisColor: widget.yAxisColor,
               dataSet: widget.dataSet,
               traceColor: widget.traceColor,
               yMin: widget.yAxisMin,
               yMax: widget.yAxisMax,
-              ),
+            ),
+          ),
         ),
-      ),
-    );
+      ),);
+    });
   }
 }
 
@@ -117,9 +117,6 @@ class _TracePainter extends CustomPainter {
     double yRange = yMax - yMin;
     double yScale = (size.height / yRange);
 
-    
-    //print('SIZE: ${size.width}');
-
     // only start plot if dataset has data
     int length = dataSet.length;
     if (length > 0) {
@@ -135,8 +132,7 @@ class _TracePainter extends CustomPainter {
 
       // generate trace path
       for (int p = 0; p < length; p++) {
-        double plotPoint =
-            size.height - (dataSet[p] - yMin) * yScale;
+        double plotPoint = size.height - (dataSet[p] - yMin) * yScale;
         trace.lineTo(p * xScale, plotPoint);
       }
 
@@ -144,25 +140,21 @@ class _TracePainter extends CustomPainter {
       canvas.drawPath(trace, tracePaint);
 
       // if yAxis required draw it here
-      if (showCanvas) {
+      Offset yStartL = Offset(0.0, 0.0);
+      Offset yEndL = Offset(0.0, size.height);
+      canvas.drawLine(yStartL, yEndL, axisPaint);
 
-        Offset yStartL = Offset(0.0, 0.0);
-        Offset yEndL = Offset(0.0, size.height);
-        canvas.drawLine(yStartL, yEndL, axisPaint);
+      Offset yStartR = Offset(size.width, 0.0);
+      Offset yEndR = Offset(size.width, size.height);
+      canvas.drawLine(yStartR, yEndR, axisPaint);
 
-        Offset yStartR = Offset(size.width, 0.0);
-        Offset yEndR = Offset(size.width, size.height);
-        canvas.drawLine(yStartR, yEndR, axisPaint);
+      Offset yStartT = Offset(0.0, 0.0);
+      Offset yEndT = Offset(size.width, 0.0);
+      canvas.drawLine(yStartT, yEndT, axisPaint);
 
-        Offset yStartT = Offset(0.0, 0.0);
-        Offset yEndT = Offset(size.width, 0.0);
-        canvas.drawLine(yStartT, yEndT, axisPaint);
-
-        Offset yStartB = Offset(0.0, size.height);
-        Offset yEndB = Offset(size.width, size.height);
-        canvas.drawLine(yStartB, yEndB, axisPaint);
-      }
-
+      Offset yStartB = Offset(0.0, size.height);
+      Offset yEndB = Offset(size.width, size.height);
+      canvas.drawLine(yStartB, yEndB, axisPaint);
     }
   }
 

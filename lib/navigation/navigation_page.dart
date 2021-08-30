@@ -63,8 +63,6 @@ class _NavigationPageState extends State<NavigationPage>
 
   ValueNotifier<List<String>> historyMAC = ValueNotifier([]);
 
-  ValueNotifier<bool> newAnnotation = ValueNotifier(false);
-
   MqttCurrentConnectionState connectionState;
   MQTTClientWrapper mqttClientWrapper;
   MqttClient client;

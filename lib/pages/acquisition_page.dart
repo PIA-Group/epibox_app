@@ -44,46 +44,33 @@ class AcquisitionPage extends StatelessWidget {
       length: 2,
       child: Column(children: [
         TabBar(
-          tabs: [
-            Tab(
-              child: Text(
-                devices.macAddress1,
-                style: MyTextStyle(
-                    color: DefaultColors.textColorOnLight, fontSize: 15),
-              ),
-            ),
-            Tab(
-              child: Text(
-                devices.macAddress2,
-                style: MyTextStyle(
-                    color: DefaultColors.textColorOnLight, fontSize: 15),
-              ),
-            ),
-          ],
+          tabs: [devices.macAddress1, devices.macAddress2]
+              .map(
+                (macAddress) => Tab(
+                  child: Text(macAddress,
+                      style: MyTextStyle(
+                          color: DefaultColors.textColorOnLight, fontSize: 15)),
+                ),
+              )
+              .toList(),
         ),
         Expanded(
-          child: TabBarView(children: [
-            DestinationView(
-              configurations: configurations,
-              visualizationMAC: visualizationMAC1,
-              mqttClientWrapper: mqttClientWrapper,
-              patientNotifier: patientNotifier,
-              annotationTypesD: annotationTypesD,
-              connectionNotifier: connectionNotifier,
-              timedOut: timedOut,
-              startupError: startupError,
-            ),
-            DestinationView(
-              configurations: configurations,
-              visualizationMAC: visualizationMAC2,
-              mqttClientWrapper: mqttClientWrapper,
-              patientNotifier: patientNotifier,
-              annotationTypesD: annotationTypesD,
-              connectionNotifier: connectionNotifier,
-              timedOut: timedOut,
-              startupError: startupError,
-            ),
-          ]),
+          child: TabBarView(
+            children: [visualizationMAC1, visualizationMAC2]
+                .map(
+                  (visualizationMAC) => DestinationView(
+                    configurations: configurations,
+                    visualizationMAC: visualizationMAC,
+                    mqttClientWrapper: mqttClientWrapper,
+                    patientNotifier: patientNotifier,
+                    annotationTypesD: annotationTypesD,
+                    connectionNotifier: connectionNotifier,
+                    timedOut: timedOut,
+                    startupError: startupError,
+                  ),
+                )
+                .toList(),
+          ),
         ),
       ]),
     );
