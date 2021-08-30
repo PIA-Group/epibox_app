@@ -3,8 +3,8 @@ import 'package:property_change_notifier/property_change_notifier.dart';
 
 class Configurations extends PropertyChangeNotifier<String> {
 
-  List<bool> _bit1Selections;
-  List<bool> _bit2Selections;
+  List<bool> _bit1Selections = [false, false, false, false, false, false];
+  List<bool> _bit2Selections = [false, false, false, false, false, false];
   Map<String, dynamic> _configDefault = {};
   List<TextEditingController> _controllerSensors = List.generate(12, (i) => TextEditingController());
   String _chosenDrive = ' ';
@@ -18,6 +18,17 @@ class Configurations extends PropertyChangeNotifier<String> {
   String get chosenDrive => _chosenDrive;
   TextEditingController get controllerFreq => _controllerFreq;
   bool get saveRaw => _saveRaw;
+
+
+  dynamic get(String key) => <String, dynamic>{
+        'bit1Selections': _bit1Selections,
+        'bit2Selections': _bit2Selections,
+        'configDefault': _configDefault,
+        'controllerSensors': _controllerSensors,
+        'chosenDrive': _chosenDrive,
+        'controllerFreq': _controllerFreq,
+        'saveRaw': _saveRaw,
+      }[key];
 
 
   set bit1Selections(List<bool> value) {

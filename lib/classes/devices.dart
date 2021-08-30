@@ -24,8 +24,13 @@ class Devices extends PropertyChangeNotifier<String> {
   dynamic get(String key) => <String, dynamic>{
         'macAddress1': _macAddress1,
         'macAddress2': _macAddress2,
+        'defaultMacAddress1': _defaultMacAddress1,
+        'defaultMacAddress2': _defaultMacAddress2,
         'macAddress1Connection': _macAddress1Connection,
         'macAddress2Connection': _macAddress2Connection,
+        'isBit1Enabled': _isBit1Enabled,
+        'isBit2Enabled': _isBit2Enabled,
+        'type': _type,
       }[key];
 
   set macAddress1(String value) {

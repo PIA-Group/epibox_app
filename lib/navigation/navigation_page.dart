@@ -79,6 +79,8 @@ class _NavigationPageState extends State<NavigationPage>
 
   Future<bool> initialized;
 
+
+
   @override
   void initState() {
     super.initState();
@@ -118,7 +120,7 @@ class _NavigationPageState extends State<NavigationPage>
         android: initializationSettingsAndroid, iOS: initializationSettingsIOs);
     batteryNotification.initialize(initSetttings);
 
-    setupHome(
+    mqttClientWrapper = setupHome(
       mqttClientWrapper: mqttClientWrapper,
       client: client,
       devices: devices,
@@ -132,7 +134,7 @@ class _NavigationPageState extends State<NavigationPage>
     );
 
     getAnnotationTypes(annotationTypesD);
-    getPreviousDevice(devices);
+    getPreviousDeviceType(devices);
     getLastMAC(devices);
     //getLastBatteries(acquisition);
     getMACHistory(historyMAC);

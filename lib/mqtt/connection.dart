@@ -20,7 +20,24 @@ void updatedConnection(MqttCurrentConnectionState newConnectionState,
   print('This is the new connection state ${connectionNotifier.value}');
 }
 
-void setupHome({
+Future<void> setup(
+  MQTTClientWrapper mqttClientWrapper,
+  ValueNotifier<MqttCurrentConnectionState> connectionNotifier,
+) async {
+  print('running setup');
+  // connects the client instance to the server and topic
+  await mqttClientWrapper.prepareMqttClient().then((value) {
+    if (connectionNotifier.value == MqttCurrentConnectionState.CONNECTED) {
+      var timeStamp = DateTime.now();
+      String time =
+          "${timeStamp.year}-${timeStamp.month}-${timeStamp.day} ${timeStamp.hour}:${timeStamp.minute}:${timeStamp.second}";
+      mqttClientWrapper.publishMessage("['TIME', '$time']");
+      mqttClientWrapper.publishMessage("['Send default']");
+    }
+  });
+}
+
+MQTTClientWrapper setupHome({
   MQTTClientWrapper mqttClientWrapper,
   MqttClient client,
   Devices devices,
@@ -33,6 +50,7 @@ void setupHome({
   ValueNotifier<bool> shouldRestart,
   ValueNotifier<MqttCurrentConnectionState> connectionNotifier,
 }) {
+  print('running setupHome');
   // initiate MQTT client and message/state functions
   mqttClientWrapper = MQTTClientWrapper(
     client,
@@ -51,4 +69,5 @@ void setupHome({
     (newConnectionState) =>
         updatedConnection(newConnectionState, connectionNotifier),
   );
+  return mqttClientWrapper;
 }

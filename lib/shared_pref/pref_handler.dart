@@ -7,25 +7,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 // DEVICES
 
 void getLastMAC(Devices devices) async {
-    await Future.delayed(Duration.zero);
-    Future.delayed(Duration.zero, () async {
       await SharedPreferences.getInstance().then((value) {
         List<String> lastMAC = (value.getStringList('lastMAC').toList() ??
             ['xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx']);
-        devices.macAddress1 = lastMAC[0];
-        devices.macAddress2 = lastMAC[1];
+        devices.defaultMacAddress1 = lastMAC[0];
+        devices.defaultMacAddress2 = lastMAC[1];
       });
-      print('LAST MAC: ${devices.macAddress1}, ${devices.macAddress2}');
-    });
   }
 
-  void getPreviousDevice(Devices devices) async {
+  void getPreviousDeviceType(Devices devices) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String device;
     try {
       device = prefs.getString('deviceType') ?? 'Bitalino';
       devices.type = device;
-      print('Device: $device');
     } catch (e) {
       print(e);
     }

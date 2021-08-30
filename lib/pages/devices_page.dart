@@ -109,7 +109,7 @@ class _DevicesPageState extends State<DevicesPage> {
 
   @override
   Widget build(BuildContext context) {
-    const double _horizontalSpacing = 20.0;
+    const double horizontalSpacing = 20.0;
     const double verticalSpacing = 20.0;
 
     return PropertyChangeProvider(
@@ -119,7 +119,7 @@ class _DevicesPageState extends State<DevicesPage> {
           height: verticalSpacing,
         ),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: _horizontalSpacing),
+          padding: EdgeInsets.symmetric(horizontal: horizontalSpacing),
           child: Column(children: [
             Align(
               alignment: Alignment.centerLeft,
@@ -339,11 +339,11 @@ class DeviceStateConnectionBlock extends StatelessWidget {
 
     return PropertyChangeConsumer<Devices>(
       properties: ['macAddress$deviceID', 'macAddress${deviceID}Connection'],
-      builder: (context, model, properties) {
+      builder: (context, devices, properties) {
         return Padding(
           padding: EdgeInsets.fromLTRB(5.0, verticalSpacing, 5.0, 0.0),
-          child: (model.get('macAddress$deviceID') == 'xx:xx:xx:xx:xx:xx' ||
-                  model.get('macAddress$deviceID').trim() == '')
+          child: (devices.get('macAddress$deviceID') == 'xx:xx:xx:xx:xx:xx' ||
+                  devices.get('macAddress$deviceID').trim() == '')
               ? Container()
               : Container(
                   width: 0.95 * bodyWidth,
@@ -365,10 +365,10 @@ class DeviceStateConnectionBlock extends StatelessWidget {
                           errorHandler.overlayMessage = DevicesCustomOverlay();
                         } else {
                           deviceID == 1
-                              ? model.macAddress1Connection = 'connecting'
-                              : model.macAddress2Connection = 'connecting';
+                              ? devices.macAddress1Connection = 'connecting'
+                              : devices.macAddress2Connection = 'connecting';
                           mqttClientWrapper.publishMessage(
-                              "['CONNECT', '${model.macAddress1}', '${devices.type}']");
+                              "['CONNECT', '${devices.macAddress1}', '${devices.type}']");
                         }
                       },
                       child: Container(
@@ -376,20 +376,20 @@ class DeviceStateConnectionBlock extends StatelessWidget {
                           leading: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                _connectionStateIcon.containsKey(model
+                                _connectionStateIcon.containsKey(devices
                                         .get('macAddress${deviceID}Connection'))
-                                    ? _connectionStateIcon[model
+                                    ? _connectionStateIcon[devices
                                         .get('macAddress${deviceID}Connection')]
                                     : _connectionStateIcon['other'],
                               ]),
-                          title: Text(controller.text,
+                          title: Text(devices.get('macAddress$deviceID'),
                               style: MyTextStyle(
                                   color: DefaultColors.textColorOnLight,
                                   fontWeight: FontWeight.bold)),
                           subtitle: Text(
-                              _connectionStateText.containsKey(model
+                              _connectionStateText.containsKey(devices
                                       .get('macAddress${deviceID}Connection'))
-                                  ? _connectionStateText[model
+                                  ? _connectionStateText[devices
                                       .get('macAddress${deviceID}Connection')]
                                   : _connectionStateText['other'],
                               style: MyTextStyle(

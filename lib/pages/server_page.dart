@@ -1,6 +1,7 @@
 
 import 'package:epibox/classes/acquisition.dart';
 import 'package:epibox/classes/devices.dart';
+import 'package:epibox/mqtt/connection.dart';
 import 'package:flutter/material.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
@@ -84,20 +85,7 @@ class _ServerPageState extends State<ServerPage> {
     }
   }
 
-  Future<void> _setup() async { // connects the client instance to the server and topic
-    await widget.mqttClientWrapper
-        .prepareMqttClient()
-        .then((value) {
-      if (widget.connectionNotifier.value ==
-          MqttCurrentConnectionState.CONNECTED) {
-        var timeStamp = DateTime.now();
-        String time =
-            "${timeStamp.year}-${timeStamp.month}-${timeStamp.day} ${timeStamp.hour}:${timeStamp.minute}:${timeStamp.second}";
-        widget.mqttClientWrapper.publishMessage("['TIME', '$time']");
-        widget.mqttClientWrapper.publishMessage("['Send default']");
-      }
-    });
-  }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -167,7 +155,7 @@ class _ServerPageState extends State<ServerPage> {
                       //onPrimary: Colors.white, // foreground
                     ),
                     onPressed: () {
-                      _setup();
+                      setup(widget.mqttClientWrapper, widget.connectionNotifier);
                     },
                     child: new Text(
                       "Conectar",
@@ -183,7 +171,7 @@ class _ServerPageState extends State<ServerPage> {
                     ),
                     onPressed: () {
                       widget.shouldRestart.value = true;
-                      _setup();
+                      setup(widget.mqttClientWrapper, widget.connectionNotifier);
                     },
                     child: new Text(
                       "Reiniciar",

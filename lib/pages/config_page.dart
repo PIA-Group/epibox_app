@@ -28,6 +28,23 @@ class ConfigPage extends StatefulWidget {
 }
 
 class _ConfigPageState extends State<ConfigPage> {
+  List<String> fsOptions = [
+    ' ',
+    /* '17000',
+    '16000',
+    '10000',
+    '9000',
+    '7000',
+    '6000',
+    '5000',
+    '4000',
+    '3000', */
+    '1000',
+    '100',
+    '10',
+    '1'
+  ];
+
   List<DropdownMenuItem<String>> sensorItems = [
     '-',
     'ECG',
@@ -43,14 +60,15 @@ class _ConfigPageState extends State<ConfigPage> {
     return new DropdownMenuItem<String>(
       value: value,
       child: Center(
-        child: Text(
-          value,
-          style: MyTextStyle(color: DefaultColors.textColorOnLight),
-          textAlign: TextAlign.center,
-        ),
+        child: Text(value, textAlign: TextAlign.center),
       ),
     );
   }).toList();
+
+  List<String> channelSensorItems = [
+    'Canais dispositivo',
+    'Sensores dispositivo'
+  ];
 
   bool _isDefaultDriveInList() {
     bool _isInList = false;
@@ -154,22 +172,23 @@ class _ConfigPageState extends State<ConfigPage> {
     List<bool> _aux1Selections = List.generate(6, (_) => false);
     List<bool> _aux2Selections = List.generate(6, (_) => false);
 
-    channels.asMap().forEach((i, triplet) {
+    channels.forEach((triplet) {
       if (triplet[0] == widget.devices.defaultMacAddress1) {
         _aux1Selections[int.parse(triplet[1]) - 1] = true;
+        print(_aux1Selections);
       }
       if (triplet[0] == widget.devices.defaultMacAddress2) {
         _aux2Selections[int.parse(triplet[1]) - 1] = true;
       }
     });
-    setState(() => widget.configurations.bit1Selections = _aux1Selections);
-    setState(() => widget.configurations.bit2Selections = _aux2Selections);
+    widget.configurations.bit1Selections = _aux1Selections;
+    widget.configurations.bit2Selections = _aux2Selections;
   }
 
   void _getDefaultSensors(List channels) {
     //List<String>
 
-    channels.asMap().forEach((i, triplet) {
+    channels.forEach((triplet) {
       if (triplet[0] == widget.devices.defaultMacAddress1) {
         widget.configurations.controllerSensors[int.parse(triplet[1]) - 1]
             .text = triplet[2];
@@ -192,6 +211,7 @@ class _ConfigPageState extends State<ConfigPage> {
         ]);
       }
     });
+
     widget.configurations.bit2Selections.asMap().forEach((channel, value) {
       if (value) {
         _channels2Send.add([
@@ -201,7 +221,6 @@ class _ConfigPageState extends State<ConfigPage> {
         ]);
       }
     });
-    print('chn: $_channels2Send');
     return _channels2Send;
   }
 
@@ -224,502 +243,369 @@ class _ConfigPageState extends State<ConfigPage> {
         MediaQuery.of(context).viewInsets.top -
         MediaQuery.of(context).viewInsets.bottom;
 
+    const double horizontalSpacing = 20.0;
+    const double verticalSpacing = 10.0;
+    const double verticalSpacingWithinGroup = 5.0;
+
     return PropertyChangeProvider(
       value: widget.configurations,
       child: PropertyChangeProvider(
         value: widget.devices,
-        child: ListView(
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.only(top: 0),
-              child: Column(children: [
-                Padding(
-                  padding: EdgeInsets.fromLTRB(20.0, 0.0, 0.0, 10.0),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Container(
-                      child: Text(
-                        'Pasta para armazenamento',
-                        textAlign: TextAlign.left,
-                        style: MyTextStyle(
-                          color: DefaultColors.textColorOnLight,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: horizontalSpacing),
+          child: ListView(
+            shrinkWrap: true,
+            children: <Widget>[
+              DriveBlock(
+                  driveListNotifier: widget.driveListNotifier,
+                  height: height,
+                  width: width,
+                  verticalSpacing: verticalSpacing),
+              SizedBox(height: verticalSpacing),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  child: Text(
+                    'Configurações de aquisição',
+                    textAlign: TextAlign.left,
+                    style: MyTextStyle(
+                      color: DefaultColors.textColorOnLight,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-                Container(
-                  padding: EdgeInsets.only(top: 0, bottom: 0),
-                  height: height * 0.07,
-                  width: width * 0.9,
-                  color: Colors.transparent,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.rectangle,
-                      borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                      boxShadow: [
-                        BoxShadow(
-                            color: Colors.grey[200],
-                            offset: new Offset(5.0, 5.0))
-                      ],
-                    ),
-                    child: ListView(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 0.0),
-                          child: PropertyChangeConsumer<Configurations>(
-                              properties: ['chosenDrive'],
-                              builder: (context, configurations, properties) {
-                                return ValueListenableBuilder(
-                                    valueListenable: widget.driveListNotifier,
-                                    builder: (context, driveList, child) {
-                                      return DropdownButton(
-                                        value: configurations.chosenDrive,
-                                        items: driveList
-                                            .map<DropdownMenuItem<String>>(
-                                                (String value) {
-                                          return DropdownMenuItem<String>(
-                                            value: value,
-                                            child: Text(
-                                              value,
-                                              style: MyTextStyle(
-                                                  color: DefaultColors
-                                                      .textColorOnLight),
-                                            ),
-                                          );
-                                        }).toList(),
-                                        onChanged: (newDrive) => setState(() =>
-                                            configurations.chosenDrive =
-                                                newDrive),
-                                      );
-                                    });
-                              }),
-                        ),
-                      ],
-                    ),
+              ),
+              SizedBox(height: verticalSpacing),
+              Container(
+                padding: EdgeInsets.only(top: 0, bottom: 0),
+                width: width * 0.9,
+                color: Colors.transparent,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.rectangle,
+                    borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.grey[200], offset: new Offset(5.0, 5.0))
+                    ],
                   ),
-                ),
-              ]),
-            ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
-              child: Column(mainAxisSize: MainAxisSize.min, children: [
-                Padding(
-                  padding: EdgeInsets.fromLTRB(20.0, 0.0, 0.0, 10.0),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Container(
-                      child: Text(
-                        'Configurações de aquisição',
-                        textAlign: TextAlign.left,
-                        style: MyTextStyle(
-                          color: DefaultColors.textColorOnLight,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.only(top: 0, bottom: 0),
-                  width: width * 0.9,
-                  color: Colors.transparent,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.rectangle,
-                      borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                      boxShadow: [
-                        BoxShadow(
-                            color: Colors.grey[200],
-                            offset: new Offset(5.0, 5.0))
-                      ],
-                    ),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 15.0),
                     child: ListView(
                         shrinkWrap: true,
                         physics: NeverScrollableScrollPhysics(),
                         children: [
-                          Padding(
-                            padding: EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 0.0),
-                            child: Row(
-                              children: [
-                                Text(
-                                  'Freq.amostragem [Hz]:',
-                                  style: MyTextStyle(
-                                      color: DefaultColors.textColorOnLight),
-                                ),
-                                Expanded(
-                                  child: Container(
-                                    margin: EdgeInsets.fromLTRB(
-                                        20.0, 0.0, 10.0, 0.0),
-                                    child: DropdownButton(
-                                      value: widget
-                                          .configurations.controllerFreq.text,
-                                      items: [
-                                        ' ',
-                                        '17000',
-                                        '16000',
-                                        '10000',
-                                        '9000',
-                                        '7000',
-                                        '6000',
-                                        '5000',
-                                        '4000',
-                                        '3000',
-                                        '1000',
-                                        '100',
-                                        '10',
-                                        '1'
-                                      ].map<DropdownMenuItem<String>>(
-                                          (String value) {
-                                        return DropdownMenuItem<String>(
-                                          value: value,
-                                          child: Text(
-                                            value,
-                                            style: MyTextStyle(
-                                                color: DefaultColors
-                                                    .textColorOnLight),
-                                          ),
-                                        );
-                                      }).toList(),
-                                      onChanged: (fs) => setState(() => widget
-                                          .configurations
-                                          .controllerFreq
-                                          .text = fs),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                          FrequencyBlock(fsOptions: fsOptions),
+                          SaveRawBlock(),
+                          ListView(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            children: channelSensorItems
+                                .asMap()
+                                .keys
+                                .map((int titleIndex) {
+                                  return [1, 2]
+                                      .map((int id) => [
+                                            SizedBox(height: verticalSpacing),
+                                            Text(
+                                                '${channelSensorItems[titleIndex]} $id:',
+                                                textAlign: TextAlign.start,
+                                                style: MyTextStyle(
+                                                    color: DefaultColors
+                                                        .textColorOnLight)),
+                                            SizedBox(
+                                                height:
+                                                    verticalSpacingWithinGroup),
+                                            titleIndex == 0
+                                                ? ChannelBlock(deviceID: id)
+                                                : SensorBlock(
+                                                    deviceID: id,
+                                                    sensorItems: sensorItems,
+                                                  ),
+                                          ])
+                                      .toList()
+                                      .expand((i) => i)
+                                      .toList();
+                                })
+                                .toList()
+                                .expand((i) => i)
+                                .toList(),
                           ),
-                          Padding(
-                            padding: EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 0.0),
-                            child: Row(
-                              children: [
-                                Text(
-                                  'Guardar dados em bruto?',
-                                  style: MyTextStyle(
-                                      color: DefaultColors.textColorOnLight),
-                                ),
-                                PropertyChangeConsumer<Configurations>(
-                              properties: ['saveRaw'],
-                              builder: (context, configurations, properties) {
-                                return Checkbox(
-                                        value: configurations.saveRaw,
-                                        onChanged: (bool value) {
-                                          setState(() =>
-                                              configurations.saveRaw = value);
-                                        },
-                                      );
-                                    })
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 5.0),
-                            child: Text(
-                              'Canais dispositivo 1:',
-                              style: MyTextStyle(
-                                  color: DefaultColors.textColorOnLight),
-                            ),
-                          ),
-                          Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                PropertyChangeConsumer<Configurations>(
-                                    properties: ['bit1Selections'],
-                                    builder:
-                                        (context, configurations, properties) {
-                                      return PropertyChangeConsumer<Devices>(
-                                          properties: ['isBit1Enabled'],
-                                          builder: (context, devices,
-                                              properties) {
-                                            return ToggleButtons(
-                                              constraints: BoxConstraints(
-                                                  maxHeight: 25.0,
-                                                  minHeight: 25.0,
-                                                  maxWidth: 40.0,
-                                                  minWidth: 40.0),
-                                              borderRadius: BorderRadius.all(
-                                                  Radius.circular(25)),
-                                              renderBorder: true,
-                                              children: <Widget>[
-                                                Text('A1'),
-                                                Text('A2'),
-                                                Text('A3'),
-                                                Text('A4'),
-                                                Text('A5'),
-                                                Text('A6'),
-                                              ],
-                                              isSelected: configurations
-                                                      .bit1Selections ??
-                                                  [
-                                                    false,
-                                                    false,
-                                                    false,
-                                                    false,
-                                                    false,
-                                                    false
-                                                  ],
-                                              onPressed:
-                                                  devices.isBit1Enabled
-                                                      ? (int index) {
-                                                          setState(() {
-                                                            widget.configurations
-                                                                    .bit1Selections[
-                                                                index] = !widget
-                                                                    .configurations
-                                                                    .bit1Selections[
-                                                                index];
-                                                          });
-                                                        }
-                                                      : null,
-                                            );
-                                          });
-                                    }),
-                              ]),
-                          Padding(
-                            padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 5.0),
-                            child: Text(
-                              'Canais dispositivo 2:',
-                              style: MyTextStyle(
-                                  color: DefaultColors.textColorOnLight),
-                            ),
-                          ),
-                          Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                PropertyChangeConsumer<Configurations>(
-                                    properties: ['bit2Selections'],
-                                    builder:
-                                        (context, configurations, properties) {
-                                      return PropertyChangeConsumer<Devices>(
-                                          properties: ['isBit2Enabled'],
-                                          builder: (context, devices,
-                                              properties) {
-                                            return ToggleButtons(
-                                              constraints: BoxConstraints(
-                                                  maxHeight: 25.0,
-                                                  minHeight: 25.0,
-                                                  maxWidth: 40.0,
-                                                  minWidth: 40.0),
-                                              borderRadius: BorderRadius.all(
-                                                  Radius.circular(25)),
-                                              renderBorder: true,
-                                              children: <Widget>[
-                                                Text('A1'),
-                                                Text('A2'),
-                                                Text('A3'),
-                                                Text('A4'),
-                                                Text('A5'),
-                                                Text('A6'),
-                                              ],
-                                              isSelected: configurations
-                                                      .bit2Selections ??
-                                                  [
-                                                    false,
-                                                    false,
-                                                    false,
-                                                    false,
-                                                    false,
-                                                    false
-                                                  ],
-                                              onPressed:
-                                                  devices.isBit2Enabled
-                                                      ? (int index) {
-                                                          setState(() {
-                                                            widget.configurations
-                                                                    .bit2Selections[
-                                                                index] = !widget
-                                                                    .configurations
-                                                                    .bit2Selections[
-                                                                index];
-                                                          });
-                                                        }
-                                                      : null,
-                                            );
-                                          });
-                                    }),
-                              ]),
-                          Padding(
-                            padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 5.0),
-                            child: Text(
-                              'Sensores dispositivo 1:',
-                              style: MyTextStyle(
-                                  color: DefaultColors.textColorOnLight),
-                            ),
-                          ),
-                          PropertyChangeConsumer<Devices>(
-                              properties: ['isBit1Enabled'],
-                              builder: (context, devices, properties) {
-                                return PropertyChangeConsumer<Configurations>(
-                                    properties: ['controllerSensors'],
-                                    builder:
-                                        (context, configurations, properties) {
-                                      return Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: <Widget>[
-                                            SensorContainer(
-                                                controller: configurations
-                                                    .controllerSensors[0],
-                                                sensorItems: sensorItems,
-                                                position: 'cornerL',
-                                                isBitEnabled:
-                                                    devices.isBit1Enabled),
-                                            SensorContainer(
-                                                controller: configurations
-                                                    .controllerSensors[1],
-                                                sensorItems: sensorItems,
-                                                position: 'secondL',
-                                                isBitEnabled:
-                                                    devices.isBit1Enabled),
-                                            SensorContainer(
-                                                controller: configurations
-                                                    .controllerSensors[2],
-                                                sensorItems: sensorItems,
-                                                position: 'middle',
-                                                isBitEnabled:
-                                                    devices.isBit1Enabled),
-                                            SensorContainer(
-                                                controller: configurations
-                                                    .controllerSensors[3],
-                                                sensorItems: sensorItems,
-                                                position: 'middle',
-                                                isBitEnabled:
-                                                    devices.isBit1Enabled),
-                                            SensorContainer(
-                                                controller: configurations
-                                                    .controllerSensors[4],
-                                                sensorItems: sensorItems,
-                                                position: 'middle',
-                                                isBitEnabled:
-                                                    devices.isBit1Enabled),
-                                            SensorContainer(
-                                                controller: configurations
-                                                    .controllerSensors[5],
-                                                sensorItems: sensorItems,
-                                                position: 'cornerR',
-                                                isBitEnabled:
-                                                    devices.isBit1Enabled),
-                                          ]);
-                                    });
-                              }),
-                          Padding(
-                            padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 5.0),
-                            child: Text(
-                              'Sensores dispositivo 2:',
-                              style: MyTextStyle(
-                                  color: DefaultColors.textColorOnLight),
-                            ),
-                          ),
-                          PropertyChangeConsumer<Devices>(
-                              properties: ['isBit2Enabled'],
-                              builder: (context, devices, properties) {
-                                return PropertyChangeConsumer<Configurations>(
-                                    properties: ['controllerSensors'],
-                                    builder:
-                                        (context, configurations, properties) {
-                                      return Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: <Widget>[
-                                            SensorContainer(
-                                                controller: configurations
-                                                    .controllerSensors[6],
-                                                sensorItems: sensorItems,
-                                                position: 'cornerL',
-                                                isBitEnabled:
-                                                    devices.isBit2Enabled),
-                                            SensorContainer(
-                                                controller: configurations
-                                                    .controllerSensors[7],
-                                                sensorItems: sensorItems,
-                                                position: 'secondL',
-                                                isBitEnabled:
-                                                    devices.isBit2Enabled),
-                                            SensorContainer(
-                                                controller: configurations
-                                                    .controllerSensors[8],
-                                                sensorItems: sensorItems,
-                                                position: 'middle',
-                                                isBitEnabled:
-                                                    devices.isBit2Enabled),
-                                            SensorContainer(
-                                                controller: configurations
-                                                    .controllerSensors[9],
-                                                sensorItems: sensorItems,
-                                                position: 'middle',
-                                                isBitEnabled:
-                                                    devices.isBit2Enabled),
-                                            SensorContainer(
-                                                controller: configurations
-                                                    .controllerSensors[10],
-                                                sensorItems: sensorItems,
-                                                position: 'middle',
-                                                isBitEnabled:
-                                                    devices.isBit2Enabled),
-                                            SensorContainer(
-                                                controller: configurations
-                                                    .controllerSensors[11],
-                                                sensorItems: sensorItems,
-                                                position: 'cornerR',
-                                                isBitEnabled:
-                                                    devices.isBit2Enabled),
-                                          ]);
-                                    });
-                              }),
-                          SizedBox(
-                            height: 10,
-                          ),
+                          SizedBox(height: verticalSpacing),
                         ]),
                   ),
                 ),
+              ),
+              SizedBox(height: 10.0),
+              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    primary: DefaultColors.mainLColor, // background
+                    //onPrimary: Colors.white, // foreground
+                  ),
+                  onPressed: () {
+                    _newDefault();
+                  },
+                  child: new Text(
+                    "Definir novo default",
+                    style: MyTextStyle(),
+                  ),
+                ),
               ]),
-            ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 0.0),
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        primary: DefaultColors.mainLColor, // background
-                        //onPrimary: Colors.white, // foreground
-                      ),
-                      onPressed: () {
-                        _newDefault();
-                      },
-                      child: new Text(
-                        "Definir novo default",
-                        style: MyTextStyle(),
-                      ),
-                    ),
-                  ]),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class SensorContainer extends StatefulWidget {
-  final TextEditingController controller;
+class DriveBlock extends StatelessWidget {
+  final ValueNotifier<List<String>> driveListNotifier;
+  final double height, width, verticalSpacing;
+  DriveBlock(
+      {this.driveListNotifier, this.height, this.width, this.verticalSpacing});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(children: [
+      Align(
+        alignment: Alignment.centerLeft,
+        child: Container(
+          child: Text(
+            'Pasta para armazenamento',
+            textAlign: TextAlign.left,
+            style: MyTextStyle(
+              color: DefaultColors.textColorOnLight,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+      SizedBox(height: verticalSpacing),
+      Container(
+        padding: EdgeInsets.only(top: 0, bottom: 0),
+        height: height * 0.07,
+        width: width * 0.9,
+        color: Colors.transparent,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.rectangle,
+            borderRadius: BorderRadius.all(Radius.circular(8.0)),
+            boxShadow: [
+              BoxShadow(color: Colors.grey[200], offset: new Offset(5.0, 5.0))
+            ],
+          ),
+          child: ListView(
+            physics: NeverScrollableScrollPhysics(),
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 15.0),
+                child: PropertyChangeConsumer<Configurations>(
+                    properties: ['chosenDrive'],
+                    builder: (context, configurations, properties) {
+                      return ValueListenableBuilder(
+                          valueListenable: driveListNotifier,
+                          builder: (context, driveList, child) {
+                            return DropdownButton(
+                              value: configurations.chosenDrive,
+                              items: driveList.map<DropdownMenuItem<String>>(
+                                  (String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(
+                                    value,
+                                    style: MyTextStyle(
+                                        color: DefaultColors.textColorOnLight),
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (newDrive) =>
+                                  configurations.chosenDrive = newDrive,
+                            );
+                          });
+                    }),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ]);
+  }
+}
+
+class FrequencyBlock extends StatelessWidget {
+  final List<String> fsOptions;
+
+  FrequencyBlock({this.fsOptions});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Text(
+          'Freq.amostragem [Hz]:',
+          style: MyTextStyle(color: DefaultColors.textColorOnLight),
+        ),
+        Expanded(
+          child: Container(
+            margin: EdgeInsets.only(left: 20.0, right: 10.0),
+            child: PropertyChangeConsumer<Configurations>(
+                properties: ['controllerFreq'],
+                builder: (context, configurations, properties) {
+                  return DropdownButton(
+                    value: configurations.controllerFreq.text,
+                    items:
+                        fsOptions.map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(
+                          value,
+                          style: MyTextStyle(
+                              color: DefaultColors.textColorOnLight),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (fs) => configurations.controllerFreq =
+                        TextEditingController(text: fs),
+                  );
+                }),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class SaveRawBlock extends StatelessWidget {
+  SaveRawBlock();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Text('Guardar dados em bruto?',
+            style: MyTextStyle(color: DefaultColors.textColorOnLight)),
+        PropertyChangeConsumer<Configurations>(
+            properties: ['saveRaw'],
+            builder: (context, configurations, properties) {
+              return Checkbox(
+                value: configurations.saveRaw,
+                onChanged: (bool value) {
+                  configurations.saveRaw = value;
+                },
+              );
+            })
+      ],
+    );
+  }
+}
+
+class ChannelBlock extends StatelessWidget {
+  final int deviceID;
+
+  ChannelBlock({this.deviceID});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+      PropertyChangeConsumer<Configurations>(
+          properties: ['bit${deviceID}Selections'],
+          builder: (context, configurations, properties) {
+            return PropertyChangeConsumer<Devices>(
+                properties: ['isBit${deviceID}Enabled'],
+                builder: (context, devices, properties) {
+                  return ToggleButtons(
+                    constraints: BoxConstraints(
+                        maxHeight: 25.0,
+                        minHeight: 25.0,
+                        maxWidth: 40.0,
+                        minWidth: 40.0),
+                    borderRadius: BorderRadius.all(Radius.circular(25)),
+                    renderBorder: true,
+                    children: <Widget>[
+                      Text('A1'),
+                      Text('A2'),
+                      Text('A3'),
+                      Text('A4'),
+                      Text('A5'),
+                      Text('A6'),
+                    ],
+                    isSelected: configurations.get('bit${deviceID}Selections'),
+                    onPressed: devices.get('isBit${deviceID}Enabled')
+                        ? (int index) {
+                            List<bool> auxList = List.from(
+                                configurations.get('bit${deviceID}Selections'));
+                            auxList[index] = !auxList[index];
+                            deviceID == 1
+                                ? configurations.bit1Selections = auxList
+                                : configurations.bit2Selections = auxList;
+                          }
+                        : null,
+                  );
+                });
+          }),
+    ]);
+  }
+}
+
+class SensorBlock extends StatelessWidget {
+  final int deviceID;
+  final List<DropdownMenuItem<String>> sensorItems;
+
+  SensorBlock({this.deviceID, this.sensorItems});
+
+  @override
+  Widget build(BuildContext context) {
+    List<String> _sensorContainerPositions = [
+      'cornerL',
+      'secondL',
+      'middle',
+      'middle',
+      'middle',
+      'cornerR'
+    ];
+
+    return PropertyChangeConsumer<Devices>(
+        properties: ['isBit${deviceID}Enabled'],
+        builder: (context, devices, properties) {
+          return PropertyChangeConsumer<Configurations>(
+              properties: ['controllerSensors'],
+              builder: (context, configurations, properties) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: _sensorContainerPositions.asMap().keys.map((i) {
+                    return SensorContainer(
+                      configurations: configurations,
+                      index: i + 6 * (deviceID - 1),
+                      sensorItems: sensorItems,
+                      position: _sensorContainerPositions[i],
+                      isBitEnabled: devices.get('isBit${deviceID}Enabled'),
+                    );
+                  }).toList(),
+                );
+              });
+        });
+  }
+}
+
+class SensorContainer extends StatelessWidget {
+  //final TextEditingController controller;
+  final Configurations configurations;
+  final int index;
   final List<DropdownMenuItem<String>> sensorItems;
   final String position;
   final bool isBitEnabled;
 
   SensorContainer(
-      {this.controller, this.sensorItems, this.position, this.isBitEnabled});
+      {this.configurations,
+      this.index,
+      this.sensorItems,
+      this.position,
+      this.isBitEnabled});
 
-  @override
-  _SensorContainerState createState() => _SensorContainerState();
-}
-
-class _SensorContainerState extends State<SensorContainer> {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width -
@@ -730,21 +616,21 @@ class _SensorContainerState extends State<SensorContainer> {
 
     return Container(
       width: (width * 0.85 - 2 * 30.0) / 6,
-      decoration: (widget.position == 'cornerL')
+      decoration: (position == 'cornerL')
           ? BoxDecoration(
               borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(25),
                   bottomLeft: Radius.circular(25)),
               border: Border.all(color: borderColor),
             )
-          : (widget.position == 'cornerR')
+          : (position == 'cornerR')
               ? BoxDecoration(
                   borderRadius: BorderRadius.only(
                       topRight: Radius.circular(25),
                       bottomRight: Radius.circular(25)),
                   border: Border.all(color: borderColor),
                 )
-              : (widget.position == 'secondL')
+              : (position == 'secondL')
                   ? BoxDecoration(
                       border: Border(
                       top: BorderSide(color: borderColor),
@@ -758,24 +644,20 @@ class _SensorContainerState extends State<SensorContainer> {
       child: DropdownButtonHideUnderline(
         child: DropdownButton(
           iconSize: 0.0,
-          value: widget.controller.text,
-          items: widget.sensorItems,
-          onChanged: widget.isBitEnabled
-              ? (sensor) => setState(() => widget.controller.text = sensor)
+          value: configurations.controllerSensors[index].text,
+          items: sensorItems,
+          onChanged: isBitEnabled
+              ? (sensor) {
+                  List auxList = List.from(configurations.controllerSensors);
+                  auxList[index] = TextEditingController(text: sensor);
+                  configurations.controllerSensors = List.from(auxList);
+                }
               : null,
           isDense: true,
           isExpanded: true,
-          style: new TextStyle(
-              color: widget.isBitEnabled
-                  ? DefaultColors.textColorOnLight
-                  : borderColor),
-          disabledHint: Center(
-            child: Text(
-              '-',
-              style: MyTextStyle(color: borderColor),
-              textAlign: TextAlign.center,
-            ),
-          ),
+          style: MyTextStyle(
+              color:
+                  isBitEnabled ? DefaultColors.textColorOnLight : borderColor),
         ),
       ),
     );
