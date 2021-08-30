@@ -55,8 +55,13 @@ class _ScanPageState extends State<ScanPage> {
 
   @override
   Widget build(BuildContext context) {
+    final height = MediaQuery.of(context).size.height -
+        MediaQuery.of(context).viewInsets.top -
+        MediaQuery.of(context).viewInsets.bottom;
+
     return Scaffold(
-      appBar: new AppBar(
+      backgroundColor: DefaultColors.backgroundColor,
+      /* appBar: new AppBar(
         centerTitle: true,
         /* shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
@@ -70,82 +75,110 @@ class _ScanPageState extends State<ScanPage> {
             fontWeight: FontWeight.bold,
           ),
         ),
-      ),
-      body: new Center(
-        child: new ListView(
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.fromLTRB(20.0, 100.0, 20.0, 0.0),
-              child: Align(
-                alignment: Alignment.center,
-                child: Container(
-                    child: Text(
-                        'Para começar as aquisições, faça scan do ID do paciente ou introduza-o manualmente.',
-                        style:
-                            MyTextStyle(color: DefaultColors.textColorOnLight),
-                        textAlign: TextAlign.center)),
+      ), */
+      body: new CustomPaint(
+        painter: CurveBackground(),
+        child: Stack(children: [
+          Positioned(
+            top: height * 0.2,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              alignment: Alignment.topCenter,
+              child: Text(
+                'Bem vindo ao EpiBOX!',
+                style: MyTextStyle(
+                  fontSize: 18,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(20.0, 30.0, 20.0, 0.0),
-              child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    primary: DefaultColors.mainLColor, // background
-                    //onPrimary: Colors.white, // foreground
-                  ),
-                  onPressed: () => scan(widget.patientNotifier),
-                  icon: Icon(
-                    MdiIcons.qrcode,
-                  ),
-                  label: const Text(
-                    'INICIAR SCAN',
-                    style: MyTextStyle(fontSize: 14),
-                  )),
-            ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 0.0),
-              child: Align(
-                alignment: Alignment.center,
-                child: Container(
-                    child: Text(barcodeError,
-                        style: MyTextStyle(color: Colors.grey[500]),
-                        textAlign: TextAlign.center)),
-              ),
-            ),
-            Padding(
-                padding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: TextField(
-                          style: MyTextStyle(
-                            color: DefaultColors.textColorOnLight,
-                          ),
-                          controller: _idController,
-                          decoration: InputDecoration(
-                              filled: true,
-                              fillColor: Colors.white,
-                              border: OutlineInputBorder(),
-                              labelText: 'ID do paciente',
-                              contentPadding: EdgeInsets.all(10)),
-                          onChanged: null),
+          ),
+          Positioned(
+            top: height * 0.4,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Center(
+              child: new ListView(
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(20.0, 0, 20.0, 0.0),
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: Container(
+                          child: Text(
+                              'Para começar as aquisições, faça scan do ID do paciente ou introduza-o manualmente.',
+                              style: MyTextStyle(
+                                  color: DefaultColors.textColorOnLight),
+                              textAlign: TextAlign.center)),
                     ),
-                    IconButton(
-                        icon: Icon(
-                          Icons.check_circle,
-                          color: DefaultColors.mainLColor,
-                          size: 30,
+                  ),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(20.0, 30.0, 20.0, 0.0),
+                    child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          primary: DefaultColors.mainLColor, // background
+                          //onPrimary: Colors.white, // foreground
                         ),
-                        onPressed: () {
-                          setState(() => widget.patientNotifier.value =
-                              _idController.text.trim());
-                          _updateIdTemplate();
-                        })
-                  ],
-                )),
-          ],
-        ),
+                        onPressed: () => scan(widget.patientNotifier),
+                        icon: Icon(
+                          MdiIcons.qrcode,
+                        ),
+                        label: const Text(
+                          'INICIAR SCAN',
+                          style: MyTextStyle(fontSize: 14),
+                        )),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 0.0),
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: Container(
+                          child: Text(barcodeError,
+                              style: MyTextStyle(color: Colors.grey[500]),
+                              textAlign: TextAlign.center)),
+                    ),
+                  ),
+                  Padding(
+                      padding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: TextField(
+                                style: MyTextStyle(
+                                  color: DefaultColors.textColorOnLight,
+                                ),
+                                controller: _idController,
+                                decoration: InputDecoration(
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                    border: OutlineInputBorder(),
+                                    labelText: 'ID do paciente',
+                                    contentPadding: EdgeInsets.all(10)),
+                                onChanged: null),
+                          ),
+                          IconButton(
+                              icon: Icon(
+                                Icons.check_circle,
+                                color: DefaultColors.mainLColor,
+                                size: 30,
+                              ),
+                              onPressed: () {
+                                setState(() => widget.patientNotifier.value =
+                                    _idController.text.trim());
+                                _updateIdTemplate();
+                              })
+                        ],
+                      )),
+                ],
+              ),
+            ),
+          ),
+        ]),
       ),
       floatingActionButton: FloatingActionButton.extended(
           //mini: true,
@@ -190,5 +223,29 @@ class _ScanPageState extends State<ScanPage> {
     } catch (e) {
       setState(() => this.barcodeError = 'Unknown error: $e');
     }
+  }
+}
+
+class CurveBackground extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    var paint = Paint();
+    paint.color = DefaultColors.mainColor;
+    paint.style = PaintingStyle.fill; // Change this to fill
+
+    var path = Path();
+
+    path.moveTo(0, size.height * 0.25);
+    path.quadraticBezierTo(
+        size.width / 2, size.height * 0.45, size.width, size.height * 0.25);
+    path.lineTo(size.width, 0);
+    path.lineTo(0, 0);
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return true;
   }
 }
