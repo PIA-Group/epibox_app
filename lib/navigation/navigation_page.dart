@@ -147,8 +147,6 @@ class _NavigationPageState extends State<NavigationPage>
     shouldRestart.removeListener(listeners['shouldRestart']);
     acquisition
         .removeListener(listeners['acquisitionState'], ['acquisitionState']);
-    errorHandler
-        .removeListener(listeners['overlayMessage'], ['overlayMessage']);
     acquisition.removeListener(listeners['dataMAC'], ['dataMAC1', 'dataMAC2']);
     super.dispose();
   }

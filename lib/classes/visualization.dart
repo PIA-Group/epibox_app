@@ -5,7 +5,7 @@ class Visualization extends PropertyChangeNotifier<String> {
   List<List> _dataMAC = [];
   List _sensorsMAC = [];
   List<List> _channelsMAC = [];
-  List<List> _data2Plot = List.filled(6, [], growable: true);
+  List<List> _data2Plot = [];
   List<List<double>> _rangesList = List.filled(6, [-1, 10, 1]);
   
 

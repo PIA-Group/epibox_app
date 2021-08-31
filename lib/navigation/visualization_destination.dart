@@ -44,11 +44,82 @@ class _DestinationViewState extends State<DestinationView> {
 
   final plotHeight = 160.0;
 
-  bool _rangeInitiated;
+  bool _rangeInitiated = false;
   bool _isTimedOutOpen = false;
   
   int secondsSinceStart = 0;
   DateTime startTime;
+
+  Map<String, Function> listeners = {
+    'startupError': null,
+    'timedOut': null,
+    'dataMAC': null,
+  };
+
+  
+
+  @override
+  void initState() {
+    super.initState();
+
+    listeners['startupError'] = () {
+      if (widget.startupError.value) {
+        // TODO: startup error
+      }
+    };
+    listeners['timedOut'] = () {
+      if (widget.timedOut.value != null) {
+        // TODO: timed out
+      }
+    };
+    listeners['dataMAC'] = () {
+      if (this.mounted) {
+        if (!_rangeInitiated && widget.visualizationMAC.sensorsMAC.isNotEmpty) {
+          _initRange(widget.visualizationMAC.sensorsMAC);
+        }
+
+        double canvasWidth = MediaQuery.of(context).size.width;
+
+        widget.visualizationMAC.dataMAC.asMap().forEach((index, channel) {
+          List auxData = widget.visualizationMAC.data2Plot[index] + channel;
+          if (auxData.length > canvasWidth) {
+            auxData = auxData.sublist(auxData.length - canvasWidth.floor());
+          }
+          List auxListData = List.from(widget.visualizationMAC.data2Plot);
+          auxListData[index] = auxData;
+
+          if (widget.visualizationMAC.rangesList[index][2] == 0) {
+            aux = []..addAll(auxListData[index]);
+            aux.sort();
+            if (_rangeUpdateNeeded(
+                aux, widget.visualizationMAC.rangesList[index].sublist(0, 2))) {
+              List auxListRanges =
+                  List.from(widget.visualizationMAC.rangesList);
+
+              auxListRanges[index] = _updateRange(
+                  aux, widget.visualizationMAC.rangesList[index].sublist(0, 2));
+              widget.visualizationMAC.rangesList = List.from(auxListRanges);
+            }
+          }
+          widget.visualizationMAC.data2Plot = List.from(auxListData);
+        });
+        
+      }
+    };
+
+    widget.startupError.addListener(listeners['startupError']);
+    widget.timedOut.addListener(listeners['timedOut']);
+    widget.visualizationMAC.addListener(listeners['dataMAC'], ['dataMAC']);
+  }
+
+  @override
+  void dispose() {
+    widget.startupError.removeListener(listeners['startupError']);
+    widget.timedOut.removeListener(listeners['timedOut']);
+    widget.visualizationMAC.removeListener(listeners['dataMAC'], ['dataMAC']);
+    super.dispose();
+  }
+
 
   List<double> _getRangeFromSensor(sensor) {
     List<double> yRange;
@@ -116,62 +187,6 @@ class _DestinationViewState extends State<DestinationView> {
   }
 
   @override
-  void initState() {
-    super.initState();
-
-    startTime = DateTime.now();
-
-    widget.startupError.addListener(() {
-      if (widget.startupError.value) {
-        // TODO: startup error
-      }
-    });
-
-    widget.timedOut.addListener(() {
-      //print(widget.timedOut.value);
-      if (widget.timedOut.value != null) {
-        // TODO: timed out
-      }
-    });
-
-    setState(() => _rangeInitiated = false);
-
-    widget.visualizationMAC.addListener(() {
-      if (this.mounted) {
-        if (!_rangeInitiated && widget.visualizationMAC.sensorsMAC.isNotEmpty) {
-          _initRange(widget.visualizationMAC.sensorsMAC);
-        }
-
-        double canvasWidth = MediaQuery.of(context).size.width;
-
-        widget.visualizationMAC.dataMAC.asMap().forEach((index, channel) {
-          List auxData = widget.visualizationMAC.data2Plot[index] + channel;
-          if (auxData.length > canvasWidth) {
-            auxData = auxData.sublist(auxData.length - canvasWidth.floor());
-          }
-          List auxListData = List.from(widget.visualizationMAC.data2Plot);
-          auxListData[index] = auxData;
-
-          if (widget.visualizationMAC.rangesList[index][2] == 0) {
-            aux = []..addAll(auxListData[index]);
-            aux.sort();
-            if (_rangeUpdateNeeded(
-                aux, widget.visualizationMAC.rangesList[index].sublist(0, 2))) {
-              List auxListRanges =
-                  List.from(widget.visualizationMAC.rangesList);
-
-              auxListRanges[index] = _updateRange(
-                  aux, widget.visualizationMAC.rangesList[index].sublist(0, 2));
-              widget.visualizationMAC.rangesList = List.from(auxListRanges);
-            }
-          }
-          widget.visualizationMAC.data2Plot = List.from(auxListData);
-        });
-      }
-    }, ['dataMAC']);
-  }
-
-  @override
   Widget build(BuildContext context) {
     return PropertyChangeProvider(
       value: widget.visualizationMAC,
@@ -185,7 +200,7 @@ class _DestinationViewState extends State<DestinationView> {
                 return Column(
                     children: visualization.data2Plot
                         .mapIndexed((data, i) {
-                          if (data != []) {
+                          if (data.isNotEmpty) {
                             return [
                               PlotDataTitle(
                                   channels: visualization.channelsMAC[i],
