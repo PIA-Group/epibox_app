@@ -22,7 +22,6 @@ void gotNewMessage({
 }) {
   // runs functions based on the received message
   List message2List = json.decode(message.replaceAll('\'', '\"'));
-  print('message: $message2List');
 
   switch (message2List[0]) {
     case 'DEFAULT MAC':
@@ -126,33 +125,27 @@ void isAcquisitionState(String message, Acquisition acquisition,
     ValueNotifier<bool> shouldRestart) {
   if (message.contains('STARTING')) {
     acquisition.acquisitionState = 'starting';
-    print('ACQUISITION STARTING');
   } else if (message.contains('ACQUISITION ON')) {
-    acquisition.acquisitionState = 'acquiring';
-    print('ACQUIRING');
+    if (acquisition.acquisitionState != 'acquiring')
+      acquisition.acquisitionState = 'acquiring';
   } else if (message.contains('RECONNECTING')) {
     acquisition.acquisitionState = 'reconnecting';
-    print('RECONNECTING ACQUISITION');
   } else if (message.contains('PAIRING')) {
     acquisition.acquisitionState = 'pairing';
-    print('PAIRING');
   } else if (message.contains('STOPPED')) {
     acquisition.acquisitionState = 'stopped';
     shouldRestart.value = false;
-    print('ACQUISITION STOPPED AND SAVED');
   } else if (message.contains('PAUSED')) {
     acquisition.acquisitionState = 'paused';
-    print('ACQUISITION PAUSED');
   }
 }
 
 void isData(List message2List, Devices devices, Acquisition acquisition) {
-  acquisition.acquisitionState =
-      'acquiring'; // if user leaves the app, this will enable the visualization nontheless
-
   if (devices.macAddress1 == 'xx:xx:xx:xx:xx:xx') {
     getLastMAC(devices);
   }
+  if (acquisition.acquisitionState != 'acquiring')
+    acquisition.acquisitionState = 'acquiring';
 
   List<List> dataMAC1 = [];
   List<List> dataMAC2 = [];

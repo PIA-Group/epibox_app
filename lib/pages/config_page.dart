@@ -27,7 +27,11 @@ class ConfigPage extends StatefulWidget {
   _ConfigPageState createState() => _ConfigPageState();
 }
 
-class _ConfigPageState extends State<ConfigPage> {
+class _ConfigPageState extends State<ConfigPage>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   List<String> fsOptions = [
     ' ',
     /* '17000',
@@ -225,6 +229,7 @@ class _ConfigPageState extends State<ConfigPage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final width = MediaQuery.of(context).size.width -
         MediaQuery.of(context).viewInsets.left -
         MediaQuery.of(context).viewInsets.right;
@@ -244,6 +249,7 @@ class _ConfigPageState extends State<ConfigPage> {
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: horizontalSpacing),
           child: ListView(
+            key: Key('configListView'),
             shrinkWrap: true,
             children: <Widget>[
               DriveBlock(
@@ -339,6 +345,7 @@ class _ConfigPageState extends State<ConfigPage> {
                   },
                   child: new Text(
                     "Definir novo default",
+                    key: Key('defineNewDefault'),
                     style: MyTextStyle(),
                   ),
                 ),

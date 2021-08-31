@@ -48,6 +48,7 @@ class MQTTStateFloater extends StatelessWidget {
                   backgroundColor: Colors.transparent,
                   elevation: 0.0,
                   child: CircleAvatar(
+                    key: Key('serverStateIcon'),
                     backgroundColor:
                         state == MqttCurrentConnectionState.CONNECTED
                             ? Colors.green[800]
@@ -190,6 +191,7 @@ class StartStopButton extends StatelessWidget {
           properties: ['acquisitionState'],
           builder: (context, acquisition, properties) {
             return FloatingActionButton.extended(
+              key: Key('startStopButton'),
               onPressed: (acquisition.acquisitionState == 'stopped' ||
                       acquisition.acquisitionState == 'off')
                   ? () => startAcquisition(

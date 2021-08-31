@@ -6,11 +6,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 // DEVICES
 
 void getLastMAC(Devices devices) async {
-  await SharedPreferences.getInstance().then((value) {
-    List<String> lastMAC = (value.getStringList('lastMAC').toList() ??
-        ['xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx']);
-    devices.defaultMacAddress1 = lastMAC[0];
-    devices.defaultMacAddress2 = lastMAC[1];
+  await SharedPreferences.getInstance().then((prefs) {
+    if (prefs.containsKey('lastMAC')) {
+      List<String> lastMAC = (prefs.getStringList('lastMAC').toList() ??
+          ['xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx']);
+      devices.defaultMacAddress1 = lastMAC[0];
+      devices.defaultMacAddress2 = lastMAC[1];
+    } else {
+      List<String> lastMAC = ['xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx'];
+      devices.defaultMacAddress1 = lastMAC[0];
+      devices.defaultMacAddress2 = lastMAC[1];
+    }
   });
 }
 

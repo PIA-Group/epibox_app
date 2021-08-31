@@ -8,7 +8,7 @@ import 'package:epibox/mqtt/mqtt_states.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'package:property_change_notifier/property_change_notifier.dart';
 
-class DestinationView extends StatefulWidget {
+class VisualizationPage extends StatefulWidget {
   final Configurations configurations;
   final Visualization visualizationMAC;
 
@@ -23,7 +23,7 @@ class DestinationView extends StatefulWidget {
 
   final ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
 
-  DestinationView({
+  VisualizationPage({
     Key key,
     this.visualizationMAC,
     this.configurations,
@@ -36,17 +36,20 @@ class DestinationView extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _DestinationViewState createState() => _DestinationViewState();
+  _VisualizationPageState createState() => _VisualizationPageState();
 }
 
-class _DestinationViewState extends State<DestinationView> {
+class _VisualizationPageState extends State<VisualizationPage>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   List aux;
 
   final plotHeight = 160.0;
 
   bool _rangeInitiated = false;
-  bool _isTimedOutOpen = false;
-  
+
   int secondsSinceStart = 0;
   DateTime startTime;
 
@@ -55,8 +58,6 @@ class _DestinationViewState extends State<DestinationView> {
     'timedOut': null,
     'dataMAC': null,
   };
-
-  
 
   @override
   void initState() {
@@ -103,7 +104,6 @@ class _DestinationViewState extends State<DestinationView> {
           }
           widget.visualizationMAC.data2Plot = List.from(auxListData);
         });
-        
       }
     };
 
@@ -119,7 +119,6 @@ class _DestinationViewState extends State<DestinationView> {
     widget.visualizationMAC.removeListener(listeners['dataMAC'], ['dataMAC']);
     super.dispose();
   }
-
 
   List<double> _getRangeFromSensor(sensor) {
     List<double> yRange;
@@ -188,41 +187,45 @@ class _DestinationViewState extends State<DestinationView> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return PropertyChangeProvider(
       value: widget.visualizationMAC,
-      child: ListView(shrinkWrap: true, children: [
-        PropertyChangeConsumer<Visualization>(
-            properties: ['data2Plot'],
-            builder: (context, visualization, properties) {
-              if (visualization.dataMAC.isEmpty) {
-                return Container();
-              } else {
-                return Column(
-                    children: visualization.data2Plot
-                        .mapIndexed((data, i) {
-                          if (data.isNotEmpty) {
-                            return [
-                              PlotDataTitle(
-                                  channels: visualization.channelsMAC[i],
-                                  sensor: visualization.sensorsMAC[i]),
-                              PlotData(
-                                data: data.map((s) => s as double).toList(),
-                                yRange:
-                                    visualization.rangesList[i].sublist(0, 2),
-                                plotHeight: plotHeight,
-                                startTime: startTime,
-                                secondsSinceStart: secondsSinceStart,
-                                configurations: widget.configurations,
-                              )
-                            ];
-                          }
-                        })
-                        .expand((k) => k)
-                        .toList());
-              }
-            }),
-        SizedBox(height: 40.0),
-      ]),
+      child: ListView(
+          shrinkWrap: true,
+          key: Key('visualizationListView'),
+          children: [
+            PropertyChangeConsumer<Visualization>(
+                properties: ['data2Plot'],
+                builder: (context, visualization, properties) {
+                  if (visualization.dataMAC.isEmpty) {
+                    return Container();
+                  } else {
+                    return Column(
+                        children: visualization.data2Plot
+                            .mapIndexed((data, i) {
+                              if (data.isNotEmpty) {
+                                return [
+                                  PlotDataTitle(
+                                      channels: visualization.channelsMAC[i],
+                                      sensor: visualization.sensorsMAC[i]),
+                                  PlotData(
+                                    data: data.map((s) => s as double).toList(),
+                                    yRange: visualization.rangesList[i]
+                                        .sublist(0, 2),
+                                    plotHeight: plotHeight,
+                                    startTime: startTime,
+                                    secondsSinceStart: secondsSinceStart,
+                                    configurations: widget.configurations,
+                                  )
+                                ];
+                              }
+                            })
+                            .expand((k) => k)
+                            .toList());
+                  }
+                }),
+            SizedBox(height: 40.0),
+          ]),
     );
   }
 }

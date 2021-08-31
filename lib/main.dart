@@ -1,9 +1,13 @@
+import 'package:epibox/navigation/nav_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:epibox/utils/id_wrapper.dart';
 import 'package:epibox/decor/default_colors.dart';
+import 'package:provider/provider.dart';
 
-void main() => runApp(new InterfaceRPi());
+void main() => runApp(ChangeNotifierProvider(
+      create: (context) => BottomNavigationBarProvider(),
+      child: new InterfaceRPi()));
 
 class InterfaceRPi extends StatelessWidget {
   // This widget is the root of your application.

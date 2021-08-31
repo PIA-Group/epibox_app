@@ -1,4 +1,3 @@
-
 import 'package:epibox/classes/acquisition.dart';
 import 'package:epibox/classes/devices.dart';
 import 'package:epibox/mqtt/connection.dart';
@@ -10,10 +9,9 @@ import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ServerPage extends StatefulWidget {
-
   final Devices devices;
   final Acquisition acquisition;
-  
+
   final ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
   final MQTTClientWrapper mqttClientWrapper;
 
@@ -56,7 +54,11 @@ class ServerPage extends StatefulWidget {
   _ServerPageState createState() => _ServerPageState();
 }
 
-class _ServerPageState extends State<ServerPage> {
+class _ServerPageState extends State<ServerPage>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+  
   String message;
 
   @override
@@ -85,10 +87,9 @@ class _ServerPageState extends State<ServerPage> {
     }
   }
 
-  
-
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return ListView(
       children: <Widget>[
         Padding(
@@ -155,7 +156,8 @@ class _ServerPageState extends State<ServerPage> {
                       //onPrimary: Colors.white, // foreground
                     ),
                     onPressed: () {
-                      setup(widget.mqttClientWrapper, widget.connectionNotifier);
+                      setup(
+                          widget.mqttClientWrapper, widget.connectionNotifier);
                     },
                     child: new Text(
                       "Conectar",
@@ -165,13 +167,15 @@ class _ServerPageState extends State<ServerPage> {
                     ),
                   ),
                   ElevatedButton(
+                    key: Key('connectServerButton'),
                     style: ElevatedButton.styleFrom(
                       primary: DefaultColors.mainLColor, // background
                       //onPrimary: Colors.white, // foreground
                     ),
                     onPressed: () {
                       widget.shouldRestart.value = true;
-                      setup(widget.mqttClientWrapper, widget.connectionNotifier);
+                      setup(
+                          widget.mqttClientWrapper, widget.connectionNotifier);
                     },
                     child: new Text(
                       "Reiniciar",

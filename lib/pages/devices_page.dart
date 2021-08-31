@@ -44,7 +44,11 @@ class DevicesPage extends StatefulWidget {
   _DevicesPageState createState() => _DevicesPageState();
 }
 
-class _DevicesPageState extends State<DevicesPage> {
+class _DevicesPageState extends State<DevicesPage>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   TextEditingController controller1 = TextEditingController();
   TextEditingController controller2 = TextEditingController();
 
@@ -71,9 +75,10 @@ class _DevicesPageState extends State<DevicesPage> {
     };
 
     // show changes in default MAC recieved from the RPi
-    widget.devices.addListener(listeners['defaultMacAddress1'], ['defaultMacAddress1']);
-    widget.devices.addListener(listeners['defaultMacAddress2'], ['defaultMacAddress2']);
-
+    widget.devices
+        .addListener(listeners['defaultMacAddress1'], ['defaultMacAddress1']);
+    widget.devices
+        .addListener(listeners['defaultMacAddress2'], ['defaultMacAddress2']);
 
     controller1.addListener(() {
       widget.devices.macAddress1 = controller1.text;
@@ -101,13 +106,14 @@ class _DevicesPageState extends State<DevicesPage> {
     }
   }
 
-
   @override
   void dispose() {
     controller1.dispose();
     controller2.dispose();
-    widget.devices.removeListener(listeners['defaultMacAddress1'], ['defaultMacAddress1']);
-    widget.devices.removeListener(listeners['defaultMacAddress2'], ['defaultMacAddress2']);
+    widget.devices.removeListener(
+        listeners['defaultMacAddress1'], ['defaultMacAddress1']);
+    widget.devices.removeListener(
+        listeners['defaultMacAddress2'], ['defaultMacAddress2']);
     super.dispose();
   }
 
@@ -121,6 +127,7 @@ class _DevicesPageState extends State<DevicesPage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     const double horizontalSpacing = 20.0;
     const double verticalSpacing = 20.0;
 
@@ -371,6 +378,7 @@ class DeviceStateConnectionBlock extends StatelessWidget {
                   child: Material(
                     color: Colors.white.withOpacity(0.0),
                     child: InkWell(
+                      key: Key('connectDeviceButton'),
                       onTap: () {
                         if (connectionNotifier.value !=
                             MqttCurrentConnectionState.CONNECTED) {
@@ -404,6 +412,7 @@ class DeviceStateConnectionBlock extends StatelessWidget {
                                   ? _connectionStateText[devices
                                       .get('macAddress${deviceID}Connection')]
                                   : _connectionStateText['other'],
+                              key: Key('connectionStateText'),
                               style: MyTextStyle(
                                   color: DefaultColors.textColorOnLight)),
                         ),

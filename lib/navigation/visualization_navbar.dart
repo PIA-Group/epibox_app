@@ -3,13 +3,13 @@ import 'package:epibox/classes/devices.dart';
 import 'package:epibox/classes/visualization.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
-import 'package:epibox/navigation/visualization_destination.dart';
+import 'package:epibox/pages/visualization_page.dart';
 import 'package:epibox/mqtt/mqtt_states.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'package:flutter/material.dart';
 
-class AcquisitionPage extends StatelessWidget {
-  AcquisitionPage({
+class VisualizationNavPage extends StatelessWidget {
+  VisualizationNavPage({
     this.devices,
     this.configurations,
     this.visualizationMAC1,
@@ -58,7 +58,7 @@ class AcquisitionPage extends StatelessWidget {
           child: TabBarView(
             children: [visualizationMAC1, visualizationMAC2]
                 .map(
-                  (visualizationMAC) => DestinationView(
+                  (visualizationMAC) => VisualizationPage(
                     configurations: configurations,
                     visualizationMAC: visualizationMAC,
                     mqttClientWrapper: mqttClientWrapper,

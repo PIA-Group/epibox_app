@@ -61,21 +61,6 @@ class _ScanPageState extends State<ScanPage> {
 
     return Scaffold(
       backgroundColor: DefaultColors.backgroundColor,
-      /* appBar: new AppBar(
-        centerTitle: true,
-        /* shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(10),
-          ),
-        ), */
-        title: new Text(
-          'Bem vindo ao EpiBOX!',
-          style: MyTextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ), */
       body: new CustomPaint(
         painter: CurveBackground(),
         child: Stack(children: [
@@ -149,6 +134,7 @@ class _ScanPageState extends State<ScanPage> {
                         children: [
                           Expanded(
                             child: TextField(
+                              key: Key('loginTextField'),
                                 style: MyTextStyle(
                                   color: DefaultColors.textColorOnLight,
                                 ),
@@ -162,6 +148,7 @@ class _ScanPageState extends State<ScanPage> {
                                 onChanged: null),
                           ),
                           IconButton(
+                            key: Key('loginCheckButton'),
                               icon: Icon(
                                 Icons.check_circle,
                                 color: DefaultColors.mainLColor,
