@@ -110,11 +110,11 @@ class _ConfigPageState extends State<ConfigPage>
           }
         });
       }
-      //
+      
       // Sampling frequency
       widget.configurations.controllerFreq.text =
           widget.configurations.configDefault['fs'].toString();
-      //
+      
       // Save raw
       widget.configurations.saveRaw =
           widget.configurations.configDefault['saveRaw'] == 'true';
@@ -139,18 +139,18 @@ class _ConfigPageState extends State<ConfigPage>
         widget.devices.isBit2Enabled = true;
       }
     };
-    listeners['driveListNotifier'] = () {
+    /* listeners['driveListNotifier'] = () {
       if (!widget.driveListNotifier.value
           .contains(widget.configurations.chosenDrive))
         widget.configurations.chosenDrive = widget.driveListNotifier.value[0];
-    };
+    }; */
 
     // update values upon receiving default configurations from RPi
     widget.configurations
         .addListener(listeners['configDefault'], ['configDefault']);
     widget.devices.addListener(listeners['macAddress1'], ['macAddress1']);
     widget.devices.addListener(listeners['macAddress2'], ['macAddress2']);
-    widget.driveListNotifier.addListener(listeners['driveListNotifier']);
+    //widget.driveListNotifier.addListener(listeners['driveListNotifier']);
   }
 
   @override
@@ -159,7 +159,7 @@ class _ConfigPageState extends State<ConfigPage>
         .removeListener(listeners['configDefault'], ['configDefault']);
     widget.devices.removeListener(listeners['macAddress1'], ['macAddress1']);
     widget.devices.removeListener(listeners['macAddress2'], ['macAddress2']);
-    widget.driveListNotifier.removeListener(listeners['driveListNotifier']);
+    //widget.driveListNotifier.removeListener(listeners['driveListNotifier']);
     super.dispose();
   }
 
@@ -407,6 +407,7 @@ class DriveBlock extends StatelessWidget {
                           valueListenable: driveListNotifier,
                           builder: (context, driveList, child) {
                             return DropdownButton(
+                              key: Key('driveDropdown'),
                               value: configurations.chosenDrive,
                               items: driveList.map<DropdownMenuItem<String>>(
                                   (String value) {
@@ -414,6 +415,7 @@ class DriveBlock extends StatelessWidget {
                                   value: value,
                                   child: Text(
                                     value,
+                                    //key: Key(value.split(' (')[0]),
                                     style: MyTextStyle(
                                         color: DefaultColors.textColorOnLight),
                                   ),
@@ -453,6 +455,7 @@ class FrequencyBlock extends StatelessWidget {
                 properties: ['controllerFreq'],
                 builder: (context, configurations, properties) {
                   return DropdownButton(
+                    key: Key('fsDropdown'),
                     value: configurations.controllerFreq.text,
                     items:
                         fsOptions.map<DropdownMenuItem<String>>((String value) {
@@ -515,6 +518,7 @@ class ChannelBlock extends StatelessWidget {
                 properties: ['isBit${deviceID}Enabled'],
                 builder: (context, devices, properties) {
                   return ToggleButtons(
+                    key: Key('channels${deviceID}Toggle'),
                     constraints: BoxConstraints(
                         maxHeight: 25.0,
                         minHeight: 25.0,

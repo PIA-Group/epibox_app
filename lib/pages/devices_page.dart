@@ -87,23 +87,25 @@ class _DevicesPageState extends State<DevicesPage>
       widget.devices.macAddress2 = controller2.text;
     });
 
-    if (widget.devices.macAddress1 == 'xx:xx:xx:xx:xx:xx') {
-      if (widget.devices.defaultMacAddress1 == '') {
-        controller1.text = ' ';
+    Future.delayed(Duration.zero).then((value) {
+      if (widget.devices.macAddress1 == 'xx:xx:xx:xx:xx:xx') {
+        if (widget.devices.defaultMacAddress1 == '') {
+          controller1.text = ' ';
+        } else {
+          controller1.text = widget.devices.defaultMacAddress1;
+        }
+        if (widget.devices.defaultMacAddress2 == '') {
+          controller2.text = ' ';
+        } else {
+          controller2.text = widget.devices.defaultMacAddress2;
+        }
       } else {
-        controller1.text = widget.devices.defaultMacAddress1;
+        controller1.text =
+            widget.devices.macAddress1 == '' ? ' ' : widget.devices.macAddress1;
+        controller2.text =
+            widget.devices.macAddress2 == '' ? ' ' : widget.devices.macAddress2;
       }
-      if (widget.devices.defaultMacAddress2 == '') {
-        controller2.text = ' ';
-      } else {
-        controller2.text = widget.devices.defaultMacAddress2;
-      }
-    } else {
-      controller1.text =
-          widget.devices.macAddress1 == '' ? ' ' : widget.devices.macAddress1;
-      controller2.text =
-          widget.devices.macAddress2 == '' ? ' ' : widget.devices.macAddress2;
-    }
+    });
   }
 
   @override
@@ -256,6 +258,7 @@ class SelectDevicesBlock extends StatelessWidget {
               child: Row(children: [
                 Expanded(
                   child: MaskedTextField(
+                    key: Key('device${entry.key.substring(entry.key.length-1)}TextField'),
                     maskedTextFieldController: entry.value,
                     mask: 'xx:xx:xx:xx:xx:xx',
                     maxLength: 17,

@@ -61,11 +61,6 @@ class _ServerPageState extends State<ServerPage>
   
   String message;
 
-  @override
-  void initState() {
-    super.initState();
-  }
-
   Future<void> saveMAC(mac1, mac2) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     try {

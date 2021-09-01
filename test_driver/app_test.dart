@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_driver/flutter_driver.dart';
 import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart' as ft;
 
 void main() {
   group('EpiBOX - UI testing', () {
@@ -16,6 +16,10 @@ void main() {
       }
     });
 
+    String fs = '1000';
+    String drive = 'TOSHIBA';
+    List<String> devices = [' ', '98:D3:91:FD:3F:5C'];
+
     test('Successful login', () async {
       final timeline = await driver.traceAction(() async {
         final loginTextField = find.byValueKey('loginTextField');
@@ -27,7 +31,7 @@ void main() {
 
       // write summary to a file
       final summary = new TimelineSummary.summarize(timeline);
-      await summary.writeTimelineToFile('ui_login', pretty: true);
+      await summary.writeTimelineToFile('login', pretty: true);
     });
 
     test('Server connection', () async {
@@ -43,15 +47,16 @@ void main() {
       await summary.writeTimelineToFile('server_connection', pretty: true);
     });
 
-    test('Connect to default device', () async {
+    test('Connect to chosen devices', () async {
       final timeline = await driver.traceAction(() async {
         await driver.waitFor(find.byValueKey('bottomNavbar'));
-        await driver.tap(
-          find.ancestor(
-            of: find.byValueKey('Dispositivos'),
-            matching: find.byType('BottomNavigationBarItem'),
-          ),
-        );
+        await driver.tap(find.text('Dispositivos'));
+
+        await driver.tap(find.byValueKey('device${1}TextField'));
+        await driver.enterText(devices[0]);
+
+        await driver.tap(find.byValueKey('device${2}TextField'));
+        await driver.enterText(devices[1]);
 
         await driver.tap(find.byValueKey('connectDeviceButton'));
         await Future<void>.delayed(Duration(seconds: 3));
@@ -68,10 +73,18 @@ void main() {
       await summary.writeTimelineToFile('device_connection', pretty: true);
     });
 
-    test('Choose default configurations', () async {
+    test('Choose configurations', () async {
       final timeline = await driver.traceAction(() async {
         await driver.waitFor(find.byValueKey('bottomNavbar'));
         await driver.tap(find.text('Configurações'));
+
+        await driver.tap(find.byValueKey('driveDropdown'));
+        await driver.tap(find.byValueKey(drive));
+
+        await driver.tap(find.byValueKey('fsDropdown'));
+        await driver.tap(find.text(fs));
+
+        await driver.tap(finder)
 
         await driver.scrollUntilVisible(find.byValueKey('configListView'),
             find.byValueKey('defineNewDefault'),
