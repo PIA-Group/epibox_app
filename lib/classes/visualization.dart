@@ -36,7 +36,7 @@ class Visualization extends PropertyChangeNotifier<String> {
     notifyListeners('data2Plot');
   }
 
-  set rangesList(List<List> value) {
+  set rangesList(List<List<double>> value) {
     _rangesList = value;
     notifyListeners('rangesList');
   }

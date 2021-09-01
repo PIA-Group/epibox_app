@@ -26,7 +26,6 @@ Future<void> setup(
   MQTTClientWrapper mqttClientWrapper,
   ValueNotifier<MqttCurrentConnectionState> connectionNotifier,
 ) async {
-  print('running setup');
   // connects the client instance to the server and topic
   await mqttClientWrapper.prepareMqttClient().then((value) {
     if (connectionNotifier.value == MqttCurrentConnectionState.CONNECTED) {

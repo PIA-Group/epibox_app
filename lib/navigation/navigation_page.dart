@@ -81,6 +81,7 @@ class _NavigationPageState extends State<NavigationPage>
     'shouldRestart': null,
     'acquisitionState': null,
     'dataMAC': null,
+    'overlayInfo': null,
   };
 
   @override
@@ -102,12 +103,24 @@ class _NavigationPageState extends State<NavigationPage>
       visualizationMAC1.dataMAC = acquisition.dataMAC1;
       visualizationMAC2.dataMAC = acquisition.dataMAC2;
     };
+    listeners['overlayInfo'] = () {
+      errorHandler.showOverlay = true;
+      print('show: ${errorHandler.showOverlay}');
+      print('show timer: ${errorHandler.overlayInfo['timer']}');
+      if (errorHandler.overlayInfo['timer'] != null) {
+        Future.delayed(Duration(seconds: errorHandler.overlayInfo['timer']), () {
+          errorHandler.showOverlay = false;
+          print('show: ${errorHandler.showOverlay}');
+        });
+      }
+    };
 
     connectionNotifier.addListener(listeners['connectionNotifier']);
     shouldRestart.addListener(listeners['shouldRestart']);
     acquisition
         .addListener(listeners['acquisitionState'], ['acquisitionState']);
     acquisition.addListener(listeners['dataMAC'], ['dataMAC1', 'dataMAC2']);
+    errorHandler.addListener(listeners['overlayInfo'], ['overlayInfo']);
 
     timer = Timer.periodic(Duration(seconds: 15), (Timer t) => print('timer'));
 
@@ -209,109 +222,123 @@ class _NavigationPageState extends State<NavigationPage>
           devices: devices),
       backgroundColor: Colors.transparent,
       key: _scaffoldKey,
-      body: PropertyChangeProvider(
-        value: errorHandler,
-        child: PropertyChangeConsumer<ErrorHandler>(
-            builder: (context, error, properties) {
-          return LoaderOverlay(
-            overlayOpacity: 0.8,
-            overlayColor: Colors.white,
-            useDefaultLoading: false,
-            overlayWidget: error.overlayMessage,
-            child: Stack(
-              children: [
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    height: appBarHeight * 2,
-                    color: DefaultColors.mainColor,
-                    child: Center(
-                      child: Column(children: [
-                        SizedBox(
-                          height: 37,
-                        ),
-                        ValueListenableBuilder(
-                            valueListenable: _navigationIndex,
-                            builder:
-                                (BuildContext context, int i, Widget child) {
-                              return _headerIcon[i];
-                            }),
-                        ValueListenableBuilder(
-                            valueListenable: _navigationIndex,
-                            builder:
-                                (BuildContext context, int i, Widget child) {
-                              return _headerLabel[i];
-                            }),
-                      ]),
+      body: LoaderOverlay(
+        overlayOpacity: 0.8,
+        overlayColor: Colors.white,
+        useDefaultLoading: false,
+        overlayWidget: errorHandler.overlayMessage,
+        child: Stack(
+          children: [
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Container(
+                height: appBarHeight * 2,
+                color: DefaultColors.mainColor,
+                child: Center(
+                  child: Column(children: [
+                    SizedBox(
+                      height: 37,
                     ),
-                  ),
+                    ValueListenableBuilder(
+                        valueListenable: _navigationIndex,
+                        builder: (BuildContext context, int i, Widget child) {
+                          return _headerIcon[i];
+                        }),
+                    ValueListenableBuilder(
+                        valueListenable: _navigationIndex,
+                        builder: (BuildContext context, int i, Widget child) {
+                          return _headerLabel[i];
+                        }),
+                  ]),
                 ),
-                Positioned(
-                  top: appBarHeight,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    decoration: BoxDecoration(
-                        color: DefaultColors.backgroundColor,
-                        borderRadius: new BorderRadius.only(
-                          topLeft: const Radius.circular(30.0),
-                          topRight: const Radius.circular(30.0),
-                        )),
-                    child:
-                        IndexedStack(index: _navigationIndex.value, children: [
-                      ServerPage(
-                        devices: devices,
-                        acquisition: acquisition,
-                        mqttClientWrapper: mqttClientWrapper,
-                        connectionNotifier: connectionNotifier,
-                        receivedMACNotifier: receivedMACNotifier,
-                        driveListNotifier: driveListNotifier,
-                        sentMACNotifier: sentMACNotifier,
-                        patientNotifier: widget.patientNotifier,
-                        annotationTypesD: annotationTypesD,
-                        timedOut: timedOut,
-                        startupError: startupError,
-                        shouldRestart: shouldRestart,
-                      ),
-                      DevicesPage(
-                        devices: devices,
-                        errorHandler: errorHandler,
-                        patientNotifier: widget.patientNotifier,
-                        mqttClientWrapper: mqttClientWrapper,
-                        connectionNotifier: connectionNotifier,
-                        driveListNotifier: driveListNotifier,
-                        historyMAC: historyMAC,
-                      ),
-                      ConfigPage(
-                        devices: devices,
-                        configurations: configurations,
-                        mqttClientWrapper: mqttClientWrapper,
-                        connectionNotifier: connectionNotifier,
-                        driveListNotifier: driveListNotifier,
-                      ),
-                      VisualizationNavPage(
-                        devices: devices,
-                        configurations: configurations,
-                        visualizationMAC1: visualizationMAC1,
-                        visualizationMAC2: visualizationMAC2,
-                        mqttClientWrapper: mqttClientWrapper,
-                        patientNotifier: widget.patientNotifier,
-                        annotationTypesD: annotationTypesD,
-                        connectionNotifier: connectionNotifier,
-                        timedOut: timedOut,
-                        startupError: startupError,
-                      ),
-                    ]),
-                  ),
-                ),
-              ],
+              ),
             ),
-          );
-        }),
+            Positioned(
+              top: appBarHeight,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Container(
+                decoration: BoxDecoration(
+                    color: DefaultColors.backgroundColor,
+                    borderRadius: new BorderRadius.only(
+                      topLeft: const Radius.circular(30.0),
+                      topRight: const Radius.circular(30.0),
+                    )),
+                child: IndexedStack(index: _navigationIndex.value, children: [
+                  ServerPage(
+                    devices: devices,
+                    acquisition: acquisition,
+                    mqttClientWrapper: mqttClientWrapper,
+                    connectionNotifier: connectionNotifier,
+                    receivedMACNotifier: receivedMACNotifier,
+                    driveListNotifier: driveListNotifier,
+                    sentMACNotifier: sentMACNotifier,
+                    patientNotifier: widget.patientNotifier,
+                    annotationTypesD: annotationTypesD,
+                    timedOut: timedOut,
+                    startupError: startupError,
+                    shouldRestart: shouldRestart,
+                  ),
+                  DevicesPage(
+                    devices: devices,
+                    errorHandler: errorHandler,
+                    patientNotifier: widget.patientNotifier,
+                    mqttClientWrapper: mqttClientWrapper,
+                    connectionNotifier: connectionNotifier,
+                    driveListNotifier: driveListNotifier,
+                    historyMAC: historyMAC,
+                  ),
+                  ConfigPage(
+                    devices: devices,
+                    configurations: configurations,
+                    mqttClientWrapper: mqttClientWrapper,
+                    connectionNotifier: connectionNotifier,
+                    driveListNotifier: driveListNotifier,
+                  ),
+                  VisualizationNavPage(
+                    devices: devices,
+                    configurations: configurations,
+                    visualizationMAC1: visualizationMAC1,
+                    visualizationMAC2: visualizationMAC2,
+                    mqttClientWrapper: mqttClientWrapper,
+                    patientNotifier: widget.patientNotifier,
+                    annotationTypesD: annotationTypesD,
+                    connectionNotifier: connectionNotifier,
+                    timedOut: timedOut,
+                    startupError: startupError,
+                  ),
+                ]),
+              ),
+            ),
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: PropertyChangeProvider(
+                value: errorHandler,
+                child: PropertyChangeConsumer<ErrorHandler>(
+                    properties: ['showOverlay'],
+                    builder: (context, error, properties) {
+                      if (errorHandler.showOverlay) {
+                        return Container(
+                          height: double.maxFinite,
+                          width: double.maxFinite,
+                          color: Colors.white.withOpacity(0.8),
+                          child: error.overlayInfo['overlayMessage'],
+                        );
+                      } else {
+                        return Container();
+                      }
+                    }),
+              ),
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         key: Key('bottomNavbar'),

@@ -4,8 +4,6 @@ import 'package:epibox/classes/devices.dart';
 import 'package:epibox/classes/error_handler.dart';
 import 'package:epibox/classes/visualization.dart';
 import 'package:epibox/costum_overlays/error_overlays.dart';
-import 'package:epibox/decor/default_colors.dart';
-import 'package:epibox/decor/text_styles.dart';
 import 'package:epibox/mqtt/mqtt_states.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'package:epibox/pages/speed_annotation.dart';
