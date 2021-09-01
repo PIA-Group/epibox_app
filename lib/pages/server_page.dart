@@ -31,7 +31,7 @@ class ServerPage extends StatefulWidget {
 
   final ValueNotifier<TextEditingController> controllerFreq;
 
-  final ValueNotifier<bool> shouldRestart;
+  final ValueNotifier<String> shouldRestart;
 
   ServerPage({
     this.devices,
@@ -81,6 +81,7 @@ class _ServerPageState extends State<ServerPage>{
 
   @override
   Widget build(BuildContext context) {
+    print('rebuilding ServerPage');
     return ListView(
       children: <Widget>[
         Padding(
@@ -164,7 +165,7 @@ class _ServerPageState extends State<ServerPage>{
                       //onPrimary: Colors.white, // foreground
                     ),
                     onPressed: () {
-                      widget.shouldRestart.value = true;
+                      widget.shouldRestart.value = 'full';
                       setup(
                           widget.mqttClientWrapper, widget.connectionNotifier);
                     },

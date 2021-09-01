@@ -129,6 +129,8 @@ class _DevicesPageState extends State<DevicesPage>{
     const double horizontalSpacing = 20.0;
     const double verticalSpacing = 20.0;
 
+    print('rebuilding DevicesPage');
+
     return PropertyChangeProvider(
       value: widget.devices,
       child: ListView(children: <Widget>[

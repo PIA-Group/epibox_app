@@ -39,9 +39,7 @@ class VisualizationPage extends StatefulWidget {
   _VisualizationPageState createState() => _VisualizationPageState();
 }
 
-class _VisualizationPageState extends State<VisualizationPage>{
-
-
+class _VisualizationPageState extends State<VisualizationPage> {
   List aux;
 
   final plotHeight = 160.0;
@@ -141,15 +139,20 @@ class _VisualizationPageState extends State<VisualizationPage>{
 
   void _initRange(sensorsMAC) {
     for (int i = 0; i < sensorsMAC.length; i++) {
-      List<double> auxList;
+      List<double> auxRangesList;
       if (widget.configurations.saveRaw) {
-        auxList = [-1, 10, 0];
+        auxRangesList = [-1, 10, 0];
       } else {
-        auxList = _getRangeFromSensor(sensorsMAC[i]);
+        auxRangesList = _getRangeFromSensor(sensorsMAC[i]);
       }
-      setState(() => widget.visualizationMAC.rangesList[i] = auxList);
+      //setState(() => widget.visualizationMAC.rangesList[i] = auxRangesList);
+      List<List<double>> auxList =
+          List.from(widget.visualizationMAC.rangesList);
+      auxList[i] = auxRangesList;
+      widget.visualizationMAC.rangesList = List.from(auxList);
     }
-    setState(() => _rangeInitiated = true);
+    //setState(() => _rangeInitiated = true);
+    _rangeInitiated = true;
   }
 
   bool _rangeUpdateNeeded(List data, List currentRange) {
@@ -185,7 +188,7 @@ class _VisualizationPageState extends State<VisualizationPage>{
 
   @override
   Widget build(BuildContext context) {
-
+    print('rebuilding VisualizationPage');
     return PropertyChangeProvider(
       value: widget.visualizationMAC,
       child: ListView(

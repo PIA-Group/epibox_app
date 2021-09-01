@@ -17,7 +17,7 @@ void main() {
 
     String fs = '1000';
     String drive = 'TOSHIBA';
-    List<String> devices = [' ', '98:D3:91:FD:3F:5C'];
+    List<String> devices = ['98:D3:91:FD:3F:5C', ''];
 
     test('Successful login', () async {
       final timeline = await driver.traceAction(() async {
@@ -38,7 +38,7 @@ void main() {
         await Future<void>.delayed(Duration(seconds: 1));
         final connectServerButton = find.byValueKey('connectServerButton');
         await driver.tap(connectServerButton);
-        await Future<void>.delayed(Duration(seconds: 4));
+        await Future<void>.delayed(Duration(seconds: 1));
       });
 
       // write summary to a file
@@ -112,7 +112,7 @@ void main() {
             find.text('Canal: A1 | -'),
             dyScroll: 20.0);
 
-        await Future<void>.delayed(Duration(minutes: 1));
+        await Future<void>.delayed(Duration(minutes: 5));
         await driver.tap(find.byValueKey('startStopButton'));
         await driver.waitFor(find.text('Aquisição terminada!'));
       });

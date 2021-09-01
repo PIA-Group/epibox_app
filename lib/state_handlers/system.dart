@@ -6,7 +6,7 @@ import 'package:epibox/shared_pref/pref_handler.dart';
 import 'package:flutter/material.dart';
 
 Future<void> restart(
-    bool restart,
+    String restart,
     MQTTClientWrapper mqttClientWrapper,
     Devices devices,
     Acquisition acquisition,
@@ -14,7 +14,7 @@ Future<void> restart(
     ValueNotifier<List<String>> driveListNotifier) async {
   mqttClientWrapper.publishMessage("['RESTART']");
 
-  if (restart) {
+  if (restart == 'full') {
     await mqttClientWrapper.diconnectClient();
 
     devices.defaultMacAddress1 = 'xx:xx:xx:xx:xx:xx';
@@ -29,16 +29,16 @@ Future<void> restart(
 
     devices.isBit1Enabled = false;
     devices.isBit2Enabled = false;
+    
+  } else if (restart == 'medium') {
+    acquisition.batteryBit1 = null;
+    acquisition.batteryBit2 = null;
+
+    saveBatteries(null, null);
+    saveMAC('xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx');
   }
 
   devices.macAddress1Connection = 'disconnected';
   devices.macAddress2Connection = 'disconnected';
-
   acquisition.acquisitionState = 'off';
-
-  acquisition.batteryBit1 = null;
-  acquisition.batteryBit2 = null;
-
-  saveBatteries(null, null);
-  saveMAC('xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx');
 }

@@ -1,7 +1,9 @@
+import 'package:epibox/classes/acquisition.dart';
 import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/devices.dart';
 import 'package:epibox/classes/error_handler.dart';
 import 'package:epibox/classes/visualization.dart';
+import 'package:epibox/costum_overlays/error_overlays.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
 import 'package:epibox/mqtt/mqtt_states.dart';
@@ -27,27 +29,7 @@ Future<void> startAcquisition({
       (devices.isBit1Enabled && devices.macAddress1Connection != 'connected') ||
       (devices.isBit2Enabled && devices.macAddress2Connection != 'connected')) {
     if (context.loaderOverlay.visible) context.loaderOverlay.hide();
-    errorHandler.overlayMessage = Center(
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 10),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Text(
-            'Não foi possível iniciar',
-            textAlign: TextAlign.center,
-            style: MyTextStyle(
-                color: DefaultColors.textColorOnLight, fontSize: 20),
-          ),
-          SizedBox(height: 20),
-          Text(
-            'Verifique a conexão ao servidor e aos dispositivos de aquisição!',
-            textAlign: TextAlign.center,
-            style: MyTextStyle(
-                color: DefaultColors.textColorOnLight, fontSize: 20),
-          ),
-          SizedBox(height: 20),
-        ]),
-      ),
-    );
+    errorHandler.overlayMessage = VerifyConnectionsOverlay();
     context.loaderOverlay.show();
     Future.delayed(const Duration(seconds: 3), () {
       context.loaderOverlay.hide();
@@ -70,11 +52,15 @@ Future<void> startAcquisition({
 
     visualizationMAC1.channelsMAC = _channels[1];
     visualizationMAC1.sensorsMAC = _channels[2];
-    visualizationMAC1.data2Plot = List.filled(configurations.bit1Selections.where((item) => item).length, [], growable: true);
+    visualizationMAC1.data2Plot = List.filled(
+        configurations.bit1Selections.where((item) => item).length, [],
+        growable: true);
 
     visualizationMAC2.channelsMAC = _channels[1];
     visualizationMAC2.sensorsMAC = _channels[2];
-    visualizationMAC2.data2Plot = List.filled(configurations.bit2Selections.where((item) => item).length, [], growable: true);
+    visualizationMAC2.data2Plot = List.filled(
+        configurations.bit2Selections.where((item) => item).length, [],
+        growable: true);
 
     mqttClientWrapper.publishMessage("['START']");
 
@@ -120,24 +106,50 @@ void resumeAcquisition(MQTTClientWrapper mqttClientWrapper) {
   mqttClientWrapper.publishMessage("['RESUME ACQ']");
 }
 
-void pauseAcquisition(MQTTClientWrapper mqttClientWrapper) {
-  mqttClientWrapper.publishMessage("['PAUSE ACQ']");
+void pauseAcquisition({
+  MQTTClientWrapper mqttClientWrapper,
+  BuildContext context,
+  Acquisition acquisition,
+  ErrorHandler errorHandler,
+}) {
+  if (acquisition.acquisitionState != 'acquiring') {
+    if (context.loaderOverlay.visible) context.loaderOverlay.hide();
+    errorHandler.overlayMessage = NotAcquiringOverlay();
+    context.loaderOverlay.show();
+    Future.delayed(const Duration(seconds: 3), () {
+      context.loaderOverlay.hide();
+    });
+  } else {
+    mqttClientWrapper.publishMessage("['PAUSE ACQ']");
+  }
 }
 
-Future<void> speedAnnotation(
-    BuildContext context,
-    ValueNotifier<List> annotationTypesD,
-    ValueNotifier<String> patientNotifier,
-    MQTTClientWrapper mqttClientWrapper) async {
+Future<void> speedAnnotation({
+  BuildContext context,
+  Acquisition acquisition,
+  ErrorHandler errorHandler,
+  ValueNotifier<List> annotationTypesD,
+  ValueNotifier<String> patientNotifier,
+  MQTTClientWrapper mqttClientWrapper,
+}) async {
   List<String> annotationTypes = List<String>.from(annotationTypesD.value);
-  Navigator.of(context).push(new MaterialPageRoute<Null>(
-      builder: (BuildContext context) {
-        return SpeedAnnotationDialog(
-          annotationTypesD: annotationTypesD,
-          annotationTypes: annotationTypes,
-          patientNotifier: patientNotifier,
-          mqttClientWrapper: mqttClientWrapper,
-        );
-      },
-      fullscreenDialog: true));
+  if (acquisition.acquisitionState != 'acquiring') {
+    if (context.loaderOverlay.visible) context.loaderOverlay.hide();
+    errorHandler.overlayMessage = NotAcquiringOverlay();
+    context.loaderOverlay.show();
+    Future.delayed(const Duration(seconds: 3), () {
+      context.loaderOverlay.hide();
+    });
+  } else {
+    Navigator.of(context).push(new MaterialPageRoute<Null>(
+        builder: (BuildContext context) {
+          return SpeedAnnotationDialog(
+            annotationTypesD: annotationTypesD,
+            annotationTypes: annotationTypes,
+            patientNotifier: patientNotifier,
+            mqttClientWrapper: mqttClientWrapper,
+          );
+        },
+        fullscreenDialog: true));
+  }
 }

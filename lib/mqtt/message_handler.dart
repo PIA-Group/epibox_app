@@ -18,11 +18,11 @@ void gotNewMessage({
   ValueNotifier<String> timedOut,
   ErrorHandler errorHandler,
   ValueNotifier<bool> startupError,
-  ValueNotifier<bool> shouldRestart,
+  ValueNotifier<String> shouldRestart,
 }) {
   // runs functions based on the received message
   List message2List = json.decode(message.replaceAll('\'', '\"'));
-  print(message2List);
+  //print(message2List);
   switch (message2List[0]) {
     case 'DEFAULT MAC':
       isMACAddress(message2List, devices);
@@ -122,7 +122,7 @@ void isDefaultConfig(List message2List, Configurations configurations) {
 // ACQUISITION
 
 void isAcquisitionState(String message, Acquisition acquisition,
-    ValueNotifier<bool> shouldRestart) {
+    ValueNotifier<String> shouldRestart) {
   if (message.contains('STARTING')) {
     acquisition.acquisitionState = 'starting';
   } else if (message.contains('ACQUISITION ON')) {
@@ -134,7 +134,7 @@ void isAcquisitionState(String message, Acquisition acquisition,
     acquisition.acquisitionState = 'pairing';
   } else if (message.contains('STOPPED')) {
     acquisition.acquisitionState = 'stopped';
-    shouldRestart.value = false;
+    shouldRestart.value = 'medium';
   } else if (message.contains('PAUSED')) {
     acquisition.acquisitionState = 'paused';
   }
@@ -208,12 +208,12 @@ void isTimeout(List message2List, ValueNotifier<String> timedOut) {
 }
 
 void isStartupError(
-    ValueNotifier<bool> startupError, ValueNotifier<bool> shouldRestart) {
+    ValueNotifier<bool> startupError, ValueNotifier<String> shouldRestart) {
   startupError.value = true;
-  shouldRestart.value = false;
+  shouldRestart.value = 'medium';
 }
 
-void isTurnedOff(ErrorHandler errorHandler, ValueNotifier<bool> shouldRestart) {
-  shouldRestart.value = false;
+void isTurnedOff(ErrorHandler errorHandler, ValueNotifier<String> shouldRestart) {
+  shouldRestart.value = 'medium';
   errorHandler.overlayMessage = SystemCustomOverlay();
 }

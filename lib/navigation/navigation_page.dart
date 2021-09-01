@@ -50,7 +50,7 @@ class _NavigationPageState extends State<NavigationPage>
 
   ValueNotifier<List<String>> driveListNotifier = ValueNotifier([' ']);
 
-  ValueNotifier<bool> shouldRestart = ValueNotifier(null);
+  ValueNotifier<String> shouldRestart = ValueNotifier(null);
 
   ValueNotifier<bool> receivedMACNotifier = ValueNotifier(false);
   ValueNotifier<bool> sentMACNotifier = ValueNotifier(false);
@@ -199,6 +199,7 @@ class _NavigationPageState extends State<NavigationPage>
 
   @override
   Widget build(BuildContext context) {
+    print('rebuilding NavigationPage');
     return Scaffold(
       drawer: ProfileDrawer(
           mqttClientWrapper: mqttClientWrapper,
@@ -343,42 +344,47 @@ class _NavigationPageState extends State<NavigationPage>
       floatingActionButton: PropertyChangeProvider(
         value: acquisition,
         child: PropertyChangeProvider(
-            value: devices,
-            child: ValueListenableBuilder(
-                valueListenable: _navigationIndex,
-                builder: (BuildContext context, int index, Widget child) {
-                  return index != 3
-                      ? Stack(children: [
-                          DrawerFloater(),
-                          MQTTStateFloater(
-                              connectionNotifier: connectionNotifier),
-                          MACAddressConnectionFloater(),
-                        ])
-                      : Stack(children: [
-                          DrawerFloater(),
-                          MQTTStateFloater(
-                              connectionNotifier: connectionNotifier),
-                          MACAddressConnectionFloater(),
-                          SpeedAnnotationFloater(
-                            mqttClientWrapper: mqttClientWrapper,
-                            annotationTypesD: annotationTypesD,
-                            patientNotifier: widget.patientNotifier,
-                          ),
-                          ResumePauseButton(
-                              mqttClientWrapper: mqttClientWrapper),
-                          StartStopButton(
-                            connectionNotifier: connectionNotifier,
-                            devices: devices,
-                            errorHandler: errorHandler,
-                            configurations: configurations,
-                            mqttClientWrapper: mqttClientWrapper,
-                            visualizationMAC1: visualizationMAC1,
-                            visualizationMAC2: visualizationMAC2,
-                            historyMAC: historyMAC,
-                            patientNotifier: widget.patientNotifier,
-                          ),
-                        ]);
-                })),
+          value: devices,
+          child: ValueListenableBuilder(
+              valueListenable: _navigationIndex,
+              builder: (BuildContext context, int index, Widget child) {
+                return index != 3
+                    ? Stack(children: [
+                        DrawerFloater(),
+                        MQTTStateFloater(
+                            connectionNotifier: connectionNotifier),
+                        MACAddressConnectionFloater(),
+                      ])
+                    : Stack(children: [
+                        DrawerFloater(),
+                        MQTTStateFloater(
+                            connectionNotifier: connectionNotifier),
+                        MACAddressConnectionFloater(),
+                        SpeedAnnotationFloater(
+                          mqttClientWrapper: mqttClientWrapper,
+                          annotationTypesD: annotationTypesD,
+                          patientNotifier: widget.patientNotifier,
+                          acquisition: acquisition,
+                          errorHandler: errorHandler,
+                        ),
+                        ResumePauseButton(
+                          mqttClientWrapper: mqttClientWrapper,
+                          errorHandler: errorHandler,
+                        ),
+                        StartStopButton(
+                          connectionNotifier: connectionNotifier,
+                          devices: devices,
+                          errorHandler: errorHandler,
+                          configurations: configurations,
+                          mqttClientWrapper: mqttClientWrapper,
+                          visualizationMAC1: visualizationMAC1,
+                          visualizationMAC2: visualizationMAC2,
+                          historyMAC: historyMAC,
+                          patientNotifier: widget.patientNotifier,
+                        ),
+                      ]);
+              }),
+        ),
       ),
     );
   }

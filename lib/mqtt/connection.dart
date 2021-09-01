@@ -15,7 +15,9 @@ class NewConnectionNotification extends Notification {
 }
 
 void updatedConnection(MqttCurrentConnectionState newConnectionState,
-    ValueNotifier<MqttCurrentConnectionState> connectionNotifier) {
+    ValueNotifier<MqttCurrentConnectionState> connectionNotifier, ValueNotifier<String> shouldRestart) {
+  
+  if (connectionNotifier.value == MqttCurrentConnectionState.CONNECTED && newConnectionState == MqttCurrentConnectionState.DISCONNECTED) {shouldRestart.value = 'light';}
   connectionNotifier.value = newConnectionState;
   print('This is the new connection state ${connectionNotifier.value}');
 }
@@ -47,10 +49,9 @@ MQTTClientWrapper setupHome({
   ValueNotifier<String> timedOut,
   ErrorHandler errorHandler,
   ValueNotifier<bool> startupError,
-  ValueNotifier<bool> shouldRestart,
+  ValueNotifier<String> shouldRestart,
   ValueNotifier<MqttCurrentConnectionState> connectionNotifier,
 }) {
-  print('running setupHome');
   // initiate MQTT client and message/state functions
   mqttClientWrapper = MQTTClientWrapper(
     client,
@@ -67,7 +68,7 @@ MQTTClientWrapper setupHome({
       shouldRestart: shouldRestart,
     ),
     (newConnectionState) =>
-        updatedConnection(newConnectionState, connectionNotifier),
+        updatedConnection(newConnectionState, connectionNotifier, shouldRestart),
   );
   return mqttClientWrapper;
 }

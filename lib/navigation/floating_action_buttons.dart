@@ -4,6 +4,7 @@ import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/devices.dart';
 import 'package:epibox/classes/error_handler.dart';
 import 'package:epibox/classes/visualization.dart';
+import 'package:epibox/costum_overlays/acquisition_overlay.dart';
 import 'package:epibox/mqtt/mqtt_states.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'package:flutter/material.dart';
@@ -111,13 +112,17 @@ class SpeedAnnotationFloater extends StatelessWidget {
   final MQTTClientWrapper mqttClientWrapper;
   final ValueNotifier<List> annotationTypesD;
   final ValueNotifier<String> patientNotifier;
+  final Acquisition acquisition;
+  final ErrorHandler errorHandler;
 
-  SpeedAnnotationFloater(
-      {Key key,
-      this.mqttClientWrapper,
-      this.annotationTypesD,
-      this.patientNotifier})
-      : super(key: key);
+  SpeedAnnotationFloater({
+    Key key,
+    this.mqttClientWrapper,
+    this.annotationTypesD,
+    this.patientNotifier,
+    this.acquisition,
+    this.errorHandler,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -127,7 +132,13 @@ class SpeedAnnotationFloater extends StatelessWidget {
         mini: true,
         heroTag: null,
         onPressed: () => speedAnnotation(
-            context, annotationTypesD, patientNotifier, mqttClientWrapper),
+          context: context,
+          acquisition: acquisition,
+          errorHandler: errorHandler,
+          annotationTypesD: annotationTypesD,
+          patientNotifier: patientNotifier,
+          mqttClientWrapper: mqttClientWrapper,
+        ),
         child: Icon(MdiIcons.lightningBolt),
       ),
     );
@@ -136,7 +147,9 @@ class SpeedAnnotationFloater extends StatelessWidget {
 
 class ResumePauseButton extends StatelessWidget {
   final MQTTClientWrapper mqttClientWrapper;
-  const ResumePauseButton({Key key, this.mqttClientWrapper}) : super(key: key);
+  final ErrorHandler errorHandler;
+  const ResumePauseButton({Key key, this.mqttClientWrapper, this.errorHandler})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -149,7 +162,12 @@ class ResumePauseButton extends StatelessWidget {
               mini: true,
               onPressed: acquisition.acquisitionState == 'paused'
                   ? () => resumeAcquisition(mqttClientWrapper)
-                  : () => pauseAcquisition(mqttClientWrapper),
+                  : () => pauseAcquisition(
+                        mqttClientWrapper: mqttClientWrapper,
+                        context: context,
+                        acquisition: acquisition,
+                        errorHandler: errorHandler,
+                      ),
               child: acquisition.acquisitionState == 'paused'
                   ? Icon(Icons.play_arrow)
                   : Icon(Icons.pause),
