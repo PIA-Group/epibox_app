@@ -21,14 +21,18 @@ void getLastMAC(Devices devices) async {
 }
 
 void getPreviousDeviceType(Devices devices) async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  String device;
-  try {
-    device = prefs.getString('deviceType') ?? 'Bitalino';
-    devices.type = device;
-  } catch (e) {
-    print(e);
-  }
+  await SharedPreferences.getInstance().then((prefs) {
+    if (prefs.containsKey('deviceType')) {
+      try {
+        String device = prefs.getString('deviceType') ?? 'Bitalino';
+        devices.type = device;
+      } catch (e) {
+        print(e);
+      }
+    } else {
+      devices.type = 'Bitalino';
+    }
+  });
 }
 
 Future<void> saveMAC(mac1, mac2) async {
@@ -69,47 +73,55 @@ Future<void> saveMACHistory(
 }
 
 void getMACHistory(ValueNotifier<List<String>> historyMAC) async {
-  await Future.delayed(Duration.zero);
-  List<String> history;
-  await SharedPreferences.getInstance().then((value) {
-    try {
-      history = (value.getStringList('historyMAC').toList() ?? [' ']);
-    } catch (e) {
-      history = [' '];
+  await SharedPreferences.getInstance().then((prefs) {
+    if (prefs.containsKey('historyMAC')) {
+      try {
+        List<String> history =
+            (prefs.getStringList('historyMAC').toList() ?? [' ']);
+        historyMAC.value = history;
+      } catch (e) {
+        print(e);
+      }
+    } else {
+      historyMAC.value = [' '];
     }
-    historyMAC.value = history;
   });
 }
 
 // ANNOTATIONS
 
 void getAnnotationTypes(ValueNotifier<List> annotationTypesD) async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  List annot;
-  try {
+  await SharedPreferences.getInstance().then((prefs) {
     if (prefs.containsKey('annotationTypes')) {
-      annot = prefs.getStringList('annotationTypes').toList() ?? [];
-      annotationTypesD.value = annot;
+      try {
+        List annot = prefs.getStringList('annotationTypes').toList() ?? [];
+        annotationTypesD.value = annot;
+      } catch (e) {
+        print(e);
+      }
+    } else {
+      annotationTypesD.value = [];
     }
-  } catch (e) {
-    print(e);
-  }
+  });
 }
 
 // BATTERIES
 
 void getLastBatteries(Acquisition acquisition) async {
-  await Future.delayed(Duration.zero);
-  await SharedPreferences.getInstance().then((value) {
-    List<String> lastBatteries =
-        (value.getStringList('lastBatteries').toList() ?? [null, null]);
-    if (lastBatteries[0] != null) {
-      print(lastBatteries[0]);
-      print(num.tryParse(lastBatteries[0])?.toDouble());
-      acquisition.batteryBit1 = num.tryParse(lastBatteries[0])?.toDouble();
-    }
-    if (lastBatteries[1] != null) {
-      acquisition.batteryBit2 = num.tryParse(lastBatteries[1])?.toDouble();
+  await SharedPreferences.getInstance().then((prefs) {
+    if (prefs.containsKey('lastBatteries')) {
+      try {
+        List<String> lastBatteries =
+            (prefs.getStringList('lastBatteries').toList() ?? [null, null]);
+        if (lastBatteries[0] != null) {
+          acquisition.batteryBit1 = num.tryParse(lastBatteries[0])?.toDouble();
+        }
+        if (lastBatteries[1] != null) {
+          acquisition.batteryBit2 = num.tryParse(lastBatteries[1])?.toDouble();
+        }
+      } catch (e) {
+        print(e);
+      }
     }
   });
 }

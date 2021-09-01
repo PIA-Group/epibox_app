@@ -1,6 +1,5 @@
 import 'package:flutter_driver/flutter_driver.dart';
 import 'package:test/test.dart';
-import 'package:flutter_test/flutter_test.dart' as ft;
 
 void main() {
   group('EpiBOX - UI testing', () {
@@ -84,7 +83,7 @@ void main() {
         await driver.tap(find.byValueKey('fsDropdown'));
         await driver.tap(find.text(fs));
 
-        await driver.tap(finder)
+        //await driver.tap(finder)
 
         await driver.scrollUntilVisible(find.byValueKey('configListView'),
             find.byValueKey('defineNewDefault'),

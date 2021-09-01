@@ -44,11 +44,8 @@ class DevicesPage extends StatefulWidget {
   _DevicesPageState createState() => _DevicesPageState();
 }
 
-class _DevicesPageState extends State<DevicesPage>
-    with AutomaticKeepAliveClientMixin {
-  @override
-  bool get wantKeepAlive => true;
-
+class _DevicesPageState extends State<DevicesPage>{
+ 
   TextEditingController controller1 = TextEditingController();
   TextEditingController controller2 = TextEditingController();
 
@@ -129,7 +126,6 @@ class _DevicesPageState extends State<DevicesPage>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     const double horizontalSpacing = 20.0;
     const double verticalSpacing = 20.0;
 

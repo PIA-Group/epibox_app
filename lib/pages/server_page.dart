@@ -54,10 +54,7 @@ class ServerPage extends StatefulWidget {
   _ServerPageState createState() => _ServerPageState();
 }
 
-class _ServerPageState extends State<ServerPage>
-    with AutomaticKeepAliveClientMixin {
-  @override
-  bool get wantKeepAlive => true;
+class _ServerPageState extends State<ServerPage>{
   
   String message;
 
@@ -84,7 +81,6 @@ class _ServerPageState extends State<ServerPage>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     return ListView(
       children: <Widget>[
         Padding(

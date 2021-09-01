@@ -1,13 +1,9 @@
-import 'package:epibox/navigation/nav_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:epibox/utils/id_wrapper.dart';
 import 'package:epibox/decor/default_colors.dart';
-import 'package:provider/provider.dart';
 
-void main() => runApp(ChangeNotifierProvider(
-      create: (context) => BottomNavigationBarProvider(),
-      child: new InterfaceRPi()));
+void main() => runApp(InterfaceRPi());
 
 class InterfaceRPi extends StatelessWidget {
   // This widget is the root of your application.
@@ -21,18 +17,13 @@ class InterfaceRPi extends StatelessWidget {
           canvasColor: DefaultColors.backgroundColor,
           scaffoldBackgroundColor: DefaultColors.backgroundColor,
 
-          // Define the default brightness and colors.
           brightness: Brightness.light,
           hintColor: DefaultColors.mainLColor,
           primaryColor: DefaultColors.mainColor,
           accentColor: DefaultColors.mainLColor,
           primaryColorDark: DefaultColors.mainLColor,
-          //splashColor: Colors.white,
-          // Define the default font family.
           fontFamily: 'Hind',
 
-          // Define the default TextTheme. Use this to specify the default
-          // text styling for headlines, titles, bodies of text, and more.
           textTheme: TextTheme(
             headline1: TextStyle(
               fontSize: 72.0,

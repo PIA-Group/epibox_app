@@ -27,10 +27,7 @@ class ConfigPage extends StatefulWidget {
   _ConfigPageState createState() => _ConfigPageState();
 }
 
-class _ConfigPageState extends State<ConfigPage>
-    with AutomaticKeepAliveClientMixin {
-  @override
-  bool get wantKeepAlive => true;
+class _ConfigPageState extends State<ConfigPage>{
 
   List<String> fsOptions = [
     ' ',
@@ -229,7 +226,6 @@ class _ConfigPageState extends State<ConfigPage>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     final width = MediaQuery.of(context).size.width -
         MediaQuery.of(context).viewInsets.left -
         MediaQuery.of(context).viewInsets.right;

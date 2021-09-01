@@ -5,7 +5,6 @@ import 'package:epibox/classes/error_handler.dart';
 import 'package:epibox/classes/visualization.dart';
 import 'package:epibox/mqtt/connection.dart';
 import 'package:epibox/navigation/floating_action_buttons.dart';
-import 'package:epibox/navigation/nav_provider.dart';
 import 'package:epibox/navigation/visualization_navbar.dart';
 import 'package:epibox/pages/config_page.dart';
 import 'package:epibox/pages/devices_page.dart';
@@ -26,7 +25,6 @@ import 'package:epibox/mqtt/mqtt_states.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'package:property_change_notifier/property_change_notifier.dart';
 import 'package:epibox/decor/custom_icons.dart';
-import 'package:provider/provider.dart';
 
 class NavigationPage extends StatefulWidget {
   final ValueNotifier<String> patientNotifier;
@@ -74,6 +72,7 @@ class _NavigationPageState extends State<NavigationPage>
   ValueNotifier<List> annotationTypesD = ValueNotifier([]);
 
   double appBarHeight = 100;
+  ValueNotifier<int> _navigationIndex = ValueNotifier(0);
 
   Future<bool> initialized;
 
@@ -152,6 +151,12 @@ class _NavigationPageState extends State<NavigationPage>
     super.dispose();
   }
 
+  void _onNavigationTap(int index) {
+    setState(() {
+      _navigationIndex.value = index;
+    });
+  }
+
   Future<bool> initialize() async {
     return Future.delayed(const Duration(milliseconds: 500), () {
       return (true);
@@ -194,7 +199,6 @@ class _NavigationPageState extends State<NavigationPage>
 
   @override
   Widget build(BuildContext context) {
-    var provider = Provider.of<BottomNavigationBarProvider>(context);
     return Scaffold(
       drawer: ProfileDrawer(
           mqttClientWrapper: mqttClientWrapper,
@@ -228,8 +232,18 @@ class _NavigationPageState extends State<NavigationPage>
                         SizedBox(
                           height: 37,
                         ),
-                        _headerIcon[provider.currentIndex],
-                        _headerLabel[provider.currentIndex],
+                        ValueListenableBuilder(
+                            valueListenable: _navigationIndex,
+                            builder:
+                                (BuildContext context, int i, Widget child) {
+                              return _headerIcon[i];
+                            }),
+                        ValueListenableBuilder(
+                            valueListenable: _navigationIndex,
+                            builder:
+                                (BuildContext context, int i, Widget child) {
+                              return _headerLabel[i];
+                            }),
                       ]),
                     ),
                   ),
@@ -246,7 +260,8 @@ class _NavigationPageState extends State<NavigationPage>
                           topLeft: const Radius.circular(30.0),
                           topRight: const Radius.circular(30.0),
                         )),
-                    child: [
+                    child:
+                        IndexedStack(index: _navigationIndex.value, children: [
                       ServerPage(
                         devices: devices,
                         acquisition: acquisition,
@@ -289,55 +304,7 @@ class _NavigationPageState extends State<NavigationPage>
                         timedOut: timedOut,
                         startupError: startupError,
                       ),
-                    ][provider.currentIndex]
-
-                    /* IndexedStack(
-                          index: _navigationIndex.value,
-                          children: [
-                            ServerPage(
-                              devices: devices,
-                              acquisition: acquisition,
-                              mqttClientWrapper: mqttClientWrapper,
-                              connectionNotifier: connectionNotifier,
-                              receivedMACNotifier: receivedMACNotifier,
-                              driveListNotifier: driveListNotifier,
-                              sentMACNotifier: sentMACNotifier,
-                              patientNotifier: widget.patientNotifier,
-                              annotationTypesD: annotationTypesD,
-                              timedOut: timedOut,
-                              startupError: startupError,
-                              shouldRestart: shouldRestart,
-                            ),
-                            DevicesPage(
-                              devices: devices,
-                              errorHandler: errorHandler,
-                              patientNotifier: widget.patientNotifier,
-                              mqttClientWrapper: mqttClientWrapper,
-                              connectionNotifier: connectionNotifier,
-                              driveListNotifier: driveListNotifier,
-                              historyMAC: historyMAC,
-                            ),
-                            ConfigPage(
-                              devices: devices,
-                              configurations: configurations,
-                              mqttClientWrapper: mqttClientWrapper,
-                              connectionNotifier: connectionNotifier,
-                              driveListNotifier: driveListNotifier,
-                            ),
-                            VisualizationNavPage(
-                              devices: devices,
-                              configurations: configurations,
-                              visualizationMAC1: visualizationMAC1,
-                              visualizationMAC2: visualizationMAC2,
-                              mqttClientWrapper: mqttClientWrapper,
-                              patientNotifier: widget.patientNotifier,
-                              annotationTypesD: annotationTypesD,
-                              connectionNotifier: connectionNotifier,
-                              timedOut: timedOut,
-                              startupError: startupError,
-                            ),
-                          ]) */
-                    ,
+                    ]),
                   ),
                 ),
               ],
@@ -350,9 +317,9 @@ class _NavigationPageState extends State<NavigationPage>
         selectedItemColor: Colors.black,
         unselectedItemColor: Colors.grey[500],
         showUnselectedLabels: true,
-        currentIndex: provider.currentIndex,
+        currentIndex: _navigationIndex.value,
         onTap: (index) {
-          provider.currentIndex = index;
+          _onNavigationTap(index);
         },
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -376,36 +343,42 @@ class _NavigationPageState extends State<NavigationPage>
       floatingActionButton: PropertyChangeProvider(
         value: acquisition,
         child: PropertyChangeProvider(
-          value: devices,
-          child: provider.currentIndex != 3
-              ? Stack(children: [
-                  DrawerFloater(),
-                  MQTTStateFloater(connectionNotifier: connectionNotifier),
-                  MACAddressConnectionFloater(),
-                ])
-              : Stack(children: [
-                  DrawerFloater(),
-                  MQTTStateFloater(connectionNotifier: connectionNotifier),
-                  MACAddressConnectionFloater(),
-                  SpeedAnnotationFloater(
-                    mqttClientWrapper: mqttClientWrapper,
-                    annotationTypesD: annotationTypesD,
-                    patientNotifier: widget.patientNotifier,
-                  ),
-                  ResumePauseButton(mqttClientWrapper: mqttClientWrapper),
-                  StartStopButton(
-                    connectionNotifier: connectionNotifier,
-                    devices: devices,
-                    errorHandler: errorHandler,
-                    configurations: configurations,
-                    mqttClientWrapper: mqttClientWrapper,
-                    visualizationMAC1: visualizationMAC1,
-                    visualizationMAC2: visualizationMAC2,
-                    historyMAC: historyMAC,
-                    patientNotifier: widget.patientNotifier,
-                  ),
-                ]),
-        ),
+            value: devices,
+            child: ValueListenableBuilder(
+                valueListenable: _navigationIndex,
+                builder: (BuildContext context, int index, Widget child) {
+                  return index != 3
+                      ? Stack(children: [
+                          DrawerFloater(),
+                          MQTTStateFloater(
+                              connectionNotifier: connectionNotifier),
+                          MACAddressConnectionFloater(),
+                        ])
+                      : Stack(children: [
+                          DrawerFloater(),
+                          MQTTStateFloater(
+                              connectionNotifier: connectionNotifier),
+                          MACAddressConnectionFloater(),
+                          SpeedAnnotationFloater(
+                            mqttClientWrapper: mqttClientWrapper,
+                            annotationTypesD: annotationTypesD,
+                            patientNotifier: widget.patientNotifier,
+                          ),
+                          ResumePauseButton(
+                              mqttClientWrapper: mqttClientWrapper),
+                          StartStopButton(
+                            connectionNotifier: connectionNotifier,
+                            devices: devices,
+                            errorHandler: errorHandler,
+                            configurations: configurations,
+                            mqttClientWrapper: mqttClientWrapper,
+                            visualizationMAC1: visualizationMAC1,
+                            visualizationMAC2: visualizationMAC2,
+                            historyMAC: historyMAC,
+                            patientNotifier: widget.patientNotifier,
+                          ),
+                        ]);
+                })),
       ),
     );
   }

@@ -39,10 +39,8 @@ class VisualizationPage extends StatefulWidget {
   _VisualizationPageState createState() => _VisualizationPageState();
 }
 
-class _VisualizationPageState extends State<VisualizationPage>
-    with AutomaticKeepAliveClientMixin {
-  @override
-  bool get wantKeepAlive => true;
+class _VisualizationPageState extends State<VisualizationPage>{
+
 
   List aux;
 
@@ -187,7 +185,7 @@ class _VisualizationPageState extends State<VisualizationPage>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
+
     return PropertyChangeProvider(
       value: widget.visualizationMAC,
       child: ListView(
