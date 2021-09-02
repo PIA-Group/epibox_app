@@ -85,9 +85,9 @@ class _VisualizationPageState extends State<VisualizationPage> {
           } else {
             auxData = widget.visualizationMAC.data2Plot[index] + channel.map((d) => d as double).toList();
           }
-          if (auxData.length > canvasWidth) {
+          /* if (auxData.length > canvasWidth) {
             auxData = auxData.sublist(auxData.length - canvasWidth.floor());
-          }
+          } */
           List<List<double>> auxListData = List.from(widget.visualizationMAC.data2Plot);
           auxListData[index] = auxData;
 

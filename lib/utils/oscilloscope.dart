@@ -62,12 +62,11 @@ class _OscilloscopeState extends State<Oscilloscope> {
         padding: EdgeInsets.symmetric(horizontal: 5.0),
         child: Container(
           decoration: BoxDecoration(
-            color: widget.backgroundColor,
+              color: widget.backgroundColor,
               border: Border.all(color: widget.yAxisColor, width: 2.0)),
           height: double.infinity,
           width: double.infinity,
-          //color: widget.backgroundColor,
-          child: ClipRect(
+          //child: ClipRect(
             child: CustomPaint(
               painter: _TracePainter(
                 showCanvas: widget.showCanvas,
@@ -79,7 +78,7 @@ class _OscilloscopeState extends State<Oscilloscope> {
               ),
             ),
           ),
-        ),
+        //),
       );
     });
   }
@@ -116,23 +115,20 @@ class _TracePainter extends CustomPainter {
 
     double yRange = yMax - yMin;
     double yScale = (size.height / yRange);
+    List data2draw = dataSet;
 
     // only start plot if dataset has data
     int length = dataSet.length;
     if (length > 0) {
-      // transform data set to just what we need if bigger than the width(otherwise this would be a memory hog)
-      if (length > size.width) {
-        dataSet.removeAt(0);
-        length = dataSet.length;
-      }
-
+      if (length > size.width) data2draw = dataSet.sublist(dataSet.length - size.width.floor());
       // Create Path and set Origin to first data point
       Path trace = Path();
       //trace.moveTo(0.0, size.height - (dataSet[0] - yMin) * yScale);
 
       // generate trace path
-      for (int p = 0; p < length; p++) {
-        double plotPoint = size.height - (dataSet[p] - yMin) * yScale;
+      int dataSize = data2draw.length;
+      for (int p = 0; p < dataSize; p++) {
+        double plotPoint = size.height - (data2draw[p] - yMin) * yScale;
         trace.lineTo(p * xScale, plotPoint);
       }
 

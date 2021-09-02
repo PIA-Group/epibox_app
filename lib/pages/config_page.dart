@@ -27,8 +27,7 @@ class ConfigPage extends StatefulWidget {
   _ConfigPageState createState() => _ConfigPageState();
 }
 
-class _ConfigPageState extends State<ConfigPage>{
-
+class _ConfigPageState extends State<ConfigPage> {
   List<String> fsOptions = [
     ' ',
     /* '17000',
@@ -107,11 +106,11 @@ class _ConfigPageState extends State<ConfigPage>{
           }
         });
       }
-      
+
       // Sampling frequency
       widget.configurations.controllerFreq.text =
           widget.configurations.configDefault['fs'].toString();
-      
+
       // Save raw
       widget.configurations.saveRaw =
           widget.configurations.configDefault['saveRaw'] == 'true';
@@ -403,10 +402,7 @@ class DriveBlock extends StatelessWidget {
                       return ValueListenableBuilder(
                           valueListenable: driveListNotifier,
                           builder: (context, driveList, child) {
-                            print('chosen drive: ${configurations.chosenDrive}');
-                            print('drive options: $driveList');
                             return DropdownButton(
-                              
                               key: Key('driveDropdown'),
                               value: configurations.chosenDrive,
                               items: driveList.map<DropdownMenuItem<String>>(
