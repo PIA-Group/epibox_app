@@ -44,8 +44,7 @@ class DevicesPage extends StatefulWidget {
   _DevicesPageState createState() => _DevicesPageState();
 }
 
-class _DevicesPageState extends State<DevicesPage>{
- 
+class _DevicesPageState extends State<DevicesPage> {
   TextEditingController controller1 = TextEditingController();
   TextEditingController controller2 = TextEditingController();
 
@@ -256,7 +255,8 @@ class SelectDevicesBlock extends StatelessWidget {
               child: Row(children: [
                 Expanded(
                   child: MaskedTextField(
-                    key: Key('device${entry.key.substring(entry.key.length-1)}TextField'),
+                    key: Key(
+                        'device${entry.key.substring(entry.key.length - 1)}TextField'),
                     maskedTextFieldController: entry.value,
                     mask: 'xx:xx:xx:xx:xx:xx',
                     maxLength: 17,
@@ -383,7 +383,11 @@ class DeviceStateConnectionBlock extends StatelessWidget {
                       onTap: () {
                         if (connectionNotifier.value !=
                             MqttCurrentConnectionState.CONNECTED) {
-                          errorHandler.overlayMessage = DevicesCustomOverlay();
+                          errorHandler.overlayInfo = {
+                            'overlayMessage': DevicesCustomOverlay(),
+                            'timer': 2,
+                            'showOverlay': true
+                          };
                         } else {
                           deviceID == 1
                               ? devices.macAddress1Connection = 'connecting'

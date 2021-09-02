@@ -4,7 +4,6 @@ import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/devices.dart';
 import 'package:epibox/classes/error_handler.dart';
 import 'package:epibox/classes/visualization.dart';
-import 'package:epibox/costum_overlays/acquisition_overlay.dart';
 import 'package:epibox/mqtt/mqtt_states.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'package:flutter/material.dart';

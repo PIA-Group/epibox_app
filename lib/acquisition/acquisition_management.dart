@@ -9,7 +9,6 @@ import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'package:epibox/pages/speed_annotation.dart';
 import 'package:epibox/shared_pref/pref_handler.dart';
 import 'package:flutter/material.dart';
-import 'package:loader_overlay/loader_overlay.dart';
 
 Future<void> startAcquisition({
   BuildContext context,
@@ -26,12 +25,11 @@ Future<void> startAcquisition({
   if (connectionNotifier.value != MqttCurrentConnectionState.CONNECTED ||
       (devices.isBit1Enabled && devices.macAddress1Connection != 'connected') ||
       (devices.isBit2Enabled && devices.macAddress2Connection != 'connected')) {
-    if (context.loaderOverlay.visible) context.loaderOverlay.hide();
-    errorHandler.overlayMessage = VerifyConnectionsOverlay();
-    context.loaderOverlay.show();
-    Future.delayed(const Duration(seconds: 3), () {
-      context.loaderOverlay.hide();
-    });
+    errorHandler.overlayInfo = {
+      'overlayMessage': VerifyConnectionsOverlay(),
+      'timer': 2,
+      'showOverlay': true
+    };
   } else {
     String _newDrive = configurations.chosenDrive
         .substring(0, configurations.chosenDrive.indexOf('('))
@@ -111,12 +109,11 @@ void pauseAcquisition({
   ErrorHandler errorHandler,
 }) {
   if (acquisition.acquisitionState != 'acquiring') {
-    if (context.loaderOverlay.visible) context.loaderOverlay.hide();
-    errorHandler.overlayMessage = NotAcquiringOverlay();
-    context.loaderOverlay.show();
-    Future.delayed(const Duration(seconds: 3), () {
-      context.loaderOverlay.hide();
-    });
+    errorHandler.overlayInfo = {
+      'overlayMessage': NotAcquiringOverlay(),
+      'timer': null,
+      'showOverlay': true
+    };
   } else {
     mqttClientWrapper.publishMessage("['PAUSE ACQ']");
   }
@@ -132,12 +129,11 @@ Future<void> speedAnnotation({
 }) async {
   List<String> annotationTypes = List<String>.from(annotationTypesD.value);
   if (acquisition.acquisitionState != 'acquiring') {
-    if (context.loaderOverlay.visible) context.loaderOverlay.hide();
-    errorHandler.overlayMessage = NotAcquiringOverlay();
-    context.loaderOverlay.show();
-    Future.delayed(const Duration(seconds: 3), () {
-      context.loaderOverlay.hide();
-    });
+    errorHandler.overlayInfo = {
+      'overlayMessage': NotAcquiringOverlay(),
+      'timer': null,
+      'showOverlay': true
+    };
   } else {
     Navigator.of(context).push(new MaterialPageRoute<Null>(
         builder: (BuildContext context) {

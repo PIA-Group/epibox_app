@@ -31,7 +31,6 @@ dependencies:
   barcode_scan: ^3.0.1
   material_design_icons_flutter: ^4.0.5655
   flutter_local_notifications: ^3.0.1+4
-  loader_overlay: ^2.0.2
   property_change_notifier: ^0.2.0
   
 

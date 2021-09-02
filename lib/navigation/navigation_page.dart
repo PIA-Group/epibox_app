@@ -3,7 +3,7 @@ import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/devices.dart';
 import 'package:epibox/classes/error_handler.dart';
 import 'package:epibox/classes/visualization.dart';
-import 'package:epibox/mqtt/connection.dart';
+import 'package:epibox/mqtt/connection_manager.dart';
 import 'package:epibox/navigation/floating_action_buttons.dart';
 import 'package:epibox/navigation/visualization_navbar.dart';
 import 'package:epibox/pages/config_page.dart';
@@ -18,7 +18,6 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:mqtt_client/mqtt_client.dart';
-import 'package:loader_overlay/loader_overlay.dart';
 import 'package:epibox/decor/text_styles.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/mqtt/mqtt_states.dart';
@@ -104,14 +103,16 @@ class _NavigationPageState extends State<NavigationPage>
       visualizationMAC2.dataMAC = acquisition.dataMAC2;
     };
     listeners['overlayInfo'] = () {
-      errorHandler.showOverlay = true;
-      print('show: ${errorHandler.showOverlay}');
-      print('show timer: ${errorHandler.overlayInfo['timer']}');
-      if (errorHandler.overlayInfo['timer'] != null) {
-        Future.delayed(Duration(seconds: errorHandler.overlayInfo['timer']), () {
-          errorHandler.showOverlay = false;
-          print('show: ${errorHandler.showOverlay}');
-        });
+      if (errorHandler.overlayInfo['showOverlay']) {
+        errorHandler.showOverlay = true;
+        if (errorHandler.overlayInfo['timer'] != null) {
+          Future.delayed(Duration(seconds: errorHandler.overlayInfo['timer']),
+              () {
+            errorHandler.showOverlay = false;
+          });
+        }
+      } else {
+        errorHandler.showOverlay = false;
       }
     };
 
@@ -215,130 +216,125 @@ class _NavigationPageState extends State<NavigationPage>
     print('rebuilding NavigationPage');
     return Scaffold(
       drawer: ProfileDrawer(
-          mqttClientWrapper: mqttClientWrapper,
-          patientNotifier: widget.patientNotifier,
-          annotationTypesD: annotationTypesD,
-          historyMAC: historyMAC,
-          devices: devices),
+        mqttClientWrapper: mqttClientWrapper,
+        patientNotifier: widget.patientNotifier,
+        annotationTypesD: annotationTypesD,
+        historyMAC: historyMAC,
+        devices: devices,
+      ),
       backgroundColor: Colors.transparent,
       key: _scaffoldKey,
-      body: LoaderOverlay(
-        overlayOpacity: 0.8,
-        overlayColor: Colors.white,
-        useDefaultLoading: false,
-        overlayWidget: errorHandler.overlayMessage,
-        child: Stack(
-          children: [
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Container(
-                height: appBarHeight * 2,
-                color: DefaultColors.mainColor,
-                child: Center(
-                  child: Column(children: [
-                    SizedBox(
-                      height: 37,
-                    ),
-                    ValueListenableBuilder(
-                        valueListenable: _navigationIndex,
-                        builder: (BuildContext context, int i, Widget child) {
-                          return _headerIcon[i];
-                        }),
-                    ValueListenableBuilder(
-                        valueListenable: _navigationIndex,
-                        builder: (BuildContext context, int i, Widget child) {
-                          return _headerLabel[i];
-                        }),
-                  ]),
-                ),
-              ),
-            ),
-            Positioned(
-              top: appBarHeight,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Container(
-                decoration: BoxDecoration(
-                    color: DefaultColors.backgroundColor,
-                    borderRadius: new BorderRadius.only(
-                      topLeft: const Radius.circular(30.0),
-                      topRight: const Radius.circular(30.0),
-                    )),
-                child: IndexedStack(index: _navigationIndex.value, children: [
-                  ServerPage(
-                    devices: devices,
-                    acquisition: acquisition,
-                    mqttClientWrapper: mqttClientWrapper,
-                    connectionNotifier: connectionNotifier,
-                    receivedMACNotifier: receivedMACNotifier,
-                    driveListNotifier: driveListNotifier,
-                    sentMACNotifier: sentMACNotifier,
-                    patientNotifier: widget.patientNotifier,
-                    annotationTypesD: annotationTypesD,
-                    timedOut: timedOut,
-                    startupError: startupError,
-                    shouldRestart: shouldRestart,
+      body: Stack(
+        children: [
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              height: appBarHeight * 2,
+              color: DefaultColors.mainColor,
+              child: Center(
+                child: Column(children: [
+                  SizedBox(
+                    height: 37,
                   ),
-                  DevicesPage(
-                    devices: devices,
-                    errorHandler: errorHandler,
-                    patientNotifier: widget.patientNotifier,
-                    mqttClientWrapper: mqttClientWrapper,
-                    connectionNotifier: connectionNotifier,
-                    driveListNotifier: driveListNotifier,
-                    historyMAC: historyMAC,
-                  ),
-                  ConfigPage(
-                    devices: devices,
-                    configurations: configurations,
-                    mqttClientWrapper: mqttClientWrapper,
-                    connectionNotifier: connectionNotifier,
-                    driveListNotifier: driveListNotifier,
-                  ),
-                  VisualizationNavPage(
-                    devices: devices,
-                    configurations: configurations,
-                    visualizationMAC1: visualizationMAC1,
-                    visualizationMAC2: visualizationMAC2,
-                    mqttClientWrapper: mqttClientWrapper,
-                    patientNotifier: widget.patientNotifier,
-                    annotationTypesD: annotationTypesD,
-                    connectionNotifier: connectionNotifier,
-                    timedOut: timedOut,
-                    startupError: startupError,
-                  ),
+                  ValueListenableBuilder(
+                      valueListenable: _navigationIndex,
+                      builder: (BuildContext context, int i, Widget child) {
+                        return _headerIcon[i];
+                      }),
+                  ValueListenableBuilder(
+                      valueListenable: _navigationIndex,
+                      builder: (BuildContext context, int i, Widget child) {
+                        return _headerLabel[i];
+                      }),
                 ]),
               ),
             ),
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: PropertyChangeProvider(
-                value: errorHandler,
-                child: PropertyChangeConsumer<ErrorHandler>(
-                    properties: ['showOverlay'],
-                    builder: (context, error, properties) {
-                      if (errorHandler.showOverlay) {
-                        return Container(
-                          height: double.maxFinite,
-                          width: double.maxFinite,
-                          color: Colors.white.withOpacity(0.8),
-                          child: error.overlayInfo['overlayMessage'],
-                        );
-                      } else {
-                        return Container();
-                      }
-                    }),
-              ),
+          ),
+          Positioned(
+            top: appBarHeight,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              decoration: BoxDecoration(
+                  color: DefaultColors.backgroundColor,
+                  borderRadius: new BorderRadius.only(
+                    topLeft: const Radius.circular(30.0),
+                    topRight: const Radius.circular(30.0),
+                  )),
+              child: IndexedStack(index: _navigationIndex.value, children: [
+                ServerPage(
+                  devices: devices,
+                  acquisition: acquisition,
+                  mqttClientWrapper: mqttClientWrapper,
+                  connectionNotifier: connectionNotifier,
+                  receivedMACNotifier: receivedMACNotifier,
+                  driveListNotifier: driveListNotifier,
+                  sentMACNotifier: sentMACNotifier,
+                  patientNotifier: widget.patientNotifier,
+                  annotationTypesD: annotationTypesD,
+                  timedOut: timedOut,
+                  startupError: startupError,
+                  shouldRestart: shouldRestart,
+                ),
+                DevicesPage(
+                  devices: devices,
+                  errorHandler: errorHandler,
+                  patientNotifier: widget.patientNotifier,
+                  mqttClientWrapper: mqttClientWrapper,
+                  connectionNotifier: connectionNotifier,
+                  driveListNotifier: driveListNotifier,
+                  historyMAC: historyMAC,
+                ),
+                ConfigPage(
+                  devices: devices,
+                  configurations: configurations,
+                  mqttClientWrapper: mqttClientWrapper,
+                  connectionNotifier: connectionNotifier,
+                  driveListNotifier: driveListNotifier,
+                ),
+                VisualizationNavPage(
+                  devices: devices,
+                  configurations: configurations,
+                  visualizationMAC1: visualizationMAC1,
+                  visualizationMAC2: visualizationMAC2,
+                  mqttClientWrapper: mqttClientWrapper,
+                  patientNotifier: widget.patientNotifier,
+                  annotationTypesD: annotationTypesD,
+                  connectionNotifier: connectionNotifier,
+                  timedOut: timedOut,
+                  startupError: startupError,
+                ),
+              ]),
             ),
-          ],
-        ),
+          ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: PropertyChangeProvider(
+              value: errorHandler,
+              child: PropertyChangeConsumer<ErrorHandler>(
+                  properties: ['showOverlay'],
+                  builder: (context, error, properties) {
+                    if (errorHandler.showOverlay) {
+                      return Container(
+                        height: double.maxFinite,
+                        width: double.maxFinite,
+                        color: Colors.white.withOpacity(0.8),
+                        child: error.overlayInfo['overlayMessage'],
+                      );
+                    } else {
+                      return Container();
+                    }
+                  }),
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         key: Key('bottomNavbar'),

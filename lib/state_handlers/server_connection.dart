@@ -8,12 +8,18 @@ void serverConnectionHandler(
     ValueNotifier<MqttCurrentConnectionState> connectionNotifier,
     ErrorHandler errorHandler) {
   if (connectionNotifier.value == MqttCurrentConnectionState.CONNECTING) {
-    errorHandler.overlayInfo = {'overlayMessage': ServerCustomOverlay(connectionState: connectionNotifier.value), 'timer': null};
-    
-  } else if (connectionNotifier.value == MqttCurrentConnectionState.CONNECTED) {
-    errorHandler.overlayInfo = {'overlayMessage': ServerCustomOverlay(connectionState: connectionNotifier.value), 'timer': 2};
-  } else if (connectionNotifier.value ==
-      MqttCurrentConnectionState.ERROR_WHEN_CONNECTING) {
-    errorHandler.overlayInfo = {'overlayMessage': ServerCustomOverlay(connectionState: connectionNotifier.value), 'timer': 2};
+    errorHandler.overlayInfo = {
+      'overlayMessage':
+          ServerCustomOverlay(connectionState: connectionNotifier.value),
+      'timer': null,
+      'showOverlay': true
+    };
+  } else {
+    errorHandler.overlayInfo = {
+      'overlayMessage':
+          ServerCustomOverlay(connectionState: connectionNotifier.value),
+      'timer': 2,
+      'showOverlay': true
+    };
   }
 }

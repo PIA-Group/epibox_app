@@ -1,6 +1,6 @@
 import 'package:epibox/classes/acquisition.dart';
 import 'package:epibox/classes/devices.dart';
-import 'package:epibox/mqtt/connection.dart';
+import 'package:epibox/mqtt/connection_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
@@ -161,8 +161,7 @@ class _ServerPageState extends State<ServerPage>{
                   ElevatedButton(
                     key: Key('connectServerButton'),
                     style: ElevatedButton.styleFrom(
-                      primary: DefaultColors.mainLColor, // background
-                      //onPrimary: Colors.white, // foreground
+                      primary: DefaultColors.mainLColor, 
                     ),
                     onPressed: () {
                       widget.shouldRestart.value = 'full';

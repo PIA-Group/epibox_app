@@ -12,9 +12,9 @@ Future<void> restart(
     Acquisition acquisition,
     Configurations configurations,
     ValueNotifier<List<String>> driveListNotifier) async {
-  mqttClientWrapper.publishMessage("['RESTART']");
 
   if (restart == 'full') {
+    mqttClientWrapper.publishMessage("['RESTART']");
     await mqttClientWrapper.diconnectClient();
 
     devices.defaultMacAddress1 = 'xx:xx:xx:xx:xx:xx';
@@ -31,6 +31,7 @@ Future<void> restart(
     devices.isBit2Enabled = false;
     
   } else if (restart == 'medium') {
+    mqttClientWrapper.publishMessage("['RESTART']");
     acquisition.batteryBit1 = null;
     acquisition.batteryBit2 = null;
 

@@ -213,7 +213,12 @@ void isStartupError(
   shouldRestart.value = 'medium';
 }
 
-void isTurnedOff(ErrorHandler errorHandler, ValueNotifier<String> shouldRestart) {
+void isTurnedOff(
+    ErrorHandler errorHandler, ValueNotifier<String> shouldRestart) {
   shouldRestart.value = 'medium';
-  errorHandler.overlayMessage = SystemCustomOverlay();
+  errorHandler.overlayInfo = {
+    'overlayMessage': SystemCustomOverlay(),
+    'timer': 2,
+    'showOverlay': true
+  };
 }
