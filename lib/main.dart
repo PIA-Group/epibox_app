@@ -9,10 +9,13 @@ class InterfaceRPi extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setSystemUIOverlayStyle(
-        SystemUiOverlayStyle(statusBarColor: Colors.white));
+    /* SystemChrome.setSystemUIOverlayStyle(
+        SystemUiOverlayStyle(statusBarColor: Colors.white)); */
     // Provider allows to make available information (eg: Stream) to all of its descendents
     return MaterialApp(
+      //showPerformanceOverlay: true,
+      //checkerboardOffscreenLayers: true,
+      //checkerboardRasterCacheImages: true,
       theme: ThemeData(
           canvasColor: DefaultColors.backgroundColor,
           scaffoldBackgroundColor: DefaultColors.backgroundColor,
