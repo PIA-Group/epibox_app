@@ -4,7 +4,6 @@ import 'package:epibox/classes/devices.dart';
 import 'package:epibox/classes/error_handler.dart';
 import 'package:epibox/costum_overlays/system_overlay.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
-import 'package:epibox/shared_pref/pref_handler.dart';
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 
@@ -141,11 +140,17 @@ void isAcquisitionState(String message, Acquisition acquisition,
 }
 
 void isData(List message2List, Devices devices, Acquisition acquisition) {
-  if (devices.macAddress1 == 'xx:xx:xx:xx:xx:xx') {
+  /* if (devices.macAddress1 == 'xx:xx:xx:xx:xx:xx') {
     getLastMAC(devices);
-  }
+  } */
   if (acquisition.acquisitionState != 'acquiring')
     acquisition.acquisitionState = 'acquiring';
+  if (devices.macAddress1.trim() != '' &&
+      devices.macAddress1Connection != 'connected')
+    devices.macAddress1Connection = 'connected';
+  if (devices.macAddress2.trim() != '' &&
+      devices.macAddress2Connection != 'connected')
+    devices.macAddress2Connection = 'connected';
 
   List<List> dataMAC1 = [];
   List<List> dataMAC2 = [];

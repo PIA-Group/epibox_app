@@ -11,7 +11,7 @@ import 'package:epibox/pages/devices_page.dart';
 import 'package:epibox/pages/profile_drawer.dart';
 import 'package:epibox/pages/server_page.dart';
 import 'package:epibox/shared_pref/pref_handler.dart';
-import 'package:epibox/state_handlers/acquisition.dart';
+import 'package:epibox/state_handlers/acquisition_state.dart';
 import 'package:epibox/state_handlers/server_connection.dart';
 import 'package:epibox/state_handlers/system.dart';
 import 'package:flutter/material.dart';
@@ -96,7 +96,7 @@ class _NavigationPageState extends State<NavigationPage>
             configurations, driveListNotifier);
     };
     listeners['acquisitionState'] = () {
-      acquisitionHandler(context, acquisition, errorHandler);
+      acquisitionStateHandler(context, acquisition, errorHandler);
     };
     listeners['dataMAC'] = () {
       visualizationMAC1.dataMAC = acquisition.dataMAC1;
@@ -146,8 +146,10 @@ class _NavigationPageState extends State<NavigationPage>
     );
 
     getAnnotationTypes(annotationTypesD);
-    getPreviousDeviceType(devices);
+    getLastDeviceType(devices);
     getLastMAC(devices);
+    getLastChannels(visualizationMAC1, visualizationMAC2);
+    getLastSensors(visualizationMAC1, visualizationMAC2);
     //getLastBatteries(acquisition);
     getMACHistory(historyMAC);
 
@@ -166,9 +168,9 @@ class _NavigationPageState extends State<NavigationPage>
   }
 
   void _onNavigationTap(int index) {
-    setState(() {
-      _navigationIndex.value = index;
-    });
+    //setState(() {
+    _navigationIndex.value = index;
+    //});
   }
 
   Future<bool> initialize() async {
@@ -265,50 +267,55 @@ class _NavigationPageState extends State<NavigationPage>
                     topLeft: const Radius.circular(30.0),
                     topRight: const Radius.circular(30.0),
                   )),
-              child: IndexedStack(index: _navigationIndex.value, children: [
-                ServerPage(
-                  devices: devices,
-                  acquisition: acquisition,
-                  mqttClientWrapper: mqttClientWrapper,
-                  connectionNotifier: connectionNotifier,
-                  receivedMACNotifier: receivedMACNotifier,
-                  driveListNotifier: driveListNotifier,
-                  sentMACNotifier: sentMACNotifier,
-                  patientNotifier: widget.patientNotifier,
-                  annotationTypesD: annotationTypesD,
-                  timedOut: timedOut,
-                  startupError: startupError,
-                  shouldRestart: shouldRestart,
-                ),
-                DevicesPage(
-                  devices: devices,
-                  errorHandler: errorHandler,
-                  patientNotifier: widget.patientNotifier,
-                  mqttClientWrapper: mqttClientWrapper,
-                  connectionNotifier: connectionNotifier,
-                  driveListNotifier: driveListNotifier,
-                  historyMAC: historyMAC,
-                ),
-                ConfigPage(
-                  devices: devices,
-                  configurations: configurations,
-                  mqttClientWrapper: mqttClientWrapper,
-                  connectionNotifier: connectionNotifier,
-                  driveListNotifier: driveListNotifier,
-                ),
-                VisualizationNavPage(
-                  devices: devices,
-                  configurations: configurations,
-                  visualizationMAC1: visualizationMAC1,
-                  visualizationMAC2: visualizationMAC2,
-                  mqttClientWrapper: mqttClientWrapper,
-                  patientNotifier: widget.patientNotifier,
-                  annotationTypesD: annotationTypesD,
-                  connectionNotifier: connectionNotifier,
-                  timedOut: timedOut,
-                  startupError: startupError,
-                ),
-              ]),
+              child: ValueListenableBuilder(
+                  valueListenable: _navigationIndex,
+                  builder: (BuildContext context, int i, Widget child) {
+                    return IndexedStack(index: i, //_navigationIndex.value,
+                        children: [
+                          ServerPage(
+                            devices: devices,
+                            acquisition: acquisition,
+                            mqttClientWrapper: mqttClientWrapper,
+                            connectionNotifier: connectionNotifier,
+                            receivedMACNotifier: receivedMACNotifier,
+                            driveListNotifier: driveListNotifier,
+                            sentMACNotifier: sentMACNotifier,
+                            patientNotifier: widget.patientNotifier,
+                            annotationTypesD: annotationTypesD,
+                            timedOut: timedOut,
+                            startupError: startupError,
+                            shouldRestart: shouldRestart,
+                          ),
+                          DevicesPage(
+                            devices: devices,
+                            errorHandler: errorHandler,
+                            patientNotifier: widget.patientNotifier,
+                            mqttClientWrapper: mqttClientWrapper,
+                            connectionNotifier: connectionNotifier,
+                            driveListNotifier: driveListNotifier,
+                            historyMAC: historyMAC,
+                          ),
+                          ConfigPage(
+                            devices: devices,
+                            configurations: configurations,
+                            mqttClientWrapper: mqttClientWrapper,
+                            connectionNotifier: connectionNotifier,
+                            driveListNotifier: driveListNotifier,
+                          ),
+                          VisualizationNavPage(
+                            devices: devices,
+                            configurations: configurations,
+                            visualizationMAC1: visualizationMAC1,
+                            visualizationMAC2: visualizationMAC2,
+                            mqttClientWrapper: mqttClientWrapper,
+                            patientNotifier: widget.patientNotifier,
+                            annotationTypesD: annotationTypesD,
+                            connectionNotifier: connectionNotifier,
+                            timedOut: timedOut,
+                            startupError: startupError,
+                          ),
+                        ]);
+                  }),
             ),
           ),
           Positioned(
@@ -336,34 +343,39 @@ class _NavigationPageState extends State<NavigationPage>
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        key: Key('bottomNavbar'),
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.grey[500],
-        showUnselectedLabels: true,
-        currentIndex: _navigationIndex.value,
-        onTap: (index) {
-          _onNavigationTap(index);
-        },
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home, key: Key('Início')),
-            label: 'Início',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.device_hub_rounded, key: Key('Dispositivos')),
-            label: 'Dispositivos',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings, key: Key('Configurações')),
-            label: 'Configurações',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Custom.ecg, key: Key('Aquisição')),
-            label: 'Aquisição',
-          ),
-        ],
-      ),
+      bottomNavigationBar: ValueListenableBuilder(
+          valueListenable: _navigationIndex,
+          builder: (BuildContext context, int index, Widget child) {
+            return BottomNavigationBar(
+              key: Key('bottomNavbar'),
+              selectedItemColor: Colors.black,
+              unselectedItemColor: Colors.grey[500],
+              showUnselectedLabels: true,
+              currentIndex: _navigationIndex.value,
+              onTap: (index) {
+                _onNavigationTap(index);
+              },
+              items: const <BottomNavigationBarItem>[
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home, key: Key('Início')),
+                  label: 'Início',
+                ),
+                BottomNavigationBarItem(
+                  icon:
+                      Icon(Icons.device_hub_rounded, key: Key('Dispositivos')),
+                  label: 'Dispositivos',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.settings, key: Key('Configurações')),
+                  label: 'Configurações',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Custom.ecg, key: Key('Aquisição')),
+                  label: 'Aquisição',
+                ),
+              ],
+            );
+          }),
       floatingActionButton: PropertyChangeProvider(
         value: acquisition,
         child: PropertyChangeProvider(

@@ -1,7 +1,9 @@
 import 'package:epibox/classes/acquisition.dart';
 import 'package:epibox/classes/devices.dart';
+import 'package:epibox/classes/visualization.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 // DEVICES
 
@@ -10,17 +12,21 @@ void getLastMAC(Devices devices) async {
     if (prefs.containsKey('lastMAC')) {
       List<String> lastMAC = (prefs.getStringList('lastMAC').toList() ??
           ['xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx']);
-      devices.defaultMacAddress1 = lastMAC[0];
-      devices.defaultMacAddress2 = lastMAC[1];
+      /* devices.defaultMacAddress1 = lastMAC[0];
+      devices.defaultMacAddress2 = lastMAC[1]; */
+      devices.macAddress1 = lastMAC[0];
+      devices.macAddress2 = lastMAC[1];
     } else {
       List<String> lastMAC = ['xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx'];
-      devices.defaultMacAddress1 = lastMAC[0];
-      devices.defaultMacAddress2 = lastMAC[1];
+      /* devices.defaultMacAddress1 = lastMAC[0];
+      devices.defaultMacAddress2 = lastMAC[1]; */
+      devices.macAddress1 = lastMAC[0];
+      devices.macAddress2 = lastMAC[1];
     }
   });
 }
 
-void getPreviousDeviceType(Devices devices) async {
+void getLastDeviceType(Devices devices) async {
   await SharedPreferences.getInstance().then((prefs) {
     if (prefs.containsKey('deviceType')) {
       try {
@@ -31,6 +37,92 @@ void getPreviousDeviceType(Devices devices) async {
       }
     } else {
       devices.type = 'Bitalino';
+    }
+  });
+}
+
+Future<void> saveChannels(List<List> channelsMAC1, List<List> channelsMAC2) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  try {
+    await prefs.setString(
+        'channelsMAC1', json.encode(channelsMAC1));
+  } catch (e) {
+    print(e);
+  }
+
+  try {
+    await prefs.setString(
+        'channelsMAC2', json.encode(channelsMAC2));
+  } catch (e) {
+    print(e);
+  }
+}
+
+void getLastChannels(Visualization visualizationMAC1, Visualization visualizationMAC2) async {
+  await SharedPreferences.getInstance().then((prefs) {
+    if (prefs.containsKey('channelsMAC1')) {
+      try {
+        List<List> channels = List<List>.from(json.decode(prefs.getString('channelsMAC1'))) ?? [];
+        visualizationMAC1.channelsMAC = channels;
+      } catch (e) {
+        print(e);
+      }
+    } else {
+      visualizationMAC1.channelsMAC = [];
+    }
+
+    if (prefs.containsKey('channelsMAC2')) {
+      try {
+        List<List> channels = List<List>.from(json.decode(prefs.getString('channelsMAC2'))) ?? [];
+        visualizationMAC2.channelsMAC = channels;
+      } catch (e) {
+        print(e);
+      }
+    } else {
+      visualizationMAC2.channelsMAC = [];
+    }
+  });
+}
+
+Future<void> saveSensors(List sensorsMAC1, List sensorsMAC2) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  try {
+    await prefs.setString(
+        'sensorsMAC1', json.encode(sensorsMAC1));
+  } catch (e) {
+    print(e);
+  }
+
+  try {
+    await prefs.setString(
+        'sensorsMAC2', json.encode(sensorsMAC2));
+  } catch (e) {
+    print(e);
+  }
+}
+
+void getLastSensors(Visualization visualizationMAC1, Visualization visualizationMAC2) async {
+  await SharedPreferences.getInstance().then((prefs) {
+    if (prefs.containsKey('sensorsMAC1')) {
+      try {
+        List sensors = json.decode(prefs.getString('sensorsMAC1')) ?? [];
+        visualizationMAC1.sensorsMAC = sensors;
+      } catch (e) {
+        print(e);
+      }
+    } else {
+      visualizationMAC1.sensorsMAC = [];
+    }
+
+    if (prefs.containsKey('sensorsMAC2')) {
+      try {
+        List sensors = json.decode(prefs.getString('sensorsMAC2')) ?? [];
+        visualizationMAC2.sensorsMAC = sensors;
+      } catch (e) {
+        print(e);
+      }
+    } else {
+      visualizationMAC2.sensorsMAC = [];
     }
   });
 }

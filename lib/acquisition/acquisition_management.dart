@@ -46,14 +46,14 @@ Future<void> startAcquisition({
     List<List<String>> _channels2Send = _channels[0];
     mqttClientWrapper.publishMessage("['CHANNELS', $_channels2Send]");
 
-    visualizationMAC1.channelsMAC = _channels[1];
-    visualizationMAC1.sensorsMAC = _channels[2];
+    visualizationMAC1.channelsMAC = _channels[1][0];
+    visualizationMAC1.sensorsMAC = _channels[2][0];
     visualizationMAC1.data2Plot = List.filled(
         configurations.bit1Selections.where((item) => item).length, [],
         growable: true);
 
-    visualizationMAC2.channelsMAC = _channels[1];
-    visualizationMAC2.sensorsMAC = _channels[2];
+    visualizationMAC2.channelsMAC = _channels[1][1];
+    visualizationMAC2.sensorsMAC = _channels[2][1];
     visualizationMAC2.data2Plot = List.filled(
         configurations.bit2Selections.where((item) => item).length, [],
         growable: true);
@@ -62,13 +62,15 @@ Future<void> startAcquisition({
 
     saveMAC(devices.macAddress1, devices.macAddress2);
     saveMACHistory(devices.macAddress1, devices.macAddress2, historyMAC);
+    saveChannels(visualizationMAC1.channelsMAC, visualizationMAC2.channelsMAC);
+    saveSensors(visualizationMAC1.sensorsMAC, visualizationMAC2.sensorsMAC);
   }
 }
 
 List<List> _getChannels(Configurations configurations, Devices devices) {
   List<List<String>> _channels2Send = [];
-  List<List<String>> _channels2Save = [];
-  List<String> _sensors2Save = [];
+  List<List<List<String>>> _channels2Save = [[], []];
+  List<List<String>> _sensors2Save = [[], []];
 
   configurations.bit1Selections.asMap().forEach((channel, value) {
     if (value) {
@@ -77,9 +79,9 @@ List<List> _getChannels(Configurations configurations, Devices devices) {
         "'${(channel + 1).toString()}'",
         "'${configurations.controllerSensors[channel].text}'"
       ]);
-      _channels2Save
+      _channels2Save[0]
           .add(["${devices.macAddress1}", "${(channel + 1).toString()}"]);
-      _sensors2Save.add("${configurations.controllerSensors[channel].text}");
+      _sensors2Save[0].add("${configurations.controllerSensors[channel].text}");
     }
   });
   configurations.bit2Selections.asMap().forEach((channel, value) {
@@ -89,6 +91,9 @@ List<List> _getChannels(Configurations configurations, Devices devices) {
         "'${(channel + 1).toString()}'",
         "'${configurations.controllerSensors[channel + 5].text}'"
       ]);
+      _channels2Save[1]
+          .add(["${devices.macAddress2}", "${(channel + 1).toString()}"]);
+      _sensors2Save[1].add("${configurations.controllerSensors[channel + 5].text}");
     }
   });
   return [_channels2Send, _channels2Save, _sensors2Save];

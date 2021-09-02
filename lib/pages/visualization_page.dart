@@ -40,7 +40,6 @@ class VisualizationPage extends StatefulWidget {
 }
 
 class _VisualizationPageState extends State<VisualizationPage> {
-  List aux;
 
   final plotHeight = 160.0;
 
@@ -78,15 +77,22 @@ class _VisualizationPageState extends State<VisualizationPage> {
         double canvasWidth = MediaQuery.of(context).size.width;
 
         widget.visualizationMAC.dataMAC.asMap().forEach((index, channel) {
-          List auxData = widget.visualizationMAC.data2Plot[index] + channel;
+          List<double> auxData;
+          if (widget.visualizationMAC.data2Plot.isEmpty) {
+            widget.visualizationMAC.data2Plot =
+                List.filled(widget.visualizationMAC.dataMAC.length, []);
+            auxData = channel.map((d) => d as double).toList();
+          } else {
+            auxData = widget.visualizationMAC.data2Plot[index] + channel.map((d) => d as double).toList();
+          }
           if (auxData.length > canvasWidth) {
             auxData = auxData.sublist(auxData.length - canvasWidth.floor());
           }
-          List auxListData = List.from(widget.visualizationMAC.data2Plot);
+          List<List<double>> auxListData = List.from(widget.visualizationMAC.data2Plot);
           auxListData[index] = auxData;
 
           if (widget.visualizationMAC.rangesList[index][2] == 0) {
-            aux = []..addAll(auxListData[index]);
+            List<double> aux = []..addAll(auxListData[index]);
             aux.sort();
             if (_rangeUpdateNeeded(
                 aux, widget.visualizationMAC.rangesList[index].sublist(0, 2))) {
@@ -155,7 +161,7 @@ class _VisualizationPageState extends State<VisualizationPage> {
     _rangeInitiated = true;
   }
 
-  bool _rangeUpdateNeeded(List data, List currentRange) {
+  bool _rangeUpdateNeeded(List<double> data, List<double> currentRange) {
     bool update = false;
     int std = 5;
     if (data.first < currentRange[0] ||
@@ -210,7 +216,7 @@ class _VisualizationPageState extends State<VisualizationPage> {
                                       channels: visualization.channelsMAC[i],
                                       sensor: visualization.sensorsMAC[i]),
                                   PlotData(
-                                    data: data.map((s) => s as double).toList(),
+                                    data: data,
                                     yRange: visualization.rangesList[i]
                                         .sublist(0, 2),
                                     plotHeight: plotHeight,

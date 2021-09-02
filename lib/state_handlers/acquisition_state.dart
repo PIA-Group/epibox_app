@@ -3,7 +3,7 @@ import 'package:epibox/classes/error_handler.dart';
 import 'package:epibox/costum_overlays/acquisition_overlay.dart';
 import 'package:flutter/material.dart';
 
-void acquisitionHandler(
+void acquisitionStateHandler(
     BuildContext context, Acquisition acquisition, ErrorHandler errorHandler) {
   print('---- change in acquisition state: ${acquisition.acquisitionState}');
   if (acquisition.acquisitionState == 'starting') {

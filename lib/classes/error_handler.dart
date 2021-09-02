@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:property_change_notifier/property_change_notifier.dart';
 
 class ErrorHandler extends PropertyChangeNotifier<String> {

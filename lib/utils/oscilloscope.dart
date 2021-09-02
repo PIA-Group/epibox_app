@@ -61,22 +61,26 @@ class _OscilloscopeState extends State<Oscilloscope> {
       return Padding(
         padding: EdgeInsets.symmetric(horizontal: 5.0),
         child: Container(
-        height: double.infinity,
-        width: double.infinity,
-        color: widget.backgroundColor,
-        child: ClipRect(
-          child: CustomPaint(
-            painter: _TracePainter(
-              showCanvas: widget.showCanvas,
-              yAxisColor: widget.yAxisColor,
-              dataSet: widget.dataSet,
-              traceColor: widget.traceColor,
-              yMin: widget.yAxisMin,
-              yMax: widget.yAxisMax,
+          decoration: BoxDecoration(
+            color: widget.backgroundColor,
+              border: Border.all(color: widget.yAxisColor, width: 2.0)),
+          height: double.infinity,
+          width: double.infinity,
+          //color: widget.backgroundColor,
+          child: ClipRect(
+            child: CustomPaint(
+              painter: _TracePainter(
+                showCanvas: widget.showCanvas,
+                yAxisColor: widget.yAxisColor,
+                dataSet: widget.dataSet,
+                traceColor: widget.traceColor,
+                yMin: widget.yAxisMin,
+                yMax: widget.yAxisMax,
+              ),
             ),
           ),
         ),
-      ),);
+      );
     });
   }
 }
@@ -110,10 +114,6 @@ class _TracePainter extends CustomPainter {
       ..color = traceColor
       ..style = PaintingStyle.stroke;
 
-    final axisPaint = Paint()
-      ..strokeWidth = 3.0
-      ..color = yAxisColor;
-
     double yRange = yMax - yMin;
     double yScale = (size.height / yRange);
 
@@ -138,23 +138,6 @@ class _TracePainter extends CustomPainter {
 
       // display the trace
       canvas.drawPath(trace, tracePaint);
-
-      // if yAxis required draw it here
-      Offset yStartL = Offset(0.0, 0.0);
-      Offset yEndL = Offset(0.0, size.height);
-      canvas.drawLine(yStartL, yEndL, axisPaint);
-
-      Offset yStartR = Offset(size.width, 0.0);
-      Offset yEndR = Offset(size.width, size.height);
-      canvas.drawLine(yStartR, yEndR, axisPaint);
-
-      Offset yStartT = Offset(0.0, 0.0);
-      Offset yEndT = Offset(size.width, 0.0);
-      canvas.drawLine(yStartT, yEndT, axisPaint);
-
-      Offset yStartB = Offset(0.0, size.height);
-      Offset yEndB = Offset(size.width, size.height);
-      canvas.drawLine(yStartB, yEndB, axisPaint);
     }
   }
 

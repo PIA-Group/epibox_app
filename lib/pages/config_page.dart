@@ -403,7 +403,10 @@ class DriveBlock extends StatelessWidget {
                       return ValueListenableBuilder(
                           valueListenable: driveListNotifier,
                           builder: (context, driveList, child) {
+                            print('chosen drive: ${configurations.chosenDrive}');
+                            print('drive options: $driveList');
                             return DropdownButton(
+                              
                               key: Key('driveDropdown'),
                               value: configurations.chosenDrive,
                               items: driveList.map<DropdownMenuItem<String>>(

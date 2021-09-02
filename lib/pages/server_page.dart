@@ -54,8 +54,7 @@ class ServerPage extends StatefulWidget {
   _ServerPageState createState() => _ServerPageState();
 }
 
-class _ServerPageState extends State<ServerPage>{
-  
+class _ServerPageState extends State<ServerPage> {
   String message;
 
   Future<void> saveMAC(mac1, mac2) async {
@@ -161,12 +160,12 @@ class _ServerPageState extends State<ServerPage>{
                   ElevatedButton(
                     key: Key('connectServerButton'),
                     style: ElevatedButton.styleFrom(
-                      primary: DefaultColors.mainLColor, 
+                      primary: DefaultColors.mainLColor,
                     ),
                     onPressed: () {
                       widget.shouldRestart.value = 'full';
-                      setup(
-                          widget.mqttClientWrapper, widget.connectionNotifier);
+                      Future.delayed(Duration.zero).then((value) => setup(
+                          widget.mqttClientWrapper, widget.connectionNotifier));
                     },
                     child: new Text(
                       "Reiniciar",
