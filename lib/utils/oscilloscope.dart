@@ -67,7 +67,9 @@ class _OscilloscopeState extends State<Oscilloscope> {
           height: double.infinity,
           width: double.infinity,
           //child: ClipRect(
+          child: RepaintBoundary(
             child: CustomPaint(
+              isComplex: true,
               painter: _TracePainter(
                 showCanvas: widget.showCanvas,
                 yAxisColor: widget.yAxisColor,
@@ -78,6 +80,7 @@ class _OscilloscopeState extends State<Oscilloscope> {
               ),
             ),
           ),
+        ),
         //),
       );
     });
@@ -120,7 +123,8 @@ class _TracePainter extends CustomPainter {
     // only start plot if dataset has data
     int length = dataSet.length;
     if (length > 0) {
-      if (length > size.width) data2draw = dataSet.sublist(dataSet.length - size.width.floor());
+      if (length > size.width)
+        data2draw = dataSet.sublist(dataSet.length - size.width.floor());
       // Create Path and set Origin to first data point
       Path trace = Path();
       //trace.moveTo(0.0, size.height - (dataSet[0] - yMin) * yScale);

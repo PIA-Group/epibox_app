@@ -48,6 +48,7 @@ class VisualizationNavPage extends StatelessWidget {
               .map(
                 (macAddress) => Tab(
                   child: Text(macAddress,
+                  key: Key(macAddress),
                       style: MyTextStyle(
                           color: DefaultColors.textColorOnLight, fontSize: 15)),
                 ),

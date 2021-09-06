@@ -379,7 +379,7 @@ class DeviceStateConnectionBlock extends StatelessWidget {
                   child: Material(
                     color: Colors.white.withOpacity(0.0),
                     child: InkWell(
-                      key: Key('connectDeviceButton'),
+                      key: Key('connectDeviceButton$deviceID'),
                       onTap: () {
                         if (connectionNotifier.value !=
                             MqttCurrentConnectionState.CONNECTED) {
@@ -417,7 +417,7 @@ class DeviceStateConnectionBlock extends StatelessWidget {
                                   ? _connectionStateText[devices
                                       .get('macAddress${deviceID}Connection')]
                                   : _connectionStateText['other'],
-                              key: Key('connectionStateText'),
+                              key: Key('connectionStateText$deviceID'),
                               style: MyTextStyle(
                                   color: DefaultColors.textColorOnLight)),
                         ),

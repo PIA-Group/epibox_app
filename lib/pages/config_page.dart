@@ -411,7 +411,7 @@ class DriveBlock extends StatelessWidget {
                                   value: value,
                                   child: Text(
                                     value,
-                                    //key: Key(value.split(' (')[0]),
+                                    key: Key(value.split(' (')[0]),
                                     style: MyTextStyle(
                                         color: DefaultColors.textColorOnLight),
                                   ),
