@@ -60,7 +60,7 @@ class MQTTClientWrapper { // MVP of MQTT. Handles all the connection to the serv
   void _setupMqttClient() {
     client = MqttServerClient.withPort(Constants.hostname, '#1', 1883);
     client.logging(on: false);
-    //client.autoReconnect = true;
+    client.autoReconnect = true;
     client.onAutoReconnected = _onReconnected;
     client.onDisconnected = _onDisconnected;
     client.onConnected = _onConnected;

@@ -7,6 +7,7 @@ import 'package:epibox/decor/text_styles.dart';
 import 'package:epibox/utils/masked_text.dart';
 import 'package:epibox/mqtt/mqtt_states.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
+import 'package:epibox/utils/tooltips.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -127,7 +128,8 @@ class _DevicesPageState extends State<DevicesPage> {
   Widget build(BuildContext context) {
     const double horizontalSpacing = 20.0;
     const double verticalSpacing = 20.0;
-
+    final selectDevicesKey = GlobalKey<State<Tooltip>>();
+    final connectDevicesKey = GlobalKey<State<Tooltip>>();
     print('rebuilding DevicesPage');
 
     return PropertyChangeProvider(
@@ -139,9 +141,12 @@ class _DevicesPageState extends State<DevicesPage> {
         Padding(
           padding: EdgeInsets.symmetric(horizontal: horizontalSpacing),
           child: Column(children: [
-            Align(
+            /* Align(
               alignment: Alignment.centerLeft,
               child: Container(
+                child:  */
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              Expanded(
                 child: Text(
                   'Selecionar dispositivo(s) de aquisição',
                   textAlign: TextAlign.left,
@@ -151,7 +156,14 @@ class _DevicesPageState extends State<DevicesPage> {
                   ),
                 ),
               ),
-            ),
+              CustomTooltip(
+                message:
+                    'Se estiver conectado ao servidor e os dispositivos mostrarem xx:xx:xx:xx:xx:xx, reinicie o processo.',
+                tooltipKey: selectDevicesKey,
+              ),
+            ]),
+            /* ),
+            ), */
             SizedBox(
               height: verticalSpacing,
             ),
@@ -163,33 +175,46 @@ class _DevicesPageState extends State<DevicesPage> {
             SizedBox(
               height: verticalSpacing,
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    primary: DefaultColors.mainLColor, // background
-                    //onPrimary: Colors.white, // foreground
-                  ),
-                  onPressed: () {
-                    widget.devices.macAddress1 =
-                        controller1.text.replaceAll(new RegExp(r"\s+"), "");
-                    widget.devices.macAddress2 =
-                        controller2.text.replaceAll(new RegExp(r"\s+"), "");
-
-                    _setNewDefault1();
-                    _setNewDefault2();
-
-                    widget.mqttClientWrapper.publishMessage(
-                        "['NEW MAC',{'MAC1':'${widget.devices.macAddress1}','MAC2':'${widget.devices.macAddress2}'}]");
-                  },
-                  child: new Text(
-                    "Definir novo default",
-                    style: MyTextStyle(),
-                  ),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  primary: DefaultColors.mainLColor, // background
+                  //onPrimary: Colors.white, // foreground
                 ),
-              ],
-            ),
+                onPressed: () {
+                  widget.devices.macAddress1 =
+                      controller1.text.replaceAll(new RegExp(r"\s+"), "");
+                  widget.devices.macAddress2 =
+                      controller2.text.replaceAll(new RegExp(r"\s+"), "");
+
+                  _setNewDefault1();
+                  _setNewDefault2();
+
+                  widget.mqttClientWrapper.publishMessage(
+                      "['NEW MAC',{'MAC1':'${widget.devices.macAddress1}','MAC2':'${widget.devices.macAddress2}'}]");
+                },
+                child: new Text(
+                  "Definir novo default",
+                  style: MyTextStyle(),
+                ),
+              ),
+              PropertyChangeConsumer<Devices>(
+                  properties: ['macAddress1', 'macAddress2'],
+                  builder: (context, devices, properties) {
+                    if ((devices.macAddress1.trim() != '' &&
+                            devices.macAddress1.trim() !=
+                                'xx:xx:xx:xx:xx:xx') ||
+                        (devices.macAddress2.trim() != '' &&
+                            devices.macAddress2.trim() != 'xx:xx:xx:xx:xx:xx'))
+                      return CustomTooltip(
+                        message:
+                            'Para conectar um dos dispositivos, pressione a caixa correspondente',
+                        tooltipKey: connectDevicesKey,
+                      );
+                    else
+                      return Container();
+                  }),
+            ]),
             DeviceStateConnectionBlock(
               mqttClientWrapper: widget.mqttClientWrapper,
               devices: widget.devices,

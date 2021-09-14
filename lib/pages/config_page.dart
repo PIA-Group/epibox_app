@@ -4,6 +4,7 @@ import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
 import 'package:epibox/mqtt/mqtt_states.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
+import 'package:epibox/utils/tooltips.dart';
 import 'package:flutter/material.dart';
 import 'package:property_change_notifier/property_change_notifier.dart';
 
@@ -357,15 +358,16 @@ class _ConfigPageState extends State<ConfigPage> {
 class DriveBlock extends StatelessWidget {
   final ValueNotifier<List<String>> driveListNotifier;
   final double height, width, verticalSpacing;
+  final configurationKey = GlobalKey<State<Tooltip>>();
+
   DriveBlock(
       {this.driveListNotifier, this.height, this.width, this.verticalSpacing});
 
   @override
   Widget build(BuildContext context) {
     return Column(children: [
-      Align(
-        alignment: Alignment.centerLeft,
-        child: Container(
+      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        Expanded(
           child: Text(
             'Pasta para armazenamento',
             textAlign: TextAlign.left,
@@ -375,7 +377,12 @@ class DriveBlock extends StatelessWidget {
             ),
           ),
         ),
-      ),
+        CustomTooltip(
+          message:
+              'Se estiver conectado ao servidor e não tiver opções na pasta de armazenamento, reinicie o processo.',
+          tooltipKey: configurationKey,
+        ),
+      ]),
       SizedBox(height: verticalSpacing),
       Container(
         padding: EdgeInsets.only(top: 0, bottom: 0),

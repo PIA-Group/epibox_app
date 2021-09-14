@@ -167,7 +167,7 @@ class _ScanPageState extends State<ScanPage> {
           ),
         ]),
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      /* floatingActionButton: FloatingActionButton.extended(
           //mini: true,
           label: Text(
             'Instruções',
@@ -181,7 +181,7 @@ class _ScanPageState extends State<ScanPage> {
                 return InstructionsHPage();
               }),
             );
-          }),
+          }), */
     );
   }
 

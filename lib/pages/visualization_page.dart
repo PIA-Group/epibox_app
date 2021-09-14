@@ -121,7 +121,7 @@ class _VisualizationPageState extends State<VisualizationPage> {
     widget.startupError.removeListener(listeners['startupError']);
     widget.timedOut.removeListener(listeners['timedOut']);
     widget.visualizationMAC.removeListener(listeners['dataMAC'], ['dataMAC']);
-    _timer.cancel();
+    if (_timer != null) _timer.cancel();
     super.dispose();
   }
 
@@ -129,9 +129,7 @@ class _VisualizationPageState extends State<VisualizationPage> {
     _timer = Timer.periodic(Duration(milliseconds: 16), (Timer timer) {
       if (widget.visualizationMAC.data2Plot.isNotEmpty &&
           widget.acquisition.acquisitionState == 'acquiring') {
-
         widget.visualizationMAC.data2Plot.asMap().forEach((index, newSamples) {
-          
           if (newSamples.length > screenWidth) {
             int start = min(buffer, newSamples.length - screenWidth.floor());
             widget.visualizationMAC.data2Plot[index] =
