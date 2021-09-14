@@ -7,6 +7,7 @@ class Visualization extends PropertyChangeNotifier<String> {
   List<List> _channelsMAC = [];
   List<List<double>> _data2Plot = [];
   List<List<double>> _rangesList = List.filled(6, [-1, 10, 1]);
+  bool _refresh = false;
   
 
   List<List> get dataMAC => _dataMAC;
@@ -14,6 +15,7 @@ class Visualization extends PropertyChangeNotifier<String> {
   List<List> get channelsMAC => _channelsMAC;
   List<List<double>> get data2Plot => _data2Plot;
   List<List<double>> get rangesList => _rangesList;
+  bool get refresh => _refresh;
 
 
   set dataMAC(List<List> value) {
@@ -41,5 +43,8 @@ class Visualization extends PropertyChangeNotifier<String> {
     notifyListeners('rangesList');
   }
 
-  
+  set refresh(bool value) {
+    _refresh = value;
+    notifyListeners('refresh');
+  }
 }

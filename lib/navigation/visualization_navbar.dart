@@ -1,3 +1,4 @@
+import 'package:epibox/classes/acquisition.dart';
 import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/devices.dart';
 import 'package:epibox/classes/visualization.dart';
@@ -14,6 +15,7 @@ class VisualizationNavPage extends StatelessWidget {
     this.configurations,
     this.visualizationMAC1,
     this.visualizationMAC2,
+    this.acquisition,
     this.mqttClientWrapper,
     this.patientNotifier,
     this.annotationTypesD,
@@ -26,6 +28,7 @@ class VisualizationNavPage extends StatelessWidget {
   final Configurations configurations;
   final Visualization visualizationMAC1;
   final Visualization visualizationMAC2;
+  final Acquisition acquisition;
 
   final MQTTClientWrapper mqttClientWrapper;
 
@@ -62,6 +65,7 @@ class VisualizationNavPage extends StatelessWidget {
                   (visualizationMAC) => VisualizationPage(
                     configurations: configurations,
                     visualizationMAC: visualizationMAC,
+                    acquisition: acquisition,
                     mqttClientWrapper: mqttClientWrapper,
                     patientNotifier: patientNotifier,
                     annotationTypesD: annotationTypesD,

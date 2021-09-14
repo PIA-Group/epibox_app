@@ -307,6 +307,7 @@ class _NavigationPageState extends State<NavigationPage>
                             configurations: configurations,
                             visualizationMAC1: visualizationMAC1,
                             visualizationMAC2: visualizationMAC2,
+                            acquisition: acquisition,
                             mqttClientWrapper: mqttClientWrapper,
                             patientNotifier: widget.patientNotifier,
                             annotationTypesD: annotationTypesD,

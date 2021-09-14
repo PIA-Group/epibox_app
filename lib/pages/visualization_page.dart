@@ -1,3 +1,7 @@
+import 'dart:async';
+import 'dart:math';
+
+import 'package:epibox/classes/acquisition.dart';
 import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/visualization.dart';
 import 'package:epibox/decor/default_colors.dart';
@@ -11,6 +15,7 @@ import 'package:property_change_notifier/property_change_notifier.dart';
 class VisualizationPage extends StatefulWidget {
   final Configurations configurations;
   final Visualization visualizationMAC;
+  final Acquisition acquisition;
 
   final MQTTClientWrapper mqttClientWrapper;
 
@@ -26,6 +31,7 @@ class VisualizationPage extends StatefulWidget {
   VisualizationPage({
     Key key,
     this.visualizationMAC,
+    this.acquisition,
     this.configurations,
     this.mqttClientWrapper,
     this.patientNotifier,
@@ -40,13 +46,17 @@ class VisualizationPage extends StatefulWidget {
 }
 
 class _VisualizationPageState extends State<VisualizationPage> {
+  List<List<double>> bufferData = [];
 
   final plotHeight = 160.0;
+  int buffer = 100;
+  Timer _timer;
 
   bool _rangeInitiated = false;
 
   int secondsSinceStart = 0;
   DateTime startTime;
+  double screenWidth;
 
   Map<String, Function> listeners = {
     'startupError': null,
@@ -58,37 +68,28 @@ class _VisualizationPageState extends State<VisualizationPage> {
   void initState() {
     super.initState();
 
-    listeners['startupError'] = () {
-      if (widget.startupError.value) {
-        // TODO: startup error
-      }
-    };
-    listeners['timedOut'] = () {
-      if (widget.timedOut.value != null) {
-        // TODO: timed out
-      }
-    };
     listeners['dataMAC'] = () {
       if (this.mounted) {
         if (!_rangeInitiated && widget.visualizationMAC.sensorsMAC.isNotEmpty) {
           _initRange(widget.visualizationMAC.sensorsMAC);
+          screenWidth = MediaQuery.of(context).size.width;
+          startTimer();
         }
 
-        double canvasWidth = MediaQuery.of(context).size.width;
-
-        widget.visualizationMAC.dataMAC.asMap().forEach((index, channel) {
+        widget.visualizationMAC.dataMAC.asMap().forEach((index, newSamples) {
           List<double> auxData;
+
           if (widget.visualizationMAC.data2Plot.isEmpty) {
             widget.visualizationMAC.data2Plot =
                 List.filled(widget.visualizationMAC.dataMAC.length, []);
-            auxData = channel.map((d) => d as double).toList();
+            auxData = newSamples.map((d) => d as double).toList();
           } else {
-            auxData = widget.visualizationMAC.data2Plot[index] + channel.map((d) => d as double).toList();
+            auxData = widget.visualizationMAC.data2Plot[index] +
+                newSamples.map((d) => d as double).toList();
           }
-          /* if (auxData.length > canvasWidth) {
-            auxData = auxData.sublist(auxData.length - canvasWidth.floor());
-          } */
-          List<List<double>> auxListData = List.from(widget.visualizationMAC.data2Plot);
+
+          List<List<double>> auxListData =
+              List.from(widget.visualizationMAC.data2Plot);
           auxListData[index] = auxData;
 
           if (widget.visualizationMAC.rangesList[index][2] == 0) {
@@ -104,6 +105,7 @@ class _VisualizationPageState extends State<VisualizationPage> {
               widget.visualizationMAC.rangesList = List.from(auxListRanges);
             }
           }
+
           widget.visualizationMAC.data2Plot = List.from(auxListData);
         });
       }
@@ -119,7 +121,27 @@ class _VisualizationPageState extends State<VisualizationPage> {
     widget.startupError.removeListener(listeners['startupError']);
     widget.timedOut.removeListener(listeners['timedOut']);
     widget.visualizationMAC.removeListener(listeners['dataMAC'], ['dataMAC']);
+    _timer.cancel();
     super.dispose();
+  }
+
+  void startTimer() {
+    _timer = Timer.periodic(Duration(milliseconds: 16), (Timer timer) {
+      if (widget.visualizationMAC.data2Plot.isNotEmpty &&
+          widget.acquisition.acquisitionState == 'acquiring') {
+
+        widget.visualizationMAC.data2Plot.asMap().forEach((index, newSamples) {
+          
+          if (newSamples.length > screenWidth) {
+            int start = min(buffer, newSamples.length - screenWidth.floor());
+            widget.visualizationMAC.data2Plot[index] =
+                newSamples.sublist(start);
+          }
+        });
+
+        widget.visualizationMAC.refresh = true;
+      }
+    });
   }
 
   List<double> _getRangeFromSensor(sensor) {
@@ -157,7 +179,6 @@ class _VisualizationPageState extends State<VisualizationPage> {
       auxList[i] = auxRangesList;
       widget.visualizationMAC.rangesList = List.from(auxList);
     }
-    //setState(() => _rangeInitiated = true);
     _rangeInitiated = true;
   }
 
@@ -202,7 +223,7 @@ class _VisualizationPageState extends State<VisualizationPage> {
           key: Key('visualizationListView'),
           children: [
             PropertyChangeConsumer<Visualization>(
-                properties: ['data2Plot'],
+                properties: ['refresh'],
                 builder: (context, visualization, properties) {
                   if (visualization.dataMAC.isEmpty) {
                     return Container();

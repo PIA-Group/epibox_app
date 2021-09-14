@@ -55,7 +55,7 @@ void main() {
         await driver.tap(find.byValueKey('connectDeviceButton2'));
       }
 
-      await Future<void>.delayed(Duration(seconds: 5));
+      await Future<void>.delayed(Duration(seconds: 6));
 
       if (devices[0] != '') {
         String state =
@@ -65,18 +65,9 @@ void main() {
       }
 
       if (devices[1] != '') {
-        /* await driver
-            .waitFor(find.text('Dispositivo conectado'),
-                timeout: Duration(seconds: 6))
-            .catchError((e) {
-          print(e);
-        }); */
-        await expectLater(find.byValueKey('connectionStateText2'),
-                'Dispositivo conectado')
-            .catchError((e) => print(e));
-
         String state =
             await driver.getText(find.byValueKey('connectionStateText2'));
+
         if (state != 'Dispositivo conectado') connectionFailed = true;
       }
       // Set configurations
@@ -111,16 +102,6 @@ void main() {
 
         await driver.tap(find.byValueKey('startStopButton'));
 
-        /* await expectLater(
-          () => driver.waitForAbsent(find.text('Canal: A1 | -'),
-              timeout: const Duration(seconds: 5)),
-          throwsA(isA<DriverError>().having(
-            (DriverError error) => error.message,
-            'message',
-            contains('Timeout while executing waitForAbsent'),
-          )),
-        ); */
-
         await driver
             .waitFor(find.text('Canal: A1 | -'), timeout: Duration(seconds: 6))
             .catchError((e) {
@@ -150,7 +131,7 @@ void main() {
           await driver.tap(find.byValueKey(devices[0]));
         }
 
-        await Future<void>.delayed(Duration(minutes: 3));
+        await Future<void>.delayed(Duration(minutes: 5));
         await driver.tap(find.byValueKey('startStopButton'));
         await driver.waitFor(find.text('Aquisição terminada!'));
       });
@@ -164,6 +145,6 @@ void main() {
       else
         await summary.writeTimelineToFile('visualization_${fs}_$nChannels',
             pretty: true);
-    }, timeout: Timeout(Duration(minutes: 6)));
+    }, timeout: Timeout(Duration(minutes: 10)));
   });
 }
