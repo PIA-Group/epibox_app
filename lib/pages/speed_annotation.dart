@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
@@ -23,7 +22,6 @@ class SpeedAnnotationDialog extends StatefulWidget {
 
 class _SpeedAnnotationDialogState extends State<SpeedAnnotationDialog> {
   final TextEditingController _controller = TextEditingController();
-  final firestoreInstance = Firestore.instance;
   double _currentSliderValue = 0.0;
 
   bool _isChecked = false;

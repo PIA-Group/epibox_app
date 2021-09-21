@@ -4,7 +4,8 @@ import 'constants.dart' as Constants;
 import 'package:mqtt_client/mqtt_client.dart';
 import 'mqtt_states.dart';
 
-class MQTTClientWrapper { // MVP of MQTT. Handles all the connection to the server
+class MQTTClientWrapper {
+  // MVP of MQTT. Handles all the connection to the server
   MqttCurrentConnectionState connectionState = MqttCurrentConnectionState.IDLE;
   MqttSubscriptionState subscriptionState = MqttSubscriptionState.IDLE;
 
@@ -61,7 +62,7 @@ class MQTTClientWrapper { // MVP of MQTT. Handles all the connection to the serv
     client = MqttServerClient.withPort(Constants.hostname, '#1', 1883);
     client.logging(on: false);
     client.autoReconnect = true;
-    client.onAutoReconnected = _onReconnected;
+    //client.onAutoReconnected = _onReconnected;
     client.onDisconnected = _onDisconnected;
     client.onConnected = _onConnected;
     client.onSubscribed = _onSubscribed;
@@ -129,19 +130,19 @@ class MQTTClientWrapper { // MVP of MQTT. Handles all the connection to the serv
   }
 
   void _onReconnected() {
-    if (connectionState == MqttCurrentConnectionState.CONNECTED) {
+    /* if (connectionState == MqttCurrentConnectionState.CONNECTED) {
       print(
           'MQTTClientWrapper::Tried to reconnect while being already connected');
       diconnectClient();
       _connectClient();
       
-    } else {
-      connectionState = MqttCurrentConnectionState.CONNECTED;
-      print(
-          'MQTTClientWrapper::OnRconnected client callback - Client connection was sucessful');
-      _subscribeToTopic();
-      onConnectedCallback();
-    }
+    } else { */
+    connectionState = MqttCurrentConnectionState.CONNECTED;
+    print(
+        'MQTTClientWrapper::OnRconnected client callback - Client connection was sucessful');
+    _subscribeToTopic();
+    onConnectedCallback();
+    // }
     onNewConnection(connectionState);
   }
 }

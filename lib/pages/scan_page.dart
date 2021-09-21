@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:epibox/decor/text_styles.dart';
-import 'package:epibox/pages/instructions_H.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -134,7 +133,7 @@ class _ScanPageState extends State<ScanPage> {
                         children: [
                           Expanded(
                             child: TextField(
-                              key: Key('loginTextField'),
+                                key: Key('loginTextField'),
                                 style: MyTextStyle(
                                   color: DefaultColors.textColorOnLight,
                                 ),
@@ -148,7 +147,7 @@ class _ScanPageState extends State<ScanPage> {
                                 onChanged: null),
                           ),
                           IconButton(
-                            key: Key('loginCheckButton'),
+                              key: Key('loginCheckButton'),
                               icon: Icon(
                                 Icons.check_circle,
                                 color: DefaultColors.mainLColor,
