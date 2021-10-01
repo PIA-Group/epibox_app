@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:epibox/decor/text_styles.dart';
-import 'package:epibox/pages/instructions_H.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -65,24 +64,31 @@ class _ScanPageState extends State<ScanPage> {
         painter: CurveBackground(),
         child: Stack(children: [
           Positioned(
-            top: height * 0.2,
+            top: height * 0.12,
             left: 0,
             right: 0,
             bottom: 0,
-            child: Container(
-              alignment: Alignment.topCenter,
-              child: Text(
-                'Bem vindo ao EpiBOX!',
-                style: MyTextStyle(
-                  fontSize: 18,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+            child: Column(
+                //alignment: Alignment.topCenter,
+                children: [
+                  Text(
+                    'Welcome to',
+                    style: MyTextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 30),
+                  Text('EpiBOX',
+                      style: TextStyle(
+                          fontSize: 70,
+                          fontFamily: 'canter',
+                          color: DefaultColors.backgroundColor)),
+                ]),
           ),
           Positioned(
-            top: height * 0.4,
+            top: height * 0.5,
             left: 0,
             right: 0,
             bottom: 0,
@@ -95,7 +101,8 @@ class _ScanPageState extends State<ScanPage> {
                       alignment: Alignment.center,
                       child: Container(
                           child: Text(
-                              'Para começar as aquisições, faça scan do ID do paciente ou introduza-o manualmente.',
+                              //'Para começar as aquisições, faça scan do ID do paciente ou introduza-o manualmente.',
+                              'To start the acquisitions, scan the patient\'s ID or type it below.',
                               style: MyTextStyle(
                                   color: DefaultColors.textColorOnLight),
                               textAlign: TextAlign.center)),
@@ -113,7 +120,7 @@ class _ScanPageState extends State<ScanPage> {
                           MdiIcons.qrcode,
                         ),
                         label: const Text(
-                          'INICIAR SCAN',
+                          'START SCAN',
                           style: MyTextStyle(fontSize: 14),
                         )),
                   ),
@@ -134,7 +141,7 @@ class _ScanPageState extends State<ScanPage> {
                         children: [
                           Expanded(
                             child: TextField(
-                              key: Key('loginTextField'),
+                                key: Key('loginTextField'),
                                 style: MyTextStyle(
                                   color: DefaultColors.textColorOnLight,
                                 ),
@@ -143,12 +150,12 @@ class _ScanPageState extends State<ScanPage> {
                                     filled: true,
                                     fillColor: Colors.white,
                                     border: OutlineInputBorder(),
-                                    labelText: 'ID do paciente',
+                                    labelText: 'Patient ID',
                                     contentPadding: EdgeInsets.all(10)),
                                 onChanged: null),
                           ),
                           IconButton(
-                            key: Key('loginCheckButton'),
+                              key: Key('loginCheckButton'),
                               icon: Icon(
                                 Icons.check_circle,
                                 color: DefaultColors.mainLColor,
@@ -222,9 +229,15 @@ class CurveBackground extends CustomPainter {
 
     var path = Path();
 
-    path.moveTo(0, size.height * 0.25);
+    /* path.moveTo(0, size.height * 0.25);
     path.quadraticBezierTo(
         size.width / 2, size.height * 0.45, size.width, size.height * 0.25);
+    path.lineTo(size.width, 0);
+    path.lineTo(0, 0); */
+
+    path.moveTo(0, size.height * 0.3);
+    path.quadraticBezierTo(
+        size.width / 2, size.height * 0.6, size.width, size.height * 0.3);
     path.lineTo(size.width, 0);
     path.lineTo(0, 0);
 
