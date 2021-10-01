@@ -96,11 +96,11 @@ class _ServerPageState extends State<ServerPage> {
                       text: TextSpan(children: [
                         TextSpan(
                             text:
-                                'Para conectar ao servidor e iniciar processo, clicar em ',
+                                'Para conectar ao servidor e iniciar (ou reiniciar) o processo, clicar em ',
                             style: MyTextStyle(
                                 color: DefaultColors.textColorOnLight)),
                         TextSpan(
-                            text: '"Conectar"',
+                            text: '"Conectar / Reiniciar"',
                             style: MyTextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: DefaultColors.textColorOnLight)),
@@ -113,7 +113,7 @@ class _ServerPageState extends State<ServerPage> {
                 ),
               ),
             ),
-            Padding(
+            /* Padding(
               padding: EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0.0),
               child: Align(
                 alignment: Alignment.centerLeft,
@@ -135,7 +135,7 @@ class _ServerPageState extends State<ServerPage> {
                       ])),
                 ),
               ),
-            ),
+            ), */
             Padding(
               padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
               child: Row(
@@ -147,17 +147,22 @@ class _ServerPageState extends State<ServerPage> {
                       //onPrimary: Colors.white, // foreground
                     ),
                     onPressed: () {
-                      setup(
-                          widget.mqttClientWrapper, widget.connectionNotifier);
+                      if (widget.connectionNotifier.value !=
+                              MqttCurrentConnectionState.DISCONNECTED &&
+                          widget.connectionNotifier.value !=
+                              MqttCurrentConnectionState.ERROR_WHEN_CONNECTING)
+                        widget.shouldRestart.value = 'full';
+                      Future.delayed(Duration.zero).then((value) => setup(
+                          widget.mqttClientWrapper, widget.connectionNotifier));
                     },
                     child: new Text(
-                      "Conectar",
+                      "Conectar / Reiniciar",
                       style: MyTextStyle(
                         color: DefaultColors.textColorOnDark,
                       ),
                     ),
                   ),
-                  ElevatedButton(
+                  /* ElevatedButton(
                     key: Key('connectServerButton'),
                     style: ElevatedButton.styleFrom(
                       primary: DefaultColors.mainLColor,
@@ -173,7 +178,7 @@ class _ServerPageState extends State<ServerPage> {
                         color: DefaultColors.textColorOnDark,
                       ),
                     ),
-                  ),
+                  ), */
                 ],
               ),
             ),
@@ -206,7 +211,7 @@ class _ServerPageState extends State<ServerPage> {
                                 color: DefaultColors.textColorOnLight)),
                         TextSpan(
                             text:
-                                'tenha sido iniciado, reinincie e tente conectar novamente. Em último caso, desligue e volte a ligar o dispositivo.',
+                                'tenha sido iniciado, reinincie. Em último caso, desligue e volte a ligar o dispositivo.',
                             style: MyTextStyle(
                                 color: DefaultColors.textColorOnLight)),
                       ],

@@ -21,6 +21,7 @@ void gotNewMessage({
 }) {
   // runs functions based on the received message
   List message2List = json.decode(message.replaceAll('\'', '\"'));
+  print(message2List);
   //print(message2List);
   switch (message2List[0]) {
     case 'DEFAULT MAC':

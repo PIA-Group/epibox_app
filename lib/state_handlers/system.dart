@@ -12,7 +12,6 @@ Future<void> restart(
     Acquisition acquisition,
     Configurations configurations,
     ValueNotifier<List<String>> driveListNotifier) async {
-
   if (restart == 'full') {
     mqttClientWrapper.publishMessage("['RESTART']");
     await mqttClientWrapper.diconnectClient();
@@ -29,7 +28,6 @@ Future<void> restart(
 
     devices.isBit1Enabled = false;
     devices.isBit2Enabled = false;
-    
   } else if (restart == 'medium') {
     mqttClientWrapper.publishMessage("['RESTART']");
     acquisition.batteryBit1 = null;
@@ -38,8 +36,9 @@ Future<void> restart(
     saveBatteries(null, null);
     saveMAC('xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx');
   }
-
-  devices.macAddress1Connection = 'disconnected';
-  devices.macAddress2Connection = 'disconnected';
-  acquisition.acquisitionState = 'off';
+  Future.delayed(Duration.zero).then((value) {
+    devices.macAddress1Connection = 'disconnected';
+    devices.macAddress2Connection = 'disconnected';
+    acquisition.acquisitionState = 'off';
+  });
 }
