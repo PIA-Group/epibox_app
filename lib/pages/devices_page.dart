@@ -418,7 +418,7 @@ class DeviceStateConnectionBlock extends StatelessWidget {
                               ? devices.macAddress1Connection = 'connecting'
                               : devices.macAddress2Connection = 'connecting';
                           mqttClientWrapper.publishMessage(
-                              "['CONNECT', '${devices.macAddress1}', '${devices.type}']");
+                              "['CONNECT', '${devices.get('macAddress$deviceID')}', '${devices.type}']");
                         }
                       },
                       child: Container(
