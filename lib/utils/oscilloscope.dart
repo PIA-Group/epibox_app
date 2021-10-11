@@ -33,6 +33,7 @@ class Oscilloscope extends StatefulWidget {
   final Color traceColor;
   final Color yAxisColor;
   final bool showCanvas;
+  final List<int> events2annotate;
 
   Oscilloscope(
       {this.traceColor = Colors.blue,
@@ -42,6 +43,7 @@ class Oscilloscope extends StatefulWidget {
       this.yAxisMax = 1.0,
       this.yAxisMin = -1.0,
       this.showCanvas = true,
+      this.events2annotate,
       @required this.dataSet});
 
   @override
@@ -66,7 +68,6 @@ class _OscilloscopeState extends State<Oscilloscope> {
               border: Border.all(color: widget.yAxisColor, width: 2.0)),
           height: double.infinity,
           width: double.infinity,
-          //child: ClipRect(
           child: RepaintBoundary(
             child: CustomPaint(
               isComplex: true,
@@ -77,6 +78,7 @@ class _OscilloscopeState extends State<Oscilloscope> {
                 traceColor: widget.traceColor,
                 yMin: widget.yAxisMin,
                 yMax: widget.yAxisMax,
+                events2annotate: widget.events2annotate,
               ),
             ),
           ),
@@ -97,6 +99,7 @@ class _TracePainter extends CustomPainter {
   final Color yAxisColor;
   final bool showCanvas;
   final bool showXAxis;
+  final List<int> events2annotate;
 
   _TracePainter(
       {this.showCanvas,
@@ -106,6 +109,7 @@ class _TracePainter extends CustomPainter {
       this.yMax,
       this.dataSet,
       this.xScale = 1.0,
+      this.events2annotate,
       this.traceColor = Colors.white});
 
   @override
@@ -119,25 +123,46 @@ class _TracePainter extends CustomPainter {
     double yRange = yMax - yMin;
     double yScale = (size.height / yRange);
     List data2draw = dataSet;
+    List events2draw = events2annotate;
 
     // only start plot if dataset has data
     int length = dataSet.length;
     if (length > 0) {
       if (length > size.width)
         data2draw = dataSet.sublist(dataSet.length - size.width.floor());
+      events2draw =
+          events2annotate.sublist(events2annotate.length - size.width.floor());
       // Create Path and set Origin to first data point
       Path trace = Path();
       //trace.moveTo(0.0, size.height - (dataSet[0] - yMin) * yScale);
 
       // generate trace path
       int dataSize = data2draw.length;
-      for (int p = 0; p < dataSize; p++) {
+      for (int p = 0; p < dataSize - 1; p++) {
         double plotPoint = size.height - (data2draw[p] - yMin) * yScale;
         trace.lineTo(p * xScale, plotPoint);
       }
 
       // display the trace
       canvas.drawPath(trace, tracePaint);
+
+      int start = events2draw.indexWhere((element) => element == 1);
+      int width = events2draw.where((element) => element == 1).length;
+      Color col = Color.fromRGBO(234, 230, 0, 0.5);
+
+      canvas.drawRect(
+          new Rect.fromLTWH(
+              start.toDouble(), 0.0, width.toDouble(), size.height),
+          new Paint()..color = col);
+
+      int start2 = events2draw.indexWhere((element) => element == 2);
+      int width2 = events2draw.where((element) => element == 2).length;
+      Color col2 = Color.fromRGBO(255, 0, 0, 0.5);
+
+      canvas.drawRect(
+          new Rect.fromLTWH(
+              start2.toDouble(), 0.0, width2.toDouble(), size.height),
+          new Paint()..color = col2);
     }
   }
 

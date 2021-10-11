@@ -1,7 +1,6 @@
 import 'package:property_change_notifier/property_change_notifier.dart';
 
 class Acquisition extends PropertyChangeNotifier<String> {
-
   String _acquisitionState = 'off';
   double _batteryBit1;
   double _batteryBit2;
@@ -11,7 +10,8 @@ class Acquisition extends PropertyChangeNotifier<String> {
   List<List> _channelsMAC2 = [];
   List _sensorsMAC1 = [];
   List _sensorsMAC2 = [];
-
+  List<int> _annotateCanvas1 = [];
+  List<int> _annotateCanvas2 = [];
 
   String get acquisitionState => _acquisitionState;
   double get batteryBit1 => _batteryBit1;
@@ -22,7 +22,8 @@ class Acquisition extends PropertyChangeNotifier<String> {
   List<List> get channelsMAC2 => _channelsMAC2;
   List get sensorsMAC1 => _sensorsMAC1;
   List get sensorsMAC2 => _sensorsMAC2;
-
+  List<int> get annotateCanvas1 => _annotateCanvas1;
+  List<int> get annotateCanvas2 => _annotateCanvas2;
 
   set acquisitionState(String value) {
     _acquisitionState = value;
@@ -63,11 +64,19 @@ class Acquisition extends PropertyChangeNotifier<String> {
     _sensorsMAC1 = value;
     notifyListeners('sensorsMAC1');
   }
-  
+
   set sensorsMAC2(List value) {
     _sensorsMAC2 = value;
     notifyListeners('sensorsMAC2');
   }
 
+  set annotateCanvas1(List<int> value) {
+    _annotateCanvas1 = value;
+    notifyListeners('annotateCanvas1');
+  }
 
+  set annotateCanvas2(List<int> value) {
+    _annotateCanvas2 = value;
+    notifyListeners('annotateCanvas2');
+  }
 }

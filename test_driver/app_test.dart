@@ -16,7 +16,7 @@ void main() {
     });
 
     String fs = '1000';
-    String drive = 'TOSHIBA';
+    String drive = 'UUI';
     List<String> devices = ['98:D3:91:FD:3F:5C', ''];
     int nChannels = 6;
 

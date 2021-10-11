@@ -156,15 +156,23 @@ void isData(List message2List, Devices devices, Acquisition acquisition) {
   List<List> dataMAC1 = [];
   List<List> dataMAC2 = [];
 
+  List<int> annotateCanvas1 = [];
+  List<int> annotateCanvas2 = [];
+
   message2List[2].asMap().forEach((index, channel) {
     if (channel[0] == devices.macAddress1) {
       dataMAC1.add(message2List[1][index]);
+      annotateCanvas1.add(channel[2]);
     } else {
       dataMAC2.add(message2List[1][index]);
+      annotateCanvas2.add(channel[2]);
     }
   });
+  acquisition.annotateCanvas1 = annotateCanvas1;
+  acquisition.annotateCanvas2 = annotateCanvas2;
 
   acquisition.dataMAC1 = dataMAC1;
+  print('data MAC len: ${acquisition.dataMAC1.length}');
   acquisition.dataMAC2 = dataMAC2;
 }
 

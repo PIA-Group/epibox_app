@@ -99,7 +99,11 @@ class _NavigationPageState extends State<NavigationPage>
       acquisitionStateHandler(context, acquisition, errorHandler);
     };
     listeners['dataMAC'] = () {
+      visualizationMAC1.annotateCanvas = acquisition.annotateCanvas1;
+      visualizationMAC2.annotateCanvas = acquisition.annotateCanvas2;
+      print('annotateCanvas (navpage): ${visualizationMAC1.annotateCanvas}');
       visualizationMAC1.dataMAC = acquisition.dataMAC1;
+      print('visualizationMAC1 len: ${visualizationMAC1.dataMAC.length}');
       visualizationMAC2.dataMAC = acquisition.dataMAC2;
     };
     listeners['overlayInfo'] = () {
@@ -141,6 +145,7 @@ class _NavigationPageState extends State<NavigationPage>
       driveListNotifier: driveListNotifier,
       timedOut: timedOut,
       errorHandler: errorHandler,
+      startupError: startupError,
       shouldRestart: shouldRestart,
       connectionNotifier: connectionNotifier,
     );

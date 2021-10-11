@@ -66,6 +66,7 @@ MQTTClientWrapper setupHome({
       configurations: configurations,
       driveListNotifier: driveListNotifier,
       timedOut: timedOut,
+      startupError: startupError,
       errorHandler: errorHandler,
       shouldRestart: shouldRestart,
     ),

@@ -157,6 +157,7 @@ class _ServerPageState extends State<ServerPage> {
                     },
                     child: new Text(
                       "Conectar / Reiniciar",
+                      key: Key('connectServerButton'),
                       style: MyTextStyle(
                         color: DefaultColors.textColorOnDark,
                       ),
