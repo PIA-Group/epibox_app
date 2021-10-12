@@ -78,12 +78,9 @@ class _VisualizationPageState extends State<VisualizationPage> {
 
         List<List<double>> auxListData =
             List.filled(widget.visualizationMAC.dataMAC.length, []);
-        List<List<int>> auxListEvents =
-            List.filled(widget.visualizationMAC.dataMAC.length, []);
 
         widget.visualizationMAC.dataMAC.asMap().forEach((index, newSamples) {
           List<double> auxData;
-          List<int> auxEvents;
 
           if (widget.visualizationMAC.data2Plot.isEmpty) {
             widget.visualizationMAC.data2Plot =
@@ -97,28 +94,13 @@ class _VisualizationPageState extends State<VisualizationPage> {
             print('aux data len: ${auxData.length}');
           }
 
-          if (widget.visualizationMAC.events2Paint.isEmpty) {
-            widget.visualizationMAC.events2Paint =
-                List.filled(widget.visualizationMAC.dataMAC.length, []);
-            print('annotateCanvas: ${widget.visualizationMAC.annotateCanvas}');
-            auxEvents = List.filled(
-                widget.visualizationMAC.dataMAC[index].length,
-                widget.visualizationMAC.annotateCanvas[index]);
-          } else {
-            auxEvents = widget.visualizationMAC.events2Paint[index] +
-                List.filled(widget.visualizationMAC.dataMAC[index].length,
-                    widget.visualizationMAC.annotateCanvas[index]);
-          }
-
           if (auxData.length > screenWidth) {
             int start = min(buffer, auxData.length - screenWidth.floor());
             auxListData[index] = auxData.sublist(start);
             print('auxListData len: ${auxListData[0].length}');
-            auxListEvents[index] = auxEvents.sublist(start);
           } else {
             auxListData[index] = auxData;
             print('auxListData len: ${auxListData[0].length}');
-            auxListEvents[index] = auxEvents;
           }
 
           if (widget.visualizationMAC.rangesList[index][2] == 0) {
@@ -136,7 +118,6 @@ class _VisualizationPageState extends State<VisualizationPage> {
           }
         });
         widget.visualizationMAC.data2Plot = List.from(auxListData);
-        widget.visualizationMAC.events2Paint = List.from(auxListEvents);
       }
     };
 
@@ -158,21 +139,9 @@ class _VisualizationPageState extends State<VisualizationPage> {
     _timer = Timer.periodic(Duration(milliseconds: 16), (Timer timer) {
       if (widget.visualizationMAC.data2Plot.isNotEmpty &&
           widget.acquisition.acquisitionState == 'acquiring') {
-        // widget.visualizationMAC.data2Plot.asMap().forEach((index, newSamples) {
-        //   if (newSamples.length > screenWidth) {
-        //     // int start = min(buffer, newSamples.length - screenWidth.floor());
-        //     // widget.visualizationMAC.data2Plot[index] =
-        //     //     newSamples.sublist(start);
-        //     // widget.visualizationMAC.events2Paint[index] =
-        //     //     widget.visualizationMAC.events2Paint[index].sublist(start);
-        //   }
-        // });
-
         widget.visualizationMAC.refresh = true;
         print('data2plot len: ${widget.visualizationMAC.data2Plot.length}');
       }
-      print(
-          'number of 1: ${widget.visualizationMAC.events2Paint[0].where((element) => element == 1).length}');
     });
   }
 
@@ -205,7 +174,6 @@ class _VisualizationPageState extends State<VisualizationPage> {
       } else {
         auxRangesList = _getRangeFromSensor(sensorsMAC[i]);
       }
-      //setState(() => widget.visualizationMAC.rangesList[i] = auxRangesList);
       List<List<double>> auxList =
           List.from(widget.visualizationMAC.rangesList);
       auxList[i] = auxRangesList;
@@ -276,8 +244,6 @@ class _VisualizationPageState extends State<VisualizationPage> {
                                     startTime: startTime,
                                     secondsSinceStart: secondsSinceStart,
                                     configurations: widget.configurations,
-                                    events2annotate:
-                                        visualization.events2Paint[i],
                                   )
                                 ];
                               }
@@ -299,7 +265,6 @@ class PlotData extends StatelessWidget {
   final DateTime startTime;
   final int secondsSinceStart;
   final Configurations configurations;
-  final List<int> events2annotate;
 
   PlotData({
     this.yRange,
@@ -308,7 +273,6 @@ class PlotData extends StatelessWidget {
     this.startTime,
     this.secondsSinceStart,
     this.configurations,
-    this.events2annotate,
   });
 
   @override
@@ -335,7 +299,6 @@ class PlotData extends StatelessWidget {
                 yAxisMax: yRange[1],
                 yAxisMin: yRange[0],
                 dataSet: data,
-                events2annotate: events2annotate,
               ),
             )
           ]),

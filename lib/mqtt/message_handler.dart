@@ -168,8 +168,6 @@ void isData(List message2List, Devices devices, Acquisition acquisition) {
       annotateCanvas2.add(channel[2]);
     }
   });
-  acquisition.annotateCanvas1 = annotateCanvas1;
-  acquisition.annotateCanvas2 = annotateCanvas2;
 
   acquisition.dataMAC1 = dataMAC1;
   print('data MAC len: ${acquisition.dataMAC1.length}');
