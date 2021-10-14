@@ -129,20 +129,20 @@ class MQTTClientWrapper {
     _subscribeToTopic();
   }
 
-  void _onReconnected() {
-    /* if (connectionState == MqttCurrentConnectionState.CONNECTED) {
-      print(
-          'MQTTClientWrapper::Tried to reconnect while being already connected');
-      diconnectClient();
-      _connectClient();
-      
-    } else { */
-    connectionState = MqttCurrentConnectionState.CONNECTED;
-    print(
-        'MQTTClientWrapper::OnRconnected client callback - Client connection was sucessful');
-    _subscribeToTopic();
-    onConnectedCallback();
-    // }
-    onNewConnection(connectionState);
-  }
+  // void _onReconnected() {
+  //   /* if (connectionState == MqttCurrentConnectionState.CONNECTED) {
+  //     print(
+  //         'MQTTClientWrapper::Tried to reconnect while being already connected');
+  //     diconnectClient();
+  //     _connectClient();
+
+  //   } else { */
+  //   connectionState = MqttCurrentConnectionState.CONNECTED;
+  //   print(
+  //       'MQTTClientWrapper::OnRconnected client callback - Client connection was sucessful');
+  //   _subscribeToTopic();
+  //   onConnectedCallback();
+  //   // }
+  //   onNewConnection(connectionState);
+  // }
 }

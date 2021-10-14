@@ -21,7 +21,7 @@ void gotNewMessage({
 }) {
   // runs functions based on the received message
   List message2List = json.decode(message.replaceAll('\'', '\"'));
-  print(message2List);
+  //print(message2List);
   //print(message2List);
   switch (message2List[0]) {
     case 'DEFAULT MAC':
@@ -144,6 +144,7 @@ void isData(List message2List, Devices devices, Acquisition acquisition) {
   /* if (devices.macAddress1 == 'xx:xx:xx:xx:xx:xx') {
     getLastMAC(devices);
   } */
+  print('RECEIVED DATA');
   if (acquisition.acquisitionState != 'acquiring')
     acquisition.acquisitionState = 'acquiring';
   if (devices.macAddress1.trim() != '' &&
@@ -170,7 +171,6 @@ void isData(List message2List, Devices devices, Acquisition acquisition) {
   });
 
   acquisition.dataMAC1 = dataMAC1;
-  print('data MAC len: ${acquisition.dataMAC1.length}');
   acquisition.dataMAC2 = dataMAC2;
 }
 

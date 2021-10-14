@@ -120,7 +120,7 @@ class _NavigationPageState extends State<NavigationPage>
     shouldRestart.addListener(listeners['shouldRestart']);
     acquisition
         .addListener(listeners['acquisitionState'], ['acquisitionState']);
-    acquisition.addListener(listeners['dataMAC'], ['dataMAC1', 'dataMAC2']);
+    acquisition.addListener(listeners['dataMAC'], ['dataMAC1']);
     errorHandler.addListener(listeners['overlayInfo'], ['overlayInfo']);
 
     timer = Timer.periodic(Duration(seconds: 15), (Timer t) => print('timer'));

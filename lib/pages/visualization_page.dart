@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'dart:math';
-
+import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:epibox/classes/acquisition.dart';
 import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/visualization.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
-import 'package:epibox/utils/oscilloscope.dart';
 import 'package:flutter/material.dart';
 import 'package:epibox/mqtt/mqtt_states.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
@@ -46,9 +45,21 @@ class VisualizationPage extends StatefulWidget {
 }
 
 class _VisualizationPageState extends State<VisualizationPage> {
+  // _write(String text) async {
+  //   final String externalDirectoryPath =
+  //       await ExtStorage.getExternalStorageDirectory();
+  //   Directory directory = await Directory(externalDirectoryPath + '/epibox')
+  //       .create()
+  //       .then((Directory directory) {
+  //     return directory;
+  //   });
+  //   final File file = File('${directory.path}/epibox_test.txt');
+  //   await file.writeAsString(',' + text, mode: FileMode.append);
+  // }
+
   List<List<double>> bufferData = [];
 
-  final plotHeight = 160.0;
+  final plotHeight = 200.0;
   int buffer = 100;
   Timer _timer;
 
@@ -69,12 +80,15 @@ class _VisualizationPageState extends State<VisualizationPage> {
     super.initState();
 
     listeners['dataMAC'] = () {
+      print('DATAMAC WAS CHANGED');
       if (this.mounted) {
-        if (!_rangeInitiated && widget.visualizationMAC.sensorsMAC.isNotEmpty) {
-          _initRange(widget.visualizationMAC.sensorsMAC);
+        if (!_rangeInitiated && widget.visualizationMAC.dataMAC.isNotEmpty) {
           screenWidth = MediaQuery.of(context).size.width;
           startTimer();
+          _rangeInitiated = true;
         }
+
+        // _write(widget.visualizationMAC.dataMAC[0].join(','));
 
         List<List<double>> auxListData =
             List.filled(widget.visualizationMAC.dataMAC.length, []);
@@ -87,34 +101,16 @@ class _VisualizationPageState extends State<VisualizationPage> {
                 List.filled(widget.visualizationMAC.dataMAC.length, []);
 
             auxData = newSamples.map((d) => d as double).toList();
-            print('aux data len: ${auxData.length}');
           } else {
             auxData = widget.visualizationMAC.data2Plot[index] +
                 newSamples.map((d) => d as double).toList();
-            print('aux data len: ${auxData.length}');
           }
 
           if (auxData.length > screenWidth) {
             int start = min(buffer, auxData.length - screenWidth.floor());
             auxListData[index] = auxData.sublist(start);
-            print('auxListData len: ${auxListData[0].length}');
           } else {
             auxListData[index] = auxData;
-            print('auxListData len: ${auxListData[0].length}');
-          }
-
-          if (widget.visualizationMAC.rangesList[index][2] == 0) {
-            List<double> aux = []..addAll(auxListData[index]);
-            aux.sort();
-            if (_rangeUpdateNeeded(
-                aux, widget.visualizationMAC.rangesList[index].sublist(0, 2))) {
-              List auxListRanges =
-                  List.from(widget.visualizationMAC.rangesList);
-
-              auxListRanges[index] = _updateRange(
-                  aux, widget.visualizationMAC.rangesList[index].sublist(0, 2));
-              widget.visualizationMAC.rangesList = List.from(auxListRanges);
-            }
           }
         });
         widget.visualizationMAC.data2Plot = List.from(auxListData);
@@ -140,77 +136,8 @@ class _VisualizationPageState extends State<VisualizationPage> {
       if (widget.visualizationMAC.data2Plot.isNotEmpty &&
           widget.acquisition.acquisitionState == 'acquiring') {
         widget.visualizationMAC.refresh = true;
-        print('data2plot len: ${widget.visualizationMAC.data2Plot.length}');
       }
     });
-  }
-
-  List<double> _getRangeFromSensor(sensor) {
-    List<double> yRange;
-    // the last value sets if the range should be updated throughout the acquisition
-    if (sensor == 'ECG') {
-      yRange = [-1.5, 1.5, 1];
-    } else if (sensor == 'EEG') {
-      yRange = [-39.49, 39.49, 1];
-    } else if (sensor == 'PZT') {
-      yRange = [-50, 50, 1];
-    } else if (sensor == 'EDA') {
-      yRange = [0, 25, 1];
-    } else if (sensor == 'EOG') {
-      yRange = [-0.81, 0.81, 1];
-    } else if (sensor == 'EMG') {
-      yRange = [-1.64, 1.64, 1];
-    } else {
-      yRange = [-1, 10, 0];
-    }
-    return yRange;
-  }
-
-  void _initRange(sensorsMAC) {
-    for (int i = 0; i < sensorsMAC.length; i++) {
-      List<double> auxRangesList;
-      if (widget.configurations.saveRaw) {
-        auxRangesList = [-1, 10, 0];
-      } else {
-        auxRangesList = _getRangeFromSensor(sensorsMAC[i]);
-      }
-      List<List<double>> auxList =
-          List.from(widget.visualizationMAC.rangesList);
-      auxList[i] = auxRangesList;
-      widget.visualizationMAC.rangesList = List.from(auxList);
-    }
-    _rangeInitiated = true;
-  }
-
-  bool _rangeUpdateNeeded(List<double> data, List<double> currentRange) {
-    bool update = false;
-    int std = 5;
-    if (data.first < currentRange[0] ||
-        currentRange[0] < data.first - 3 * std) {
-      update = true;
-    }
-    if (data.last > currentRange[1] || currentRange[1] > data.last + 3 * std) {
-      update = true;
-    }
-    return update;
-  }
-
-  List<double> _updateRange(List data, List currentRange) {
-    double min;
-    double max;
-    int std = 5;
-
-    if (data.first < currentRange[0] || currentRange[0] < data.first - std) {
-      min = (data.first - std).floor().toDouble();
-    } else {
-      min = currentRange[0];
-    }
-    if (data.last > currentRange[1] || currentRange[1] > data.last + std) {
-      max = (data.last + std).ceil().toDouble();
-    } else {
-      max = currentRange[1];
-    }
-    return [min, max, 0];
   }
 
   @override
@@ -238,11 +165,7 @@ class _VisualizationPageState extends State<VisualizationPage> {
                                       sensor: visualization.sensorsMAC[i]),
                                   PlotData(
                                     data: data,
-                                    yRange: visualization.rangesList[i]
-                                        .sublist(0, 2),
                                     plotHeight: plotHeight,
-                                    startTime: startTime,
-                                    secondsSinceStart: secondsSinceStart,
                                     configurations: widget.configurations,
                                   )
                                 ];
@@ -259,49 +182,32 @@ class _VisualizationPageState extends State<VisualizationPage> {
 }
 
 class PlotData extends StatelessWidget {
-  final List<double> yRange;
   final List<double> data;
   final double plotHeight;
-  final DateTime startTime;
-  final int secondsSinceStart;
   final Configurations configurations;
 
   PlotData({
-    this.yRange,
     this.data,
     this.plotHeight,
-    this.startTime,
-    this.secondsSinceStart,
     this.configurations,
   });
 
+  // List<double> dataTrial = [1, 2, 3, 4, 5];
+
   @override
   Widget build(BuildContext context) {
+    List<charts.Series<AcquiredSample, DateTime>> series = data2Series(data);
+
     return SizedBox(
       height: plotHeight,
       child: Container(
         height: double.infinity,
         child: Padding(
           padding: EdgeInsets.only(bottom: 20.0),
-          child: Row(children: [
-            Padding(
-              padding: EdgeInsets.only(left: 5.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('${yRange[1].ceil()}'),
-                  Text('${yRange[0].floor()}')
-                ],
-              ),
-            ),
-            Expanded(
-              child: Oscilloscope(
-                yAxisMax: yRange[1],
-                yAxisMin: yRange[0],
-                dataSet: data,
-              ),
-            )
-          ]),
+          child: charts.TimeSeriesChart(
+            series,
+            animate: false,
+          ),
         ),
       ),
     );
@@ -340,4 +246,38 @@ extension ExtendedIterable<E> on Iterable<E> {
     var i = 0;
     forEach((e) => f(e, i++));
   }
+}
+
+List<charts.Series<AcquiredSample, DateTime>> data2Series(List<double> data) {
+  List<int> aux = List<int>.generate(data.length, (i) => i + 1);
+  DateTime now = DateTime.now();
+
+  List<AcquiredSample> listSamples = aux
+      .map(
+        (i) => AcquiredSample(
+            now.add(Duration(
+                    milliseconds:
+                        // ((1 / int.parse(configurations.controllerFreq.text)) *
+                        ((1 / 1000) * 1000).floor()) *
+                (i - 1)),
+            data[i - 1]),
+      )
+      .toList();
+
+  return [
+    new charts.Series<AcquiredSample, DateTime>(
+      id: 'Samples',
+      colorFn: (_, __) => charts.MaterialPalette.blue.shadeDefault,
+      domainFn: (AcquiredSample sample, _) => sample.timestamp,
+      measureFn: (AcquiredSample sample, _) => sample.sample,
+      data: listSamples,
+    )
+  ];
+}
+
+class AcquiredSample {
+  final DateTime timestamp;
+  final double sample;
+
+  AcquiredSample(this.timestamp, this.sample);
 }
