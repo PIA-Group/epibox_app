@@ -35,17 +35,13 @@ class _SpeedAnnotationDialogState extends State<SpeedAnnotationDialog> {
   Future<void> _saveAnnotation() async {
     if (_controller.text.trim() != '') {
       var timeStamp = DateTime.now();
-      print(timeStamp);
       timeStamp = timeStamp
           .subtract(Duration(seconds: (_currentSliderValue * 60).toInt()));
-      print(timeStamp);
-
       try {
         setState(() => _controller.text = _controller.text.trim());
         if (!widget.annotationTypes.contains(_controller.text)) {
           setState(() => widget.annotationTypesD.value.add(_controller.text));
           widget.annotationTypes.add(_controller.text);
-          print(widget.annotationTypes);
           SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setStringList('annotationTypes', widget.annotationTypes);
         }

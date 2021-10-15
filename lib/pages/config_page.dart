@@ -226,7 +226,6 @@ class _ConfigPageState extends State<ConfigPage> {
 
   @override
   Widget build(BuildContext context) {
-    print('rebuilding ConfigPage');
     final width = MediaQuery.of(context).size.width -
         MediaQuery.of(context).viewInsets.left -
         MediaQuery.of(context).viewInsets.right;

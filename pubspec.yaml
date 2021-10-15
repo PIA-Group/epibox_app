@@ -36,7 +36,6 @@ dependencies:
       url: https://github.com/google/charts
       path: charts_flutter
   path_provider: ^1.6.28
-  ext_storage: ^1.0.3
   
 
 flutter_icons:

@@ -21,8 +21,9 @@ void gotNewMessage({
 }) {
   // runs functions based on the received message
   List message2List = json.decode(message.replaceAll('\'', '\"'));
-  //print(message2List);
-  //print(message2List);
+
+  if (message2List[0] != 'DATA') print('message received: ${message2List[0]}');
+
   switch (message2List[0]) {
     case 'DEFAULT MAC':
       isMACAddress(message2List, devices);
@@ -126,8 +127,10 @@ void isAcquisitionState(String message, Acquisition acquisition,
   if (message.contains('STARTING')) {
     acquisition.acquisitionState = 'starting';
   } else if (message.contains('ACQUISITION ON')) {
-    if (acquisition.acquisitionState != 'acquiring')
+    if (acquisition.acquisitionState != 'acquiring') {
+      print('changed acquisition state in isAcquisitionState');
       acquisition.acquisitionState = 'acquiring';
+    }
   } else if (message.contains('RECONNECTING')) {
     acquisition.acquisitionState = 'reconnecting';
   } else if (message.contains('PAIRING')) {
@@ -141,12 +144,10 @@ void isAcquisitionState(String message, Acquisition acquisition,
 }
 
 void isData(List message2List, Devices devices, Acquisition acquisition) {
-  /* if (devices.macAddress1 == 'xx:xx:xx:xx:xx:xx') {
-    getLastMAC(devices);
-  } */
-  print('RECEIVED DATA');
-  if (acquisition.acquisitionState != 'acquiring')
+  if (acquisition.acquisitionState != 'acquiring') {
+    print('changed acquisition state in isData');
     acquisition.acquisitionState = 'acquiring';
+  }
   if (devices.macAddress1.trim() != '' &&
       devices.macAddress1Connection != 'connected')
     devices.macAddress1Connection = 'connected';

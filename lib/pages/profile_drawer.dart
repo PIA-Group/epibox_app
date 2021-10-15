@@ -27,9 +27,9 @@ class ProfileDrawer extends StatefulWidget {
 class _ProfileDrawerState extends State<ProfileDrawer> {
   List<String> annotationTypesS;
   int _radioValue;
-  Map<String,int> typeOfDevices = {'Bitalino': 0, 'Mini': 1, 'Sense': 2};
+  Map<String, int> typeOfDevices = {'Bitalino': 0, 'Mini': 1, 'Sense': 2};
   //TextEditingController _idTemplateController = TextEditingController();
-  
+
   @override
   void initState() {
     super.initState();
@@ -40,13 +40,11 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
   void _updateAnnotations() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setStringList('annotationTypes', annotationTypesS);
-    print('removed annot');
   }
 
   void _updateHistory() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setStringList('historyMAC', widget.historyMAC.value);
-    print('removed MAC');
   }
 
   void _updateDeviceType() async {
@@ -203,15 +201,15 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                           style: MyTextStyle(
                               color: DefaultColors.textColorOnLight)),
                       Radio(
-                        value: 0,
-                        groupValue: _radioValue,
-                        onChanged: (int value) {
-                          setState(() {
-                                _radioValue = value;
-                                widget.devices.type = 'Bitalino';
-                                _updateDeviceType();
-                              });
-                            }),
+                          value: 0,
+                          groupValue: _radioValue,
+                          onChanged: (int value) {
+                            setState(() {
+                              _radioValue = value;
+                              widget.devices.type = 'Bitalino';
+                              _updateDeviceType();
+                            });
+                          }),
                     ],
                   ),
                   Column(
@@ -221,10 +219,10 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                             style: MyTextStyle(
                                 color: DefaultColors.textColorOnLight)),
                         Radio(
-                          value: 1,
-                          groupValue: _radioValue,
-                          onChanged: (int value) {
-                            setState(() {
+                            value: 1,
+                            groupValue: _radioValue,
+                            onChanged: (int value) {
+                              setState(() {
                                 _radioValue = value;
                                 widget.devices.type = 'Mini';
                                 _updateDeviceType();

@@ -45,20 +45,6 @@ class VisualizationPage extends StatefulWidget {
 }
 
 class _VisualizationPageState extends State<VisualizationPage> {
-  // _write(String text) async {
-  //   final String externalDirectoryPath =
-  //       await ExtStorage.getExternalStorageDirectory();
-  //   Directory directory = await Directory(externalDirectoryPath + '/epibox')
-  //       .create()
-  //       .then((Directory directory) {
-  //     return directory;
-  //   });
-  //   final File file = File('${directory.path}/epibox_test.txt');
-  //   await file.writeAsString(',' + text, mode: FileMode.append);
-  // }
-
-  List<List<double>> bufferData = [];
-
   final plotHeight = 200.0;
   int buffer = 100;
   Timer _timer;
@@ -80,15 +66,12 @@ class _VisualizationPageState extends State<VisualizationPage> {
     super.initState();
 
     listeners['dataMAC'] = () {
-      print('DATAMAC WAS CHANGED');
       if (this.mounted) {
         if (!_rangeInitiated && widget.visualizationMAC.dataMAC.isNotEmpty) {
           screenWidth = MediaQuery.of(context).size.width;
           startTimer();
           _rangeInitiated = true;
         }
-
-        // _write(widget.visualizationMAC.dataMAC[0].join(','));
 
         List<List<double>> auxListData =
             List.filled(widget.visualizationMAC.dataMAC.length, []);
@@ -142,7 +125,6 @@ class _VisualizationPageState extends State<VisualizationPage> {
 
   @override
   Widget build(BuildContext context) {
-    print('rebuilding VisualizationPage');
     return PropertyChangeProvider(
       value: widget.visualizationMAC,
       child: ListView(
@@ -192,11 +174,10 @@ class PlotData extends StatelessWidget {
     this.configurations,
   });
 
-  // List<double> dataTrial = [1, 2, 3, 4, 5];
-
   @override
   Widget build(BuildContext context) {
-    List<charts.Series<AcquiredSample, DateTime>> series = data2Series(data);
+    List<charts.Series<AcquiredSample, DateTime>> series =
+        data2Series(data, configurations);
 
     return SizedBox(
       height: plotHeight,
@@ -248,7 +229,8 @@ extension ExtendedIterable<E> on Iterable<E> {
   }
 }
 
-List<charts.Series<AcquiredSample, DateTime>> data2Series(List<double> data) {
+List<charts.Series<AcquiredSample, DateTime>> data2Series(
+    List<double> data, Configurations configurations) {
   List<int> aux = List<int>.generate(data.length, (i) => i + 1);
   DateTime now = DateTime.now();
 
@@ -257,8 +239,10 @@ List<charts.Series<AcquiredSample, DateTime>> data2Series(List<double> data) {
         (i) => AcquiredSample(
             now.add(Duration(
                     milliseconds:
-                        // ((1 / int.parse(configurations.controllerFreq.text)) *
-                        ((1 / 1000) * 1000).floor()) *
+                        ((1 / int.parse(configurations.controllerFreq.text)) *
+                                1000)
+                            .floor()) *
+                //((1 / 1000) * 1000).floor()) *
                 (i - 1)),
             data[i - 1]),
       )

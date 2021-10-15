@@ -1,11 +1,14 @@
 import 'package:epibox/classes/acquisition.dart';
+import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/devices.dart';
+import 'package:epibox/classes/error_handler.dart';
 import 'package:epibox/mqtt/connection_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
 import 'package:epibox/mqtt/mqtt_states.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
+import 'package:mqtt_client/mqtt_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ServerPage extends StatefulWidget {
@@ -13,7 +16,11 @@ class ServerPage extends StatefulWidget {
   final Acquisition acquisition;
 
   final ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
-  final MQTTClientWrapper mqttClientWrapper;
+  MQTTClientWrapper mqttClientWrapper;
+
+  final MqttClient client;
+  final Configurations configurations;
+  final ErrorHandler errorHandler;
 
   final ValueNotifier<List<String>> driveListNotifier;
 
@@ -37,6 +44,9 @@ class ServerPage extends StatefulWidget {
     this.devices,
     this.acquisition,
     this.mqttClientWrapper,
+    this.client,
+    this.configurations,
+    this.errorHandler,
     this.connectionNotifier,
     this.receivedMACNotifier,
     this.driveListNotifier,
@@ -80,7 +90,6 @@ class _ServerPageState extends State<ServerPage> {
 
   @override
   Widget build(BuildContext context) {
-    print('rebuilding ServerPage');
     return ListView(
       children: <Widget>[
         Padding(
@@ -113,29 +122,6 @@ class _ServerPageState extends State<ServerPage> {
                 ),
               ),
             ),
-            /* Padding(
-              padding: EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0.0),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Container(
-                  child: RichText(
-                      textAlign: TextAlign.justify,
-                      text: TextSpan(children: [
-                        TextSpan(
-                            text:
-                                'Caso queira fazer uma nova aquisição ou caso seja necessário reiniciar o processo, clicar em ',
-                            style: MyTextStyle(
-                                color: DefaultColors.textColorOnLight)),
-                        TextSpan(
-                            text: '"Reiniciar" ',
-                            style: MyTextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: DefaultColors.textColorOnLight,
-                            )),
-                      ])),
-                ),
-              ),
-            ), */
             Padding(
               padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
               child: Row(
@@ -147,13 +133,30 @@ class _ServerPageState extends State<ServerPage> {
                       //onPrimary: Colors.white, // foreground
                     ),
                     onPressed: () {
+                      print(
+                          'HERE current connectionstate: ${widget.connectionNotifier.value}');
                       if (widget.connectionNotifier.value !=
                               MqttCurrentConnectionState.DISCONNECTED &&
                           widget.connectionNotifier.value !=
                               MqttCurrentConnectionState.ERROR_WHEN_CONNECTING)
                         widget.shouldRestart.value = 'full';
-                      Future.delayed(Duration.zero).then((value) => setup(
-                          widget.mqttClientWrapper, widget.connectionNotifier));
+                      Future.delayed(Duration.zero).then((value) {
+                        // widget.mqttClientWrapper = setupHome(
+                        //   mqttClientWrapper: widget.mqttClientWrapper,
+                        //   client: widget.client,
+                        //   devices: widget.devices,
+                        //   acquisition: widget.acquisition,
+                        //   configurations: widget.configurations,
+                        //   driveListNotifier: widget.driveListNotifier,
+                        //   timedOut: widget.timedOut,
+                        //   errorHandler: widget.errorHandler,
+                        //   startupError: widget.startupError,
+                        //   shouldRestart: widget.shouldRestart,
+                        //   connectionNotifier: widget.connectionNotifier,
+                        // );
+                        setup(widget.mqttClientWrapper,
+                            widget.connectionNotifier);
+                      });
                     },
                     child: new Text(
                       "Conectar / Reiniciar",
@@ -163,23 +166,6 @@ class _ServerPageState extends State<ServerPage> {
                       ),
                     ),
                   ),
-                  /* ElevatedButton(
-                    key: Key('connectServerButton'),
-                    style: ElevatedButton.styleFrom(
-                      primary: DefaultColors.mainLColor,
-                    ),
-                    onPressed: () {
-                      widget.shouldRestart.value = 'full';
-                      Future.delayed(Duration.zero).then((value) => setup(
-                          widget.mqttClientWrapper, widget.connectionNotifier));
-                    },
-                    child: new Text(
-                      "Reiniciar",
-                      style: MyTextStyle(
-                        color: DefaultColors.textColorOnDark,
-                      ),
-                    ),
-                  ), */
                 ],
               ),
             ),
@@ -221,23 +207,6 @@ class _ServerPageState extends State<ServerPage> {
                 ),
               ),
             ),
-            /* Padding(
-              padding: EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 0.0),
-              child: ValueListenableBuilder(
-                  valueListenable: widget.acquisitionNotifier,
-                  builder: (BuildContext context, String state, Widget child) {
-                    return RaisedButton(
-                      textColor: DefaultColors.textColorOnLight,
-                      disabledTextColor: Colors.transparent,
-                      disabledColor: Colors.transparent,
-                      elevation: state == 'acquiring' ? 2 : 0,
-                      onPressed: state == 'acquiring' ? () {} : null,
-                      child: new Text(
-                        "Aquisição a decorrer!",
-                      ),
-                    );
-                  }),
-            ), */
           ]),
         ),
       ],

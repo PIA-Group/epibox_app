@@ -91,7 +91,6 @@ class _MaskedTextFieldState extends State<MaskedTextField> {
     var result = "";
 
     for (int i = 0; i < text.length - 1; i++) {
-      print(text);
       if (text[i] != ' ') {
         result += text[i];
       } else {

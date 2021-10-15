@@ -62,11 +62,12 @@ class MQTTClientWrapper {
     client = MqttServerClient.withPort(Constants.hostname, '#1', 1883);
     client.logging(on: false);
     client.autoReconnect = true;
-    //client.onAutoReconnected = _onReconnected;
+    client.onAutoReconnect = _onReconnect;
+    client.onAutoReconnected = _onReconnected;
+    client.resubscribeOnAutoReconnect = true;
     client.onDisconnected = _onDisconnected;
     client.onConnected = _onConnected;
     client.onSubscribed = _onSubscribed;
-    print('SETUP DONE');
   }
 
   Future<void> _subscribeToTopic() async {
@@ -111,6 +112,25 @@ class MQTTClientWrapper {
         'MQTTClientWrapper::OnDisconnected client callback - Client disconnection');
 
     connectionState = MqttCurrentConnectionState.DISCONNECTED;
+    onNewConnection(connectionState);
+  }
+
+  void _onReconnect() {
+    print(
+        'MQTTClientWrapper::OnReconnect client callback - Client autoReconnection');
+    //client.disconnect();
+    //connectionState = MqttCurrentConnectionState.DISCONNECTED;
+    onNewConnection(connectionState);
+  }
+
+  void _onReconnected() {
+    connectionState = MqttCurrentConnectionState.CONNECTED;
+
+    print(
+        'MQTTClientWrapper::OnConnected client callback - Client connection was sucessful');
+    //_subscribeToTopic();
+    //onConnectedCallback();
+    //onAutoReconnectCallback();
     onNewConnection(connectionState);
   }
 

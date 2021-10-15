@@ -201,7 +201,6 @@ class _ScanPageState extends State<ScanPage> {
         setState(
             () => this.barcodeError = 'ID: ${widget.patientNotifier.value}');
       }
-      print('HERE: ${notifier.value}');
     } on PlatformException catch (e) {
       if (e.code == BarcodeScanner.cameraAccessDenied) {
         setState(() {
@@ -211,7 +210,6 @@ class _ScanPageState extends State<ScanPage> {
         setState(() => this.barcodeError = 'Unknown error: $e');
       }
     } on FormatException {
-      print('HERE: ${notifier.value}');
       setState(() => notifier.value = null);
       setState(() => this.barcodeError = 'Scan não completo.');
     } catch (e) {

@@ -169,9 +169,7 @@ class _NavigationPageState extends State<NavigationPage>
   }
 
   void _onNavigationTap(int index) {
-    //setState(() {
     _navigationIndex.value = index;
-    //});
   }
 
   Future<bool> initialize() async {
@@ -216,7 +214,6 @@ class _NavigationPageState extends State<NavigationPage>
 
   @override
   Widget build(BuildContext context) {
-    print('rebuilding NavigationPage');
     return Scaffold(
       drawer: ProfileDrawer(
         mqttClientWrapper: mqttClientWrapper,
@@ -277,6 +274,9 @@ class _NavigationPageState extends State<NavigationPage>
                             devices: devices,
                             acquisition: acquisition,
                             mqttClientWrapper: mqttClientWrapper,
+                            client: client,
+                            configurations: configurations,
+                            errorHandler: errorHandler,
                             connectionNotifier: connectionNotifier,
                             receivedMACNotifier: receivedMACNotifier,
                             driveListNotifier: driveListNotifier,

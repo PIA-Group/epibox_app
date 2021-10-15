@@ -70,7 +70,6 @@ void main() {
       if (devices[0] != '') {
         String state =
             await driver.getText(find.byValueKey('connectionStateText1'));
-        print('device 1 state: $state');
 
         if (state != 'Dispositivo conectado!') devicesFailed = true;
       }
@@ -78,7 +77,6 @@ void main() {
       if (devices[1] != '') {
         String state =
             await driver.getText(find.byValueKey('connectionStateText2'));
-        print('device 2 state: $state');
 
         if (state != 'Dispositivo conectado!') devicesFailed = true;
       }
