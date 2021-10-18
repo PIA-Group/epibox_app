@@ -67,27 +67,6 @@ class ServerPage extends StatefulWidget {
 class _ServerPageState extends State<ServerPage> {
   String message;
 
-  Future<void> saveMAC(mac1, mac2) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    try {
-      await prefs.setStringList('lastMAC', [mac1, mac2]);
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  Future<void> saveBatteries(battery1, battery2) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    try {
-      await prefs.setStringList('lastBatteries', [
-        battery1,
-        battery2,
-      ]);
-    } catch (e) {
-      print(e);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return ListView(

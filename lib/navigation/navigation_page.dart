@@ -151,6 +151,7 @@ class _NavigationPageState extends State<NavigationPage>
     getLastMAC(devices);
     getLastChannels(visualizationMAC1, visualizationMAC2);
     getLastSensors(visualizationMAC1, visualizationMAC2);
+    getLastConfigurations(configurations, driveListNotifier);
     //getLastBatteries(acquisition);
     getMACHistory(historyMAC);
 
@@ -418,6 +419,7 @@ class _NavigationPageState extends State<NavigationPage>
                           visualizationMAC2: visualizationMAC2,
                           historyMAC: historyMAC,
                           patientNotifier: widget.patientNotifier,
+                          driveListNotifier: driveListNotifier,
                         ),
                       ]);
               }),

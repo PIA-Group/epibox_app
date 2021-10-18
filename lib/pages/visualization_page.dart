@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:charts_flutter/flutter.dart';
 import 'package:epibox/classes/acquisition.dart';
 import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/visualization.dart';
@@ -10,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:epibox/mqtt/mqtt_states.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'package:property_change_notifier/property_change_notifier.dart';
+import 'package:intl/intl.dart';
 
 class VisualizationPage extends StatefulWidget {
   final Configurations configurations;
@@ -68,7 +70,8 @@ class _VisualizationPageState extends State<VisualizationPage> {
     listeners['dataMAC'] = () {
       if (this.mounted) {
         if (!_rangeInitiated && widget.visualizationMAC.dataMAC.isNotEmpty) {
-          screenWidth = MediaQuery.of(context).size.width;
+          //screenWidth = MediaQuery.of(context).size.width;
+          screenWidth = 330;
           startTimer();
           _rangeInitiated = true;
         }
@@ -179,6 +182,10 @@ class PlotData extends StatelessWidget {
     List<charts.Series<AcquiredSample, DateTime>> series =
         data2Series(data, configurations);
 
+    // Future.delayed(Duration.zero).then((value) {
+    //   print('width: ${_plotKey.currentContext.size.width}');
+    // });
+
     return SizedBox(
       height: plotHeight,
       child: Container(
@@ -188,6 +195,13 @@ class PlotData extends StatelessWidget {
           child: charts.TimeSeriesChart(
             series,
             animate: false,
+            behaviors: [charts.PanAndZoomBehavior()],
+            domainAxis: DateTimeAxisSpec(
+              showAxisLine: true,
+              tickProviderSpec: const DateTimeEndPointsTickProviderSpec(),
+              tickFormatterSpec: BasicDateTimeTickFormatterSpec.fromDateFormat(
+                  DateFormat.Hms()),
+            ),
           ),
         ),
       ),
@@ -239,10 +253,10 @@ List<charts.Series<AcquiredSample, DateTime>> data2Series(
         (i) => AcquiredSample(
             now.add(Duration(
                     milliseconds:
-                        ((1 / int.parse(configurations.controllerFreq.text)) *
-                                1000)
-                            .floor()) *
-                //((1 / 1000) * 1000).floor()) *
+                        // ((1 / int.parse(configurations.controllerFreq.text)) *
+                        //         1000)
+                        //     .floor()) *
+                        ((1 / 1000) * 1000).floor()) *
                 (i - 1)),
             data[i - 1]),
       )

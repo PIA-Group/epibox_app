@@ -405,6 +405,7 @@ class DriveBlock extends StatelessWidget {
                 child: PropertyChangeConsumer<Configurations>(
                     properties: ['chosenDrive'],
                     builder: (context, configurations, properties) {
+                      print('drivelist: ${driveListNotifier.value}');
                       return ValueListenableBuilder(
                           valueListenable: driveListNotifier,
                           builder: (context, driveList, child) {
