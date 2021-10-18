@@ -151,9 +151,9 @@ class _NavigationPageState extends State<NavigationPage>
     getLastMAC(devices);
     getLastChannels(visualizationMAC1, visualizationMAC2);
     getLastSensors(visualizationMAC1, visualizationMAC2);
-    getLastConfigurations(configurations, driveListNotifier);
     //getLastBatteries(acquisition);
     getMACHistory(historyMAC);
+    getLastConfigurations(configurations, driveListNotifier);
 
     initialized = initialize();
   }

@@ -110,7 +110,7 @@ void isDrivesList(String message, ValueNotifier<List<String>> driveListNotifier,
     listDrives.removeAt(0);
     listDrives = listDrives.map((drive) => drive.split("'")[1]).toList();
     driveListNotifier.value = listDrives;
-    mqttClientWrapper.publishMessage("['GO TO DEVICES']");
+    //mqttClientWrapper.publishMessage("['GO TO DEVICES']");
   } catch (e) {
     print(e);
   }

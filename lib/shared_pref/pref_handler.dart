@@ -191,25 +191,32 @@ void getLastConfigurations(Configurations configurations,
         String conf = (prefs.getString('configurations') ?? '');
         if (conf != '') {
           Map<String, dynamic> confMap = json.decode(conf);
-          auxConf.bit1Selections = List<bool>.from(confMap['bit1Selections']);
-          auxConf.bit2Selections = List<bool>.from(confMap['bit2Selections']);
-          auxConf.configDefault = confMap['configDefault'];
-          auxConf.controllerSensors = List.generate(
+          driveListNotifier.value
+              .addAll(List<String>.from(confMap['driveList']));
+          configurations.bit1Selections =
+              List<bool>.from(confMap['bit1Selections']);
+          configurations.bit2Selections =
+              List<bool>.from(confMap['bit2Selections']);
+          configurations.configDefault = confMap['configDefault'];
+          configurations.controllerSensors = List.generate(
               12,
               (i) =>
                   TextEditingController(text: confMap['controllerSensors'][i]));
-          auxConf.chosenDrive = confMap['chosenDrive'];
-          auxConf.controllerFreq =
+          configurations.chosenDrive = confMap['chosenDrive'];
+          configurations.controllerFreq =
               TextEditingController(text: confMap['controllerFreq']);
-          auxConf.saveRaw = confMap['saveRaw'];
-          driveListNotifier.value = List<String>.from(confMap['driveList']);
-          configurations = auxConf;
+          configurations.saveRaw = confMap['saveRaw'];
+
+          //configurations = auxConf;
+          //configurations.notifyConfigListeners();
+          //configurations.controllerFreq = TextEditingController(text: '1000');
         }
       } catch (e) {
         print(e);
       }
     }
   });
+  print('after getlast: ${configurations.controllerSensors}');
 }
 
 void saveConfigurations(Configurations configurations,

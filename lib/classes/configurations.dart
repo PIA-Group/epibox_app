@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:property_change_notifier/property_change_notifier.dart';
 
 class Configurations extends PropertyChangeNotifier<String> {
-
   List<bool> _bit1Selections = [false, false, false, false, false, false];
   List<bool> _bit2Selections = [false, false, false, false, false, false];
   Map<String, dynamic> _configDefault = {};
-  List<TextEditingController> _controllerSensors = List.generate(12, (i) => TextEditingController(text: '-'));
+  List<TextEditingController> _controllerSensors =
+      List.generate(12, (i) => TextEditingController(text: '-'));
   String _chosenDrive = ' ';
   TextEditingController _controllerFreq = TextEditingController(text: ' ');
   bool _saveRaw = true;
@@ -19,7 +19,6 @@ class Configurations extends PropertyChangeNotifier<String> {
   TextEditingController get controllerFreq => _controllerFreq;
   bool get saveRaw => _saveRaw;
 
-
   dynamic get(String key) => <String, dynamic>{
         'bit1Selections': _bit1Selections,
         'bit2Selections': _bit2Selections,
@@ -29,7 +28,6 @@ class Configurations extends PropertyChangeNotifier<String> {
         'controllerFreq': _controllerFreq,
         'saveRaw': _saveRaw,
       }[key];
-
 
   set bit1Selections(List<bool> value) {
     _bit1Selections = value;
@@ -66,5 +64,14 @@ class Configurations extends PropertyChangeNotifier<String> {
     notifyListeners('saveRaw');
   }
 
-
+  void notifyConfigListeners() {
+    notifyListeners('bit1Selections');
+    notifyListeners('bit2Selections');
+    notifyListeners('configDefault');
+    notifyListeners('controllerSensors');
+    notifyListeners('chosenDrive');
+    notifyListeners('controllerFreq');
+    notifyListeners('saveRaw');
+    print('notified?');
+  }
 }

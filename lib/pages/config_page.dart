@@ -148,6 +148,9 @@ class _ConfigPageState extends State<ConfigPage> {
     widget.devices.addListener(listeners['macAddress1'], ['macAddress1']);
     widget.devices.addListener(listeners['macAddress2'], ['macAddress2']);
     //widget.driveListNotifier.addListener(listeners['driveListNotifier']);
+    widget.configurations.addListener(() {
+      print('listened to change in freq');
+    }, ['controllerFreq']);
   }
 
   @override
