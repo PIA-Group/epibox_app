@@ -70,7 +70,6 @@ class _VisualizationPageState extends State<VisualizationPage> {
     listeners['dataMAC'] = () {
       if (this.mounted) {
         if (!_rangeInitiated && widget.visualizationMAC.dataMAC.isNotEmpty) {
-          //screenWidth = MediaQuery.of(context).size.width;
           screenWidth = 330;
           startTimer();
           _rangeInitiated = true;
