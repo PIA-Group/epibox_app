@@ -72,6 +72,5 @@ class Configurations extends PropertyChangeNotifier<String> {
     notifyListeners('chosenDrive');
     notifyListeners('controllerFreq');
     notifyListeners('saveRaw');
-    print('notified?');
   }
 }

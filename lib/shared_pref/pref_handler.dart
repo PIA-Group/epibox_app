@@ -216,7 +216,6 @@ void getLastConfigurations(Configurations configurations,
       }
     }
   });
-  print('after getlast: ${configurations.controllerSensors}');
 }
 
 void saveConfigurations(Configurations configurations,
