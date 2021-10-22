@@ -1,10 +1,6 @@
 import 'dart:io';
-import 'dart:math';
-
 import 'package:flutter_driver/flutter_driver.dart';
-//import 'package:git/git.dart';
 import 'package:t_stats/t_stats.dart';
-
 import 'parse_timeline.dart';
 
 Future<void> main(List<String> args) async {
@@ -28,10 +24,7 @@ Future<Timeline> _run(FlutterDriver driver) async {
   String fs = '1000';
   String drive = 'UUI';
   List<String> devices = ['98:D3:91:FD:3F:5C', ''];
-  int nChannels = 6;
   bool serverFailed = false;
-  bool devicesFailed = false;
-  bool plotFailed = false;
 
   var health = await driver.checkHealth();
   if (health.status != HealthStatus.ok) {
@@ -87,14 +80,14 @@ Future<Timeline> _run(FlutterDriver driver) async {
     String state =
         await driver.getText(find.byValueKey('connectionStateText1'));
 
-    if (state != 'Dispositivo conectado!') devicesFailed = true;
+    //if (state != 'Dispositivo conectado!') devicesFailed = true;
   }
 
   if (devices[1] != '') {
     String state =
         await driver.getText(find.byValueKey('connectionStateText2'));
 
-    if (state != 'Dispositivo conectado!') devicesFailed = true;
+    //if (state != 'Dispositivo conectado!') devicesFailed = true;
   }
   // Set configurations
 
@@ -116,43 +109,6 @@ Future<Timeline> _run(FlutterDriver driver) async {
         find.byValueKey('configListView'), find.byValueKey('defineNewDefault'),
         dyScroll: -20.0);
   }
-
-  // await driver.waitFor(find.byValueKey('bottomNavbar'));
-  // await driver.tap(find.text('Aquisição'));
-
-  // await driver.tap(find.byValueKey('startStopButton'));
-
-  // if (!serverFailed && !devicesFailed) {
-  //   await driver
-  //       .waitFor(find.text('Canal: A1 | -'), timeout: Duration(seconds: 6))
-  //       .catchError((e) {
-  //     plotFailed = true;
-  //     print(e);
-  //   });
-
-  //   await driver.scrollUntilVisible(find.byValueKey('visualizationListView'),
-  //       find.text('Canal: A$nChannels | -'),
-  //       dyScroll: -20.0);
-  //   await driver.scrollUntilVisible(
-  //       find.byValueKey('visualizationListView'), find.text('Canal: A1 | -'),
-  //       dyScroll: 20.0);
-
-  //   if (devices[1] != '') {
-  //     await driver.tap(find.byValueKey(devices[1]));
-
-  //     await driver.scrollUntilVisible(find.byValueKey('visualizationListView'),
-  //         find.text('Canal: A$nChannels | -'),
-  //         dyScroll: -20.0);
-  //     await driver.scrollUntilVisible(
-  //         find.byValueKey('visualizationListView'), find.text('Canal: A1 | -'),
-  //         dyScroll: 20.0);
-  //     await driver.tap(find.byValueKey(devices[0]));
-  //   }
-
-  //   await Future<void>.delayed(Duration(minutes: 1)); ///////////////
-  //   await driver.tap(find.byValueKey('startStopButton'));
-  //   await driver.waitFor(find.text('Aquisição terminada!'));
-  // }
 
   return driver.stopTracingAndDownloadTimeline();
 }
@@ -285,6 +241,7 @@ Future<Timeline> _runVisualization(FlutterDriver driver) async {
     await Future<void>.delayed(Duration(minutes: 1)); ///////////////
     await driver.tap(find.byValueKey('startStopButton'));
     await driver.waitFor(find.text('Aquisição terminada!'));
+    await driver.waitFor(find.text('Aquisição iniciada!'));
   }
 
   return driver.stopTracingAndDownloadTimeline();
@@ -329,80 +286,80 @@ Future<void> _save(Timeline timeline, String key) async {
   var frameRequestStats = Statistic.from(
       additional.frameRequestDurations.map((d) => d.inMicroseconds));
 
-  IOSink stats;
-  try {
-    stats = File('test_driver/perf_stats.tsv').openWrite(mode: FileMode.append);
-    // Add general build time statistics.
-    stats.write(buildTimesStat.toTSV());
-    // Add description.
-    stats.write('\t');
-    stats.write(description);
-    // Add additional useful stats from the TimelineSummary.
-    stats.write('\t');
-    stats.write(summary.computePercentileFrameBuildTimeMillis(90));
-    stats.write('\t');
-    stats.write(summary.computePercentileFrameBuildTimeMillis(99));
-    stats.write('\t');
-    stats.write(summary.computeWorstFrameBuildTimeMillis());
-    stats.write('\t');
-    stats.write(summary.computeMissedFrameBuildBudgetCount());
-    stats.write('\t');
-    // Add things from parse_timeline.dart.
-    stats.write(additional.length.inMicroseconds);
-    stats.write('\t');
-    stats.write(additional.frames);
-    stats.write('\t');
-    stats.write(additional.fps);
-    stats.write('\t');
-    stats.write(frameRequestStats.mean);
-    stats.write('\t');
-    stats.write(additional.dartPercentage);
-    stats.write('\t');
-    stats.write(additional.dartPhaseEvents);
-    stats.write('\t');
-    stats.write(additional.dartPhaseDuration.inMicroseconds);
-    stats.write('\t');
-    stats.write(additional.expiredTasksEvents);
-    stats.write('\t');
-    stats.write(additional.expiredTasksDuration.inMicroseconds);
-    // Add timestamp.
-    stats.write('\t');
-    stats.write(now.toIso8601String());
-    // End line.
-    stats.writeln();
-  } finally {
-    await stats?.close();
-  }
+  // IOSink stats;
+  // try {
+  //   stats = File('test_driver/perf_stats.tsv').openWrite(mode: FileMode.append);
+  //   // Add general build time statistics.
+  //   stats.write(buildTimesStat.toTSV());
+  //   // Add description.
+  //   stats.write('\t');
+  //   stats.write(description);
+  //   // Add additional useful stats from the TimelineSummary.
+  //   stats.write('\t');
+  //   stats.write(summary.computePercentileFrameBuildTimeMillis(90));
+  //   stats.write('\t');
+  //   stats.write(summary.computePercentileFrameBuildTimeMillis(99));
+  //   stats.write('\t');
+  //   stats.write(summary.computeWorstFrameBuildTimeMillis());
+  //   stats.write('\t');
+  //   stats.write(summary.computeMissedFrameBuildBudgetCount());
+  //   stats.write('\t');
+  //   // Add things from parse_timeline.dart.
+  //   stats.write(additional.length.inMicroseconds);
+  //   stats.write('\t');
+  //   stats.write(additional.frames);
+  //   stats.write('\t');
+  //   stats.write(additional.fps);
+  //   stats.write('\t');
+  //   stats.write(frameRequestStats.mean);
+  //   stats.write('\t');
+  //   stats.write(additional.dartPercentage);
+  //   stats.write('\t');
+  //   stats.write(additional.dartPhaseEvents);
+  //   stats.write('\t');
+  //   stats.write(additional.dartPhaseDuration.inMicroseconds);
+  //   stats.write('\t');
+  //   stats.write(additional.expiredTasksEvents);
+  //   stats.write('\t');
+  //   stats.write(additional.expiredTasksDuration.inMicroseconds);
+  //   // Add timestamp.
+  //   stats.write('\t');
+  //   stats.write(now.toIso8601String());
+  //   // End line.
+  //   stats.writeln();
+  // } finally {
+  //   await stats?.close();
+  // }
 
-  IOSink durations;
-  try {
-    durations =
-        File('test_driver/durations.tsv').openWrite(mode: FileMode.append);
-    var length = [
-      buildTimes.length,
-      rasterizerTimes.length,
-      additional.frameRequestDurations.length
-    ].fold(0, max);
-    for (int i = 0; i < length; i++) {
-      var build = i < buildTimes.length ? buildTimes[i].toString() : '';
-      var rasterizer =
-          i < rasterizerTimes.length ? rasterizerTimes[i].toString() : '';
-      var frameRequest = i < additional.frameRequestDurations.length
-          ? additional.frameRequestDurations[i].inMicroseconds.toString()
-          : '';
-      var row = <String>[
-        id,
-        build,
-        rasterizer,
-        frameRequest,
-        '', //gitSha,
-        description,
-      ].join('\t');
-      durations.writeln(row);
-    }
-  } finally {
-    await durations?.close();
-  }
+  // IOSink durations;
+  // try {
+  //   durations =
+  //       File('test_driver/durations.tsv').openWrite(mode: FileMode.append);
+  //   var length = [
+  //     buildTimes.length,
+  //     rasterizerTimes.length,
+  //     additional.frameRequestDurations.length
+  //   ].fold(0, max);
+  //   for (int i = 0; i < length; i++) {
+  //     var build = i < buildTimes.length ? buildTimes[i].toString() : '';
+  //     var rasterizer =
+  //         i < rasterizerTimes.length ? rasterizerTimes[i].toString() : '';
+  //     var frameRequest = i < additional.frameRequestDurations.length
+  //         ? additional.frameRequestDurations[i].inMicroseconds.toString()
+  //         : '';
+  //     var row = <String>[
+  //       id,
+  //       build,
+  //       rasterizer,
+  //       frameRequest,
+  //       '', //gitSha,
+  //       description,
+  //     ].join('\t');
+  //     durations.writeln(row);
+  //   }
+  // } finally {
+  //   await durations?.close();
+  // }
 
   print(buildTimesStat);
 }

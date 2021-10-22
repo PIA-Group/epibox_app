@@ -37,6 +37,7 @@ dependencies:
       path: charts_flutter
   path_provider: ^1.6.28
   t_stats: ^3.0.0
+  firebase_performance: ^0.7.1+2
   
 
 flutter_icons:

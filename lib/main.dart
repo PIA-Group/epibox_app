@@ -13,7 +13,7 @@ class InterfaceRPi extends StatelessWidget {
         SystemUiOverlayStyle(statusBarColor: Colors.white)); */
     // Provider allows to make available information (eg: Stream) to all of its descendents
     return MaterialApp(
-      showPerformanceOverlay: true,
+      //showPerformanceOverlay: true,
       //checkerboardOffscreenLayers: true,
       //checkerboardRasterCacheImages: true,
       theme: ThemeData(

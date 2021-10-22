@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:charts_flutter/flutter.dart';
+import 'package:epibox/classes/acquired_samples.dart';
 import 'package:epibox/classes/acquisition.dart';
 import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/visualization.dart';
@@ -70,7 +71,10 @@ class _VisualizationPageState extends State<VisualizationPage> {
     listeners['dataMAC'] = () {
       if (this.mounted) {
         if (!_rangeInitiated && widget.visualizationMAC.dataMAC.isNotEmpty) {
-          screenWidth = 330;
+          screenWidth = MediaQuery.of(context).size.width -
+              MediaQuery.of(context).viewInsets.left -
+              MediaQuery.of(context).viewInsets.right;
+
           startTimer();
           _rangeInitiated = true;
         }
@@ -99,9 +103,11 @@ class _VisualizationPageState extends State<VisualizationPage> {
           }
         });
         widget.visualizationMAC.data2Plot = List.from(auxListData);
+        widget.visualizationMAC.series2Plot = widget.visualizationMAC.data2Plot
+            .map((d) => data2Series(d, widget.configurations))
+            .toList();
       }
     };
-
     widget.startupError.addListener(listeners['startupError']);
     widget.timedOut.addListener(listeners['timedOut']);
     widget.visualizationMAC.addListener(listeners['dataMAC'], ['dataMAC']);
@@ -117,8 +123,8 @@ class _VisualizationPageState extends State<VisualizationPage> {
   }
 
   void startTimer() {
-    _timer = Timer.periodic(Duration(milliseconds: 16), (Timer timer) {
-      if (widget.visualizationMAC.data2Plot.isNotEmpty &&
+    _timer = Timer.periodic(Duration(milliseconds: 30), (Timer timer) {
+      if (widget.visualizationMAC.series2Plot.isNotEmpty &&
           widget.acquisition.acquisitionState == 'acquiring') {
         widget.visualizationMAC.refresh = true;
       }
@@ -139,24 +145,27 @@ class _VisualizationPageState extends State<VisualizationPage> {
                   if (visualization.dataMAC.isEmpty) {
                     return Container();
                   } else {
-                    return Column(
-                        children: visualization.data2Plot
-                            .mapIndexed((data, i) {
-                              if (data.isNotEmpty) {
-                                return [
-                                  PlotDataTitle(
-                                      channels: visualization.channelsMAC[i],
-                                      sensor: visualization.sensorsMAC[i]),
-                                  PlotData(
-                                    data: data,
-                                    plotHeight: plotHeight,
-                                    configurations: widget.configurations,
-                                  )
-                                ];
-                              }
-                            })
-                            .expand((k) => k)
-                            .toList());
+                    if (visualization.series2Plot[0].isEmpty)
+                      return Container();
+                    else
+                      return Column(
+                          children: visualization.series2Plot
+                              .mapIndexed((data, i) {
+                                if (data.isNotEmpty) {
+                                  return [
+                                    PlotDataTitle(
+                                        channels: visualization.channelsMAC[i],
+                                        sensor: visualization.sensorsMAC[i]),
+                                    PlotData(
+                                      series: data,
+                                      plotHeight: plotHeight,
+                                      configurations: widget.configurations,
+                                    )
+                                  ];
+                                }
+                              })
+                              .expand((k) => k)
+                              .toList());
                   }
                 }),
             SizedBox(height: 40.0),
@@ -166,25 +175,19 @@ class _VisualizationPageState extends State<VisualizationPage> {
 }
 
 class PlotData extends StatelessWidget {
-  final List<double> data;
+  final List<charts.Series<AcquiredSample, DateTime>> series;
   final double plotHeight;
   final Configurations configurations;
 
   PlotData({
-    this.data,
+    this.series,
     this.plotHeight,
     this.configurations,
   });
 
   @override
   Widget build(BuildContext context) {
-    List<charts.Series<AcquiredSample, DateTime>> series =
-        data2Series(data, configurations);
-
-    // Future.delayed(Duration.zero).then((value) {
-    //   print('width: ${_plotKey.currentContext.size.width}');
-    // });
-
+    print(series);
     return SizedBox(
       height: plotHeight,
       child: Container(
@@ -240,41 +243,4 @@ extension ExtendedIterable<E> on Iterable<E> {
     var i = 0;
     forEach((e) => f(e, i++));
   }
-}
-
-List<charts.Series<AcquiredSample, DateTime>> data2Series(
-    List<double> data, Configurations configurations) {
-  List<int> aux = List<int>.generate(data.length, (i) => i + 1);
-  DateTime now = DateTime.now();
-
-  List<AcquiredSample> listSamples = aux
-      .map(
-        (i) => AcquiredSample(
-            now.add(Duration(
-                    milliseconds:
-                        // ((1 / int.parse(configurations.controllerFreq.text)) *
-                        //         1000)
-                        //     .floor()) *
-                        ((1 / 1000) * 1000).floor()) *
-                (i - 1)),
-            data[i - 1]),
-      )
-      .toList();
-
-  return [
-    new charts.Series<AcquiredSample, DateTime>(
-      id: 'Samples',
-      colorFn: (_, __) => charts.MaterialPalette.blue.shadeDefault,
-      domainFn: (AcquiredSample sample, _) => sample.timestamp,
-      measureFn: (AcquiredSample sample, _) => sample.sample,
-      data: listSamples,
-    )
-  ];
-}
-
-class AcquiredSample {
-  final DateTime timestamp;
-  final double sample;
-
-  AcquiredSample(this.timestamp, this.sample);
 }

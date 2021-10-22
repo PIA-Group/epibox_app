@@ -49,15 +49,15 @@ Future<void> startAcquisition({
 
     visualizationMAC1.channelsMAC = _channels[1][0];
     visualizationMAC1.sensorsMAC = _channels[2][0];
-    visualizationMAC1.data2Plot = List.filled(
-        configurations.bit1Selections.where((item) => item).length, [],
-        growable: true);
+    // visualizationMAC1.data2Plot = List.filled(
+    //     configurations.bit1Selections.where((item) => item).length, [],
+    //     growable: true);
 
     visualizationMAC2.channelsMAC = _channels[1][1];
     visualizationMAC2.sensorsMAC = _channels[2][1];
-    visualizationMAC2.data2Plot = List.filled(
-        configurations.bit2Selections.where((item) => item).length, [],
-        growable: true);
+    // visualizationMAC2.data2Plot = List.filled(
+    //     configurations.bit2Selections.where((item) => item).length, [],
+    //     growable: true);
 
     mqttClientWrapper.publishMessage("['START']");
 
