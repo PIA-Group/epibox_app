@@ -7,10 +7,10 @@ Future<void> main(List<String> args) async {
   try {
     driver = await FlutterDriver.connect();
     var timeline = await _run(driver);
-    await _save(timeline, 'conf');
+    await _save(timeline);
 
-    var timeline2 = await _runVisualization(driver);
-    await _save(timeline2, 'vis');
+    // var timeline2 = await _runVisualization(driver);
+    // await _save(timeline2, 'vis');
   } finally {
     if (driver != null) {
       await driver.close();
@@ -23,6 +23,9 @@ Future<Timeline> _run(FlutterDriver driver) async {
   String drive = 'UUI';
   List<String> devices = ['98:D3:91:FD:3F:5C', ''];
   bool serverFailed = false;
+  int nChannels = 6;
+  bool devicesFailed = false;
+  bool plotFailed = false;
 
   var health = await driver.checkHealth();
   if (health.status != HealthStatus.ok) {
@@ -108,6 +111,43 @@ Future<Timeline> _run(FlutterDriver driver) async {
         dyScroll: -20.0);
   }
 
+  await driver.waitFor(find.byValueKey('bottomNavbar'));
+  await driver.tap(find.text('Aquisição'));
+
+  await driver.tap(find.byValueKey('startStopButton'));
+
+  if (!serverFailed && !devicesFailed) {
+    await driver
+        .waitFor(find.text('Canal: A1 | -'), timeout: Duration(seconds: 6))
+        .catchError((e) {
+      plotFailed = true;
+      print(e);
+    });
+
+    await driver.scrollUntilVisible(find.byValueKey('visualizationListView'),
+        find.text('Canal: A$nChannels | -'),
+        dyScroll: -20.0);
+    await driver.scrollUntilVisible(
+        find.byValueKey('visualizationListView'), find.text('Canal: A1 | -'),
+        dyScroll: 20.0);
+
+    if (devices[1] != '') {
+      await driver.tap(find.byValueKey(devices[1]));
+
+      await driver.scrollUntilVisible(find.byValueKey('visualizationListView'),
+          find.text('Canal: A$nChannels | -'),
+          dyScroll: -20.0);
+      await driver.scrollUntilVisible(
+          find.byValueKey('visualizationListView'), find.text('Canal: A1 | -'),
+          dyScroll: 20.0);
+      await driver.tap(find.byValueKey(devices[0]));
+    }
+
+    await Future<void>.delayed(Duration(minutes: 30)); ///////////////
+    await driver.tap(find.byValueKey('startStopButton'));
+    await driver.waitFor(find.text('Aquisição terminada!'));
+  }
+
   return driver.stopTracingAndDownloadTimeline();
 }
 
@@ -129,80 +169,6 @@ Future<Timeline> _runVisualization(FlutterDriver driver) async {
   await Future<void>.delayed(const Duration(seconds: 1));
 
   await driver.startTracing();
-
-  // final loginTextField = find.byValueKey('loginTextField');
-  // final loginCheckButton = find.byValueKey('loginCheckButton');
-  // await driver.tap(loginTextField);
-  // await driver.enterText('trial-performance');
-  // await driver.tap(loginCheckButton);
-
-  // await Future<void>.delayed(Duration(seconds: 1));
-  // final connectServerButton = find.byValueKey('connectServerButton');
-  // await driver.tap(connectServerButton);
-
-  // await driver
-  //     .waitFor(find.text('Conectado ao servidor!'),
-  //         timeout: Duration(seconds: 8))
-  //     .catchError((e) {
-  //   serverFailed = true;
-  //   print(e);
-  // });
-
-  // await Future<void>.delayed(Duration(seconds: 3));
-
-  // // Connect to the devices
-
-  // await driver.waitFor(find.byValueKey('bottomNavbar'));
-  // await driver.tap(find.text('Dispositivos'));
-
-  // await driver.tap(find.byValueKey('device1TextField'));
-  // await driver.enterText(devices[0]);
-
-  // await driver.tap(find.byValueKey('device2TextField'));
-  // await driver.enterText(devices[1]);
-
-  // if (devices[0] != '') {
-  //   await driver.tap(find.byValueKey('connectDeviceButton1'));
-  // }
-  // if (devices[1] != '') {
-  //   await driver.tap(find.byValueKey('connectDeviceButton2'));
-  // }
-
-  // await Future<void>.delayed(Duration(seconds: 6));
-
-  // if (devices[0] != '') {
-  //   String state =
-  //       await driver.getText(find.byValueKey('connectionStateText1'));
-
-  //   if (state != 'Dispositivo conectado!') devicesFailed = true;
-  // }
-
-  // if (devices[1] != '') {
-  //   String state =
-  //       await driver.getText(find.byValueKey('connectionStateText2'));
-
-  //   if (state != 'Dispositivo conectado!') devicesFailed = true;
-  // }
-  // // Set configurations
-
-  // await driver.waitFor(find.byValueKey('bottomNavbar'));
-  // await driver.tap(find.text('Configurações'));
-
-  // if (!serverFailed) {
-  //   await driver.tap(find.byValueKey('driveDropdown'));
-  //   await driver.tap(find.byValueKey(drive)).catchError((e) {
-  //     print(e);
-  //   });
-
-  //   await driver.tap(find.byValueKey('fsDropdown'));
-  //   await driver.tap(find.text(fs)).catchError((e) {
-  //     print(e);
-  //   });
-
-  //   await driver.scrollUntilVisible(
-  //       find.byValueKey('configListView'), find.byValueKey('defineNewDefault'),
-  //       dyScroll: -20.0);
-  // }
 
   await driver.waitFor(find.byValueKey('bottomNavbar'));
   await driver.tap(find.text('Aquisição'));
@@ -239,13 +205,12 @@ Future<Timeline> _runVisualization(FlutterDriver driver) async {
     await Future<void>.delayed(Duration(minutes: 1)); ///////////////
     await driver.tap(find.byValueKey('startStopButton'));
     await driver.waitFor(find.text('Aquisição terminada!'));
-    await driver.waitFor(find.text('Aquisição iniciada!'));
   }
 
   return driver.stopTracingAndDownloadTimeline();
 }
 
-Future<void> _save(Timeline timeline, String key) async {
+Future<void> _save(Timeline timeline) async {
   var description = Platform.environment['DESC'];
 
   if (description == null) {
@@ -265,7 +230,7 @@ Future<void> _save(Timeline timeline, String key) async {
   // }
 
   var now = DateTime.now();
-  var id = 'performance_test-${now.toIso8601String()}_$key';
+  var id = 'performance_test-${now.toIso8601String()}';
   var filename = id.replaceAll(':', '-');
 
   var summary = TimelineSummary.summarize(timeline);

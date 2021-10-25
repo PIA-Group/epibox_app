@@ -120,7 +120,7 @@ class _TracePainter extends CustomPainter {
     // only start plot if dataset has data
     int length = dataSet.length;
     if (length > 0) {
-      if (length > size.width)
+      if (length > size.width.toInt())
         data2draw = dataSet.sublist(dataSet.length - size.width.floor());
       // Create Path and set Origin to first data point
       Path trace = Path();

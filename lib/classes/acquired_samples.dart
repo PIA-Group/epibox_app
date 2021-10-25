@@ -9,7 +9,6 @@ List<charts.Series<AcquiredSample, int>> data2Series(
 
   List<AcquiredSample> listSamples = aux.map(
     (i) {
-      print(i);
       return AcquiredSample(i + 1, data[i - 1]);
     },
   ).toList();

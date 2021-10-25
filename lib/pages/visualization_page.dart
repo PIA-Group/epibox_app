@@ -94,7 +94,7 @@ class _VisualizationPageState extends State<VisualizationPage> {
                 newSamples.map((d) => d as double).toList();
           }
 
-          if (auxData.length > screenWidth) {
+          if (auxData.length > screenWidth.toInt()) {
             // int start = min(buffer, auxData.length - screenWidth.floor());
             int start = auxData.length - screenWidth.floor();
             auxListData[index] = auxData.sublist(start);
@@ -117,7 +117,6 @@ class _VisualizationPageState extends State<VisualizationPage> {
           }
         });
         widget.visualizationMAC.data2Plot = List.from(auxListData);
-        print(widget.visualizationMAC.data2Plot[0].length);
         // widget.visualizationMAC.series2Plot = widget.visualizationMAC.data2Plot
         //     .map((d) => data2Series(d, widget.configurations))
         //     .toList();
