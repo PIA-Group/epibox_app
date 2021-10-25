@@ -187,7 +187,6 @@ void getLastConfigurations(Configurations configurations,
   await SharedPreferences.getInstance().then((prefs) {
     if (prefs.containsKey('configurations')) {
       try {
-        Configurations auxConf = Configurations();
         String conf = (prefs.getString('configurations') ?? '');
         if (conf != '') {
           Map<String, dynamic> confMap = json.decode(conf);

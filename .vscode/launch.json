@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "rPiInterface",
+            "name": "epibox",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"

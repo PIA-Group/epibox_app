@@ -1,8 +1,4 @@
 import 'dart:async';
-import 'dart:math';
-import 'package:charts_flutter/flutter.dart' as charts;
-import 'package:charts_flutter/flutter.dart';
-import 'package:epibox/classes/acquired_samples.dart';
 import 'package:epibox/classes/acquisition.dart';
 import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/visualization.dart';
@@ -13,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:epibox/mqtt/mqtt_states.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'package:property_change_notifier/property_change_notifier.dart';
-import 'package:intl/intl.dart';
 
 class VisualizationPage extends StatefulWidget {
   final Configurations configurations;

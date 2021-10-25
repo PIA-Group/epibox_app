@@ -25,7 +25,6 @@ Future<Timeline> _run(FlutterDriver driver) async {
   bool serverFailed = false;
   int nChannels = 6;
   bool devicesFailed = false;
-  bool plotFailed = false;
 
   var health = await driver.checkHealth();
   if (health.status != HealthStatus.ok) {
@@ -77,19 +76,6 @@ Future<Timeline> _run(FlutterDriver driver) async {
 
   await Future<void>.delayed(Duration(seconds: 6));
 
-  if (devices[0] != '') {
-    String state =
-        await driver.getText(find.byValueKey('connectionStateText1'));
-
-    //if (state != 'Dispositivo conectado!') devicesFailed = true;
-  }
-
-  if (devices[1] != '') {
-    String state =
-        await driver.getText(find.byValueKey('connectionStateText2'));
-
-    //if (state != 'Dispositivo conectado!') devicesFailed = true;
-  }
   // Set configurations
 
   await driver.waitFor(find.byValueKey('bottomNavbar'));
@@ -120,7 +106,6 @@ Future<Timeline> _run(FlutterDriver driver) async {
     await driver
         .waitFor(find.text('Canal: A1 | -'), timeout: Duration(seconds: 6))
         .catchError((e) {
-      plotFailed = true;
       print(e);
     });
 
@@ -144,65 +129,6 @@ Future<Timeline> _run(FlutterDriver driver) async {
     }
 
     await Future<void>.delayed(Duration(minutes: 30)); ///////////////
-    await driver.tap(find.byValueKey('startStopButton'));
-    await driver.waitFor(find.text('Aquisição terminada!'));
-  }
-
-  return driver.stopTracingAndDownloadTimeline();
-}
-
-Future<Timeline> _runVisualization(FlutterDriver driver) async {
-  String fs = '1000';
-  String drive = 'UUI';
-  List<String> devices = ['98:D3:91:FD:3F:5C', ''];
-  int nChannels = 6;
-  bool serverFailed = false;
-  bool devicesFailed = false;
-  bool plotFailed = false;
-
-  var health = await driver.checkHealth();
-  if (health.status != HealthStatus.ok) {
-    throw StateError('FlutterDriver health: $health');
-  }
-
-  // // Give the UI time to settle down before starting the trace.
-  await Future<void>.delayed(const Duration(seconds: 1));
-
-  await driver.startTracing();
-
-  await driver.waitFor(find.byValueKey('bottomNavbar'));
-  await driver.tap(find.text('Aquisição'));
-
-  await driver.tap(find.byValueKey('startStopButton'));
-
-  if (!serverFailed && !devicesFailed) {
-    await driver
-        .waitFor(find.text('Canal: A1 | -'), timeout: Duration(seconds: 6))
-        .catchError((e) {
-      plotFailed = true;
-      print(e);
-    });
-
-    await driver.scrollUntilVisible(find.byValueKey('visualizationListView'),
-        find.text('Canal: A$nChannels | -'),
-        dyScroll: -20.0);
-    await driver.scrollUntilVisible(
-        find.byValueKey('visualizationListView'), find.text('Canal: A1 | -'),
-        dyScroll: 20.0);
-
-    if (devices[1] != '') {
-      await driver.tap(find.byValueKey(devices[1]));
-
-      await driver.scrollUntilVisible(find.byValueKey('visualizationListView'),
-          find.text('Canal: A$nChannels | -'),
-          dyScroll: -20.0);
-      await driver.scrollUntilVisible(
-          find.byValueKey('visualizationListView'), find.text('Canal: A1 | -'),
-          dyScroll: 20.0);
-      await driver.tap(find.byValueKey(devices[0]));
-    }
-
-    await Future<void>.delayed(Duration(minutes: 1)); ///////////////
     await driver.tap(find.byValueKey('startStopButton'));
     await driver.waitFor(find.text('Aquisição terminada!'));
   }

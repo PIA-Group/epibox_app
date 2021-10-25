@@ -9,7 +9,6 @@ import 'package:epibox/decor/text_styles.dart';
 import 'package:epibox/mqtt/mqtt_states.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'package:mqtt_client/mqtt_client.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class ServerPage extends StatefulWidget {
   final Devices devices;

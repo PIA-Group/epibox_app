@@ -1,13 +1,10 @@
-import 'package:epibox/classes/acquired_samples.dart';
 import 'package:property_change_notifier/property_change_notifier.dart';
-import 'package:charts_flutter/flutter.dart' as charts;
 
 class Visualization extends PropertyChangeNotifier<String> {
   List<List> _dataMAC = [];
   List _sensorsMAC = [];
   List<List> _channelsMAC = [];
   List<List<double>> _data2Plot = [];
-  List<List<charts.Series<AcquiredSample, int>>> _series2Plot = [];
   bool _refresh = false;
   List<List<double>> _rangesList = List.filled(6, [-1, 10, 1]);
 
@@ -15,8 +12,6 @@ class Visualization extends PropertyChangeNotifier<String> {
   List get sensorsMAC => _sensorsMAC;
   List<List> get channelsMAC => _channelsMAC;
   List<List<double>> get data2Plot => _data2Plot;
-  List<List<charts.Series<AcquiredSample, int>>> get series2Plot =>
-      _series2Plot;
   bool get refresh => _refresh;
   List<List<double>> get rangesList => _rangesList;
 
@@ -38,11 +33,6 @@ class Visualization extends PropertyChangeNotifier<String> {
   set data2Plot(List<List<double>> value) {
     _data2Plot = value;
     notifyListeners('data2Plot');
-  }
-
-  set series2Plot(List<List<charts.Series<AcquiredSample, int>>> value) {
-    _series2Plot = value;
-    notifyListeners('series2Plot');
   }
 
   set refresh(bool value) {
