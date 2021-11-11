@@ -1,3 +1,4 @@
+import 'package:epibox/app_localizations.dart';
 import 'package:epibox/classes/acquisition.dart';
 import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/devices.dart';
@@ -203,14 +204,10 @@ class _NavigationPageState extends State<NavigationPage>
   ];
 
   List _headerLabel = [
-    Text('Início',
-        style: MyTextStyle(color: DefaultColors.textColorOnDark, fontSize: 18)),
-    Text('Dispositivos',
-        style: MyTextStyle(color: DefaultColors.textColorOnDark, fontSize: 18)),
-    Text('Configurações',
-        style: MyTextStyle(color: DefaultColors.textColorOnDark, fontSize: 18)),
-    Text('Aquisição',
-        style: MyTextStyle(color: DefaultColors.textColorOnDark, fontSize: 18)),
+    'home',
+    'devices',
+    'configurations',
+    'acquisition',
   ];
 
   @override
@@ -248,7 +245,14 @@ class _NavigationPageState extends State<NavigationPage>
                   ValueListenableBuilder(
                       valueListenable: _navigationIndex,
                       builder: (BuildContext context, int i, Widget child) {
-                        return _headerLabel[i];
+                        return Text(
+                          AppLocalizations.of(context)
+                              .translate(_headerLabel[i])
+                              .inCaps,
+                          style: MyTextStyle(
+                              color: DefaultColors.textColorOnDark,
+                              fontSize: 18),
+                        );
                       }),
                 ]),
               ),
@@ -358,23 +362,28 @@ class _NavigationPageState extends State<NavigationPage>
               onTap: (index) {
                 _onNavigationTap(index);
               },
-              items: const <BottomNavigationBarItem>[
+              items: <BottomNavigationBarItem>[
                 BottomNavigationBarItem(
                   icon: Icon(Icons.home, key: Key('Início')),
-                  label: 'Início',
+                  label: AppLocalizations.of(context).translate('home').inCaps,
                 ),
                 BottomNavigationBarItem(
                   icon:
                       Icon(Icons.device_hub_rounded, key: Key('Dispositivos')),
-                  label: 'Dispositivos',
+                  label:
+                      AppLocalizations.of(context).translate('devices').inCaps,
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.settings, key: Key('Configurações')),
-                  label: 'Configurações',
+                  label: AppLocalizations.of(context)
+                      .translate('configurations')
+                      .inCaps,
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Custom.ecg, key: Key('Aquisição')),
-                  label: 'Aquisição',
+                  label: AppLocalizations.of(context)
+                      .translate('acquisition')
+                      .inCaps,
                 ),
               ],
             );

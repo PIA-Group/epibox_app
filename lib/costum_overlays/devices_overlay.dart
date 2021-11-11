@@ -1,3 +1,4 @@
+import 'package:epibox/app_localizations.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
 import 'package:flutter/material.dart';
@@ -10,14 +11,20 @@ class DevicesCustomOverlay extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 10),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Text(
-            'Não foi possível conectar',
+            AppLocalizations.of(context).translate('error during').inCaps +
+                ' ' +
+                AppLocalizations.of(context)
+                    .translate('connection to the device'),
             textAlign: TextAlign.center,
             style: MyTextStyle(
                 color: DefaultColors.textColorOnLight, fontSize: 20),
           ),
           SizedBox(height: 20),
           Text(
-            'Verifique a conexão ao servidor!',
+            AppLocalizations.of(context)
+                    .translate('check your connection to the server')
+                    .inCaps +
+                '!',
             textAlign: TextAlign.center,
             style: MyTextStyle(
                 color: DefaultColors.textColorOnLight, fontSize: 20),

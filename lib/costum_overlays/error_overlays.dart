@@ -1,7 +1,7 @@
+import 'package:epibox/app_localizations.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
 import 'package:flutter/material.dart';
-
 
 class VerifyConnectionsOverlay extends StatelessWidget {
   VerifyConnectionsOverlay();
@@ -13,14 +13,20 @@ class VerifyConnectionsOverlay extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 10),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Text(
-            'Não foi possível iniciar',
+            AppLocalizations.of(context).translate('error during').inCaps +
+                ' ' +
+                AppLocalizations.of(context).translate('start'),
             textAlign: TextAlign.center,
             style: MyTextStyle(
                 color: DefaultColors.textColorOnLight, fontSize: 20),
           ),
           SizedBox(height: 20),
           Text(
-            'Verifique a conexão ao servidor e aos dispositivos de aquisição!',
+            AppLocalizations.of(context)
+                    .translate(
+                        'check your connection to the server and to the acquisition devices')
+                    .inCaps +
+                '!',
             textAlign: TextAlign.center,
             style: MyTextStyle(
                 color: DefaultColors.textColorOnLight, fontSize: 20),
@@ -32,7 +38,6 @@ class VerifyConnectionsOverlay extends StatelessWidget {
   }
 }
 
-
 class NotAcquiringOverlay extends StatelessWidget {
   NotAcquiringOverlay();
 
@@ -43,14 +48,20 @@ class NotAcquiringOverlay extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 10),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Text(
-            'Não se encontra nenhuma aquisição a decorrer',
+            AppLocalizations.of(context)
+                .translate('no ongoing acquisition')
+                .inCaps,
             textAlign: TextAlign.center,
             style: MyTextStyle(
                 color: DefaultColors.textColorOnLight, fontSize: 20),
           ),
           SizedBox(height: 20),
           Text(
-            'Inicie uma aquisição antes de pressionar o botão de pausa!',
+            AppLocalizations.of(context)
+                    .translate(
+                        'start an acquisition before pressing the button')
+                    .inCaps +
+                '!',
             textAlign: TextAlign.center,
             style: MyTextStyle(
                 color: DefaultColors.textColorOnLight, fontSize: 20),

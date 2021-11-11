@@ -279,16 +279,19 @@ class PlotData extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.only(bottom: 20.0),
           child: Row(children: [
-            // Padding(
-            //   padding: EdgeInsets.only(left: 5.0),
-            //   child: Column(
-            //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            //     children: [
-            //       Text('${yRange[1].ceil()}'),
-            //       Text('${yRange[0].floor()}')
-            //     ],
-            //   ),
-            // ),
+            Padding(
+              padding: EdgeInsets.only(left: 5.0),
+              child: SizedBox(
+                width: 10,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('${yRange[1].ceil()}'),
+                    Text('${yRange[0].floor()}')
+                  ],
+                ),
+              ),
+            ),
             Expanded(
               child: Oscilloscope(
                 yAxisMax: yRange[1],

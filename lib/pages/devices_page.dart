@@ -1,4 +1,5 @@
 import 'package:barcode_scan/barcode_scan.dart';
+import 'package:epibox/app_localizations.dart';
 import 'package:epibox/classes/devices.dart';
 import 'package:epibox/classes/error_handler.dart';
 import 'package:epibox/costum_overlays/devices_overlay.dart';
@@ -147,7 +148,9 @@ class _DevicesPageState extends State<DevicesPage> {
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
               Expanded(
                 child: Text(
-                  'Selecionar dispositivo(s) de aquisição',
+                  AppLocalizations.of(context)
+                      .translate('select acquisition device(s)')
+                      .inCaps,
                   textAlign: TextAlign.left,
                   style: MyTextStyle(
                     color: DefaultColors.textColorOnLight,
@@ -156,8 +159,16 @@ class _DevicesPageState extends State<DevicesPage> {
                 ),
               ),
               CustomTooltip(
-                message:
-                    'Se estiver conectado ao servidor e os dispositivos mostrarem xx:xx:xx:xx:xx:xx, reinicie o processo.',
+                message: AppLocalizations.of(context)
+                        .translate('in case you are')
+                        .inCaps +
+                    ' ' +
+                    AppLocalizations.of(context)
+                        .translate('connected to the server') +
+                    ' ' +
+                    AppLocalizations.of(context).translate(
+                        'but the devices show xx:xx:xx:xx:xx:xx, restart') +
+                    '.',
                 tooltipKey: selectDevicesKey,
               ),
             ]),
@@ -193,7 +204,9 @@ class _DevicesPageState extends State<DevicesPage> {
                       "['NEW MAC',{'MAC1':'${widget.devices.macAddress1}','MAC2':'${widget.devices.macAddress2}'}]");
                 },
                 child: new Text(
-                  "Definir novo default",
+                  AppLocalizations.of(context)
+                      .translate('set new default')
+                      .inCaps,
                   style: MyTextStyle(),
                 ),
               ),
@@ -354,10 +367,10 @@ class DeviceStateConnectionBlock extends StatelessWidget {
         MediaQuery.of(context).viewInsets.right;
 
     const Map<String, String> _connectionStateText = {
-      'connected': 'Dispositivo conectado!',
+      'connected': 'dispositivo conectado!',
       'connecting': 'A conectar...',
-      'failed': 'Falha na conexão',
-      'other': 'Dispositivo desconectado',
+      'failed': 'falha na conexão',
+      'other': 'dispositivo desconectado',
     };
 
     const Map<String, Widget> _connectionStateIcon = {
@@ -436,11 +449,14 @@ class DeviceStateConnectionBlock extends StatelessWidget {
                                   color: DefaultColors.textColorOnLight,
                                   fontWeight: FontWeight.bold)),
                           subtitle: Text(
-                              _connectionStateText.containsKey(devices
-                                      .get('macAddress${deviceID}Connection'))
-                                  ? _connectionStateText[devices
-                                      .get('macAddress${deviceID}Connection')]
-                                  : _connectionStateText['other'],
+                              AppLocalizations.of(context)
+                                  .translate(_connectionStateText.containsKey(
+                                          devices.get(
+                                              'macAddress${deviceID}Connection'))
+                                      ? _connectionStateText[devices.get(
+                                          'macAddress${deviceID}Connection')]
+                                      : _connectionStateText['other'])
+                                  .inCaps,
                               key: Key('connectionStateText$deviceID'),
                               style: MyTextStyle(
                                   color: DefaultColors.textColorOnLight)),

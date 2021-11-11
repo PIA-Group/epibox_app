@@ -1,9 +1,11 @@
 import 'package:epibox/acquisition/acquisition_management.dart';
+import 'package:epibox/app_localizations.dart';
 import 'package:epibox/classes/acquisition.dart';
 import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/devices.dart';
 import 'package:epibox/classes/error_handler.dart';
 import 'package:epibox/classes/visualization.dart';
+import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/mqtt/mqtt_states.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'package:flutter/material.dart';
@@ -128,6 +130,7 @@ class SpeedAnnotationFloater extends StatelessWidget {
     return Align(
       alignment: Alignment(-0.8, 1.0),
       child: FloatingActionButton(
+        backgroundColor: DefaultColors.mainLColor,
         mini: true,
         heroTag: null,
         onPressed: () => speedAnnotation(
@@ -158,6 +161,7 @@ class ResumePauseButton extends StatelessWidget {
           properties: ['acquisitionState'],
           builder: (context, acquisition, properties) {
             return FloatingActionButton(
+              backgroundColor: DefaultColors.mainLColor,
               mini: true,
               onPressed: acquisition.acquisitionState == 'paused'
                   ? () => resumeAcquisition(mqttClientWrapper)
@@ -210,6 +214,7 @@ class StartStopButton extends StatelessWidget {
           properties: ['acquisitionState'],
           builder: (context, acquisition, properties) {
             return FloatingActionButton.extended(
+              backgroundColor: DefaultColors.mainLColor,
               key: Key('startStopButton'),
               onPressed: (acquisition.acquisitionState == 'stopped' ||
                       acquisition.acquisitionState == 'off')
@@ -229,8 +234,8 @@ class StartStopButton extends StatelessWidget {
                   : () => stopAcquisition(mqttClientWrapper),
               label: (acquisition.acquisitionState == 'stopped' ||
                       acquisition.acquisitionState == 'off')
-                  ? Text('Iniciar')
-                  : Text('Parar'),
+                  ? Text(AppLocalizations.of(context).translate('start').inCaps)
+                  : Text(AppLocalizations.of(context).translate('stop').inCaps),
               icon: (acquisition.acquisitionState == 'stopped' ||
                       acquisition.acquisitionState == 'off')
                   ? Icon(Icons.play_arrow_rounded)

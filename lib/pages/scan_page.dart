@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:barcode_scan/barcode_scan.dart';
+import 'package:epibox/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -72,7 +73,7 @@ class _ScanPageState extends State<ScanPage> {
                 //alignment: Alignment.topCenter,
                 children: [
                   Text(
-                    'Welcome to',
+                    AppLocalizations.of(context).translate('welcome to').inCaps,
                     style: MyTextStyle(
                       fontSize: 18,
                       color: Colors.white,
@@ -102,7 +103,11 @@ class _ScanPageState extends State<ScanPage> {
                       child: Container(
                           child: Text(
                               //'Para começar as aquisições, faça scan do ID do paciente ou introduza-o manualmente.',
-                              'To start the acquisitions, scan the patient\'s ID or type it below.',
+                              AppLocalizations.of(context)
+                                      .translate(
+                                          "to start the acquisitions, scan the patient's ID or type it below")
+                                      .inCaps +
+                                  ".",
                               style: MyTextStyle(
                                   color: DefaultColors.textColorOnLight),
                               textAlign: TextAlign.center)),
@@ -119,8 +124,10 @@ class _ScanPageState extends State<ScanPage> {
                         icon: Icon(
                           MdiIcons.qrcode,
                         ),
-                        label: const Text(
-                          'START SCAN',
+                        label: Text(
+                          AppLocalizations.of(context)
+                              .translate('start scan')
+                              .allInCaps,
                           style: MyTextStyle(fontSize: 14),
                         )),
                   ),
@@ -150,7 +157,9 @@ class _ScanPageState extends State<ScanPage> {
                                     filled: true,
                                     fillColor: Colors.white,
                                     border: OutlineInputBorder(),
-                                    labelText: 'Patient ID',
+                                    labelText: AppLocalizations.of(context)
+                                        .translate('patient ID')
+                                        .inCaps,
                                     contentPadding: EdgeInsets.all(10)),
                                 onChanged: null),
                           ),

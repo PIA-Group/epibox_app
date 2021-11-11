@@ -1,3 +1,4 @@
+import 'package:epibox/app_localizations.dart';
 import 'package:epibox/classes/devices.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'package:flutter/material.dart';
@@ -147,7 +148,7 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                   onPrimary: Colors.grey[600], // foreground
                 ),
                 label: Text(
-                  'Sign out',
+                  AppLocalizations.of(context).translate('sign out').inCaps,
                   style: MyTextStyle(
                       fontSize: 16, color: DefaultColors.textColorOnLight),
                 ),
@@ -172,7 +173,7 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                   onPrimary: Colors.grey[600], // foreground
                 ),
                 label: Text(
-                  'Desligar RPi',
+                  AppLocalizations.of(context).translate('turn off RPi').inCaps,
                   style: MyTextStyle(
                       fontSize: 16, color: DefaultColors.textColorOnLight),
                 ),
@@ -252,7 +253,11 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
             Padding(
               padding: EdgeInsets.fromLTRB(
                   width - 0.9 * width, 10.0, width - 0.9 * width, 0.0),
-              child: Text('Tipos de Anotações:',
+              child: Text(
+                  AppLocalizations.of(context)
+                          .translate('my annotations')
+                          .inCaps +
+                      ':',
                   style: MyTextStyle(
                     color: DefaultColors.textColorOnLight,
                     fontWeight: FontWeight.bold,
@@ -286,7 +291,11 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
             Padding(
               padding: EdgeInsets.fromLTRB(
                   width - 0.9 * width, 20.0, width - 0.9 * width, 0.0),
-              child: Text('Histórico de dispositivos:',
+              child: Text(
+                  AppLocalizations.of(context)
+                          .translate('device history')
+                          .inCaps +
+                      ':',
                   style: MyTextStyle(
                     color: DefaultColors.textColorOnLight,
                     fontWeight: FontWeight.bold,

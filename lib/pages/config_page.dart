@@ -1,3 +1,4 @@
+import 'package:epibox/app_localizations.dart';
 import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/devices.dart';
 import 'package:epibox/decor/default_colors.dart';
@@ -66,10 +67,7 @@ class _ConfigPageState extends State<ConfigPage> {
     );
   }).toList();
 
-  List<String> channelSensorItems = [
-    'Canais dispositivo',
-    'Sensores dispositivo'
-  ];
+  List<String> channelSensorItems = ['channels device', 'sensors device'];
 
   Map<String, Function> listeners = {
     'configDefault': null,
@@ -259,7 +257,9 @@ class _ConfigPageState extends State<ConfigPage> {
                 alignment: Alignment.centerLeft,
                 child: Container(
                   child: Text(
-                    'Configurações de aquisição',
+                    AppLocalizations.of(context)
+                        .translate('acquisition configurations')
+                        .inCaps,
                     textAlign: TextAlign.left,
                     style: MyTextStyle(
                       color: DefaultColors.textColorOnLight,
@@ -302,7 +302,7 @@ class _ConfigPageState extends State<ConfigPage> {
                                       .map((int id) => [
                                             SizedBox(height: verticalSpacing),
                                             Text(
-                                                '${channelSensorItems[titleIndex]} $id:',
+                                                '${AppLocalizations.of(context).translate(channelSensorItems[titleIndex]).inCaps} $id:',
                                                 textAlign: TextAlign.start,
                                                 style: MyTextStyle(
                                                     color: DefaultColors
@@ -341,7 +341,9 @@ class _ConfigPageState extends State<ConfigPage> {
                     _newDefault();
                   },
                   child: new Text(
-                    "Definir novo default",
+                    AppLocalizations.of(context)
+                        .translate('set new default')
+                        .inCaps,
                     key: Key('defineNewDefault'),
                     style: MyTextStyle(),
                   ),
@@ -369,7 +371,7 @@ class DriveBlock extends StatelessWidget {
       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
         Expanded(
           child: Text(
-            'Pasta para armazenamento',
+            AppLocalizations.of(context).translate('storage folder').inCaps,
             textAlign: TextAlign.left,
             style: MyTextStyle(
               color: DefaultColors.textColorOnLight,
@@ -378,8 +380,16 @@ class DriveBlock extends StatelessWidget {
           ),
         ),
         CustomTooltip(
-          message:
-              'Se estiver conectado ao servidor e não tiver opções na pasta de armazenamento, reinicie o processo.',
+          message: AppLocalizations.of(context)
+                  .translate("in case you are")
+                  .inCaps +
+              ' ' +
+              AppLocalizations.of(context)
+                  .translate("connected to the server") +
+              ' ' +
+              AppLocalizations.of(context).translate(
+                  "but there are no options in the storage folder, restart") +
+              '.',
           tooltipKey: configurationKey,
         ),
       ]),
@@ -449,7 +459,8 @@ class FrequencyBlock extends StatelessWidget {
     return Row(
       children: [
         Text(
-          'Freq.amostragem [Hz]:',
+          AppLocalizations.of(context).translate('sampling freq.').inCaps +
+              ' [Hz]:',
           style: MyTextStyle(color: DefaultColors.textColorOnLight),
         ),
         Expanded(
@@ -490,7 +501,9 @@ class SaveRawBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Text('Guardar dados em bruto?',
+        Text(
+            AppLocalizations.of(context).translate('save data raw').inCaps +
+                '?',
             style: MyTextStyle(color: DefaultColors.textColorOnLight)),
         PropertyChangeConsumer<Configurations>(
             properties: ['saveRaw'],

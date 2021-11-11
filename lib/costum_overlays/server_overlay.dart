@@ -1,3 +1,4 @@
+import 'package:epibox/app_localizations.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
 import 'package:epibox/mqtt/mqtt_states.dart';
@@ -21,7 +22,10 @@ class ServerCustomOverlay extends StatelessWidget {
       return Center(
         child: Container(
             child: Text(
-          'Conectado ao servidor!',
+          AppLocalizations.of(context)
+                  .translate('connected to the server')
+                  .inCaps +
+              '!',
           style:
               MyTextStyle(color: DefaultColors.textColorOnLight, fontSize: 20),
         )),
@@ -31,14 +35,20 @@ class ServerCustomOverlay extends StatelessWidget {
       return Center(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Text(
-            'Não foi possível conectar ao servidor',
+            AppLocalizations.of(context).translate('error during').inCaps +
+                ' ' +
+                AppLocalizations.of(context)
+                    .translate('connection to the server'),
             textAlign: TextAlign.center,
             style: MyTextStyle(
                 color: DefaultColors.textColorOnLight, fontSize: 20),
           ),
           SizedBox(height: 20),
           Text(
-            'Verifique a conexão wifi',
+            AppLocalizations.of(context)
+                    .translate('check your wifi connection')
+                    .inCaps +
+                '!',
             textAlign: TextAlign.center,
             style: MyTextStyle(
                 color: DefaultColors.textColorOnLight, fontSize: 20),
@@ -50,14 +60,19 @@ class ServerCustomOverlay extends StatelessWidget {
       return Center(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Text(
-            'Disconectado do servidor',
+            AppLocalizations.of(context)
+                .translate('disconnected from the server')
+                .inCaps,
             textAlign: TextAlign.center,
             style: MyTextStyle(
                 color: DefaultColors.textColorOnLight, fontSize: 20),
           ),
           SizedBox(height: 20),
           Text(
-            'Verifique a conexão wifi',
+            AppLocalizations.of(context)
+                    .translate('check your wifi connection')
+                    .inCaps +
+                '!',
             textAlign: TextAlign.center,
             style: MyTextStyle(
                 color: DefaultColors.textColorOnLight, fontSize: 20),

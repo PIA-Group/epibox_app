@@ -1,3 +1,4 @@
+import 'package:epibox/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
@@ -79,7 +80,9 @@ class _SpeedAnnotationDialogState extends State<SpeedAnnotationDialog> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Anotação Rápida'),
+        title: Text(AppLocalizations.of(context)
+            .translate('flash annotation')
+            .capitalizeFirstofEach),
         actions: [
           IconButton(
               icon: Icon(
@@ -100,7 +103,9 @@ class _SpeedAnnotationDialogState extends State<SpeedAnnotationDialog> {
                   alignment: Alignment.centerLeft,
                   child: Container(
                     child: Text(
-                      'Anotação',
+                      AppLocalizations.of(context)
+                          .translate('annotation')
+                          .inCaps,
                       textAlign: TextAlign.left,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
@@ -156,7 +161,9 @@ class _SpeedAnnotationDialogState extends State<SpeedAnnotationDialog> {
                   alignment: Alignment.centerLeft,
                   child: Container(
                     child: Text(
-                      'Ajustar instante da anotação',
+                      AppLocalizations.of(context)
+                          .translate('adjust annotation time')
+                          .inCaps,
                       textAlign: TextAlign.left,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
@@ -171,7 +178,7 @@ class _SpeedAnnotationDialogState extends State<SpeedAnnotationDialog> {
                   alignment: Alignment.centerLeft,
                   child: Container(
                     child: Text(
-                      '(Tempo decorrido [min])',
+                      '${AppLocalizations.of(context).translate('time elapsed').inCaps} [min]',
                       textAlign: TextAlign.left,
                       style: TextStyle(
                         fontSize: 15,
@@ -215,7 +222,7 @@ class _SpeedAnnotationDialogState extends State<SpeedAnnotationDialog> {
                           setState(() => _isChecked = val);
                         },
                         title: Text(
-                          '(?) Não sei quando ocorreu',
+                          '(?) ${AppLocalizations.of(context).translate("don't know when it happened").inCaps}',
                           style: TextStyle(
                             color: DefaultColors.textColorOnLight,
                           ),

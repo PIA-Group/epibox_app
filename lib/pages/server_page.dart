@@ -1,3 +1,4 @@
+import 'package:epibox/app_localizations.dart';
 import 'package:epibox/classes/acquisition.dart';
 import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/devices.dart';
@@ -82,18 +83,24 @@ class _ServerPageState extends State<ServerPage> {
                       textAlign: TextAlign.justify,
                       text: TextSpan(children: [
                         TextSpan(
-                            text:
-                                'Para conectar ao servidor e iniciar (ou reiniciar) o processo, clicar em ',
+                            text: AppLocalizations.of(context)
+                                    .translate(
+                                        'to connect to the server and (re-)start the process, press')
+                                    .inCaps +
+                                ' ',
                             style: MyTextStyle(
                                 color: DefaultColors.textColorOnLight)),
                         TextSpan(
-                            text: '"Conectar / Reiniciar"',
+                            text:
+                                '"${AppLocalizations.of(context).translate("connect").inCaps}/${AppLocalizations.of(context).translate("restart").inCaps}"',
                             style: MyTextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: DefaultColors.textColorOnLight)),
                         TextSpan(
-                            text:
-                                '. Isto irá colocar em marcha os procedimentos necessários para iniciar a aquisição de dados! ',
+                            text: '. ' +
+                                AppLocalizations.of(context).translate(
+                                    'this will initiate all necessary procedures to start the data acquisition') +
+                                '!',
                             style: MyTextStyle(
                                 color: DefaultColors.textColorOnLight)),
                       ])),
@@ -137,7 +144,7 @@ class _ServerPageState extends State<ServerPage> {
                       });
                     },
                     child: new Text(
-                      "Conectar / Reiniciar",
+                      '${AppLocalizations.of(context).translate("connect").inCaps} / ${AppLocalizations.of(context).translate("restart").inCaps}',
                       key: Key('connectServerButton'),
                       style: MyTextStyle(
                         color: DefaultColors.textColorOnDark,
@@ -157,28 +164,28 @@ class _ServerPageState extends State<ServerPage> {
                     text: TextSpan(
                       children: [
                         TextSpan(
-                            text: 'Caso esteja ',
-                            style: MyTextStyle(
-                                color: DefaultColors.textColorOnLight)),
-                        TextSpan(
-                            text: 'conectado ao servidor ',
-                            style: MyTextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: DefaultColors.textColorOnLight)),
-                        TextSpan(
-                            text: 'mas o processo ',
-                            style: MyTextStyle(
-                              color: DefaultColors.textColorOnLight,
-                            )),
-                        TextSpan(
-                            text: 'não ',
+                            text: AppLocalizations.of(context)
+                                .translate('n case you are')
+                                .inCaps,
                             style: MyTextStyle(
                                 color: DefaultColors.textColorOnLight)),
                         TextSpan(
                             text:
-                                'tenha sido iniciado, reinincie. Em último caso, desligue e volte a ligar o dispositivo.',
+                                ' ${AppLocalizations.of(context).translate("connected to the server")} ',
                             style: MyTextStyle(
+                                fontWeight: FontWeight.bold,
                                 color: DefaultColors.textColorOnLight)),
+                        TextSpan(
+                            text: AppLocalizations.of(context).translate(
+                                    'but the process has not yet started, restart') +
+                                '. ' +
+                                AppLocalizations.of(context)
+                                    .translate(
+                                        'as a last resort, turn the RPi off and turn it on again')
+                                    .inCaps,
+                            style: MyTextStyle(
+                              color: DefaultColors.textColorOnLight,
+                            )),
                       ],
                     ),
                   ),

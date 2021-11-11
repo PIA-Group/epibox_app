@@ -1,3 +1,4 @@
+import 'package:epibox/app_localizations.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +21,10 @@ class AcquisitionCustomOverlay extends StatelessWidget {
       return Center(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Text(
-            'A tentar retomar a aquisição...',
+            AppLocalizations.of(context)
+                    .translate('trying to resume the acquisition')
+                    .inCaps +
+                '...',
             textAlign: TextAlign.center,
             style: MyTextStyle(
                 color: DefaultColors.textColorOnLight, fontSize: 20),
@@ -39,14 +43,19 @@ class AcquisitionCustomOverlay extends StatelessWidget {
       return Center(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Text(
-            'Aquisição em pausa!',
+            AppLocalizations.of(context)
+                    .translate('acquisition paused')
+                    .inCaps +
+                '!',
             textAlign: TextAlign.center,
             style: MyTextStyle(
                 color: DefaultColors.textColorOnLight, fontSize: 20),
           ),
           SizedBox(height: 20),
           Text(
-            'Pressione o botão para retomar',
+            AppLocalizations.of(context)
+                .translate('press the button to resume')
+                .inCaps,
             textAlign: TextAlign.center,
             style: MyTextStyle(
                 color: DefaultColors.textColorOnLight, fontSize: 20),
@@ -57,7 +66,8 @@ class AcquisitionCustomOverlay extends StatelessWidget {
     } else if (state == 'stopped') {
       return Center(
         child: Text(
-          'Aquisição terminada!',
+          AppLocalizations.of(context).translate('acquisition stopped').inCaps +
+              '!',
           textAlign: TextAlign.center,
           style:
               MyTextStyle(color: DefaultColors.textColorOnLight, fontSize: 20),
