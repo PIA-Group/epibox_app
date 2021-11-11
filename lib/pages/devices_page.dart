@@ -130,7 +130,6 @@ class _DevicesPageState extends State<DevicesPage> {
     const double verticalSpacing = 20.0;
     final selectDevicesKey = GlobalKey<State<Tooltip>>();
     final connectDevicesKey = GlobalKey<State<Tooltip>>();
-    print('rebuilding DevicesPage');
 
     return PropertyChangeProvider(
       value: widget.devices,

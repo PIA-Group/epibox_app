@@ -120,7 +120,7 @@ class _NavigationPageState extends State<NavigationPage>
     shouldRestart.addListener(listeners['shouldRestart']);
     acquisition
         .addListener(listeners['acquisitionState'], ['acquisitionState']);
-    acquisition.addListener(listeners['dataMAC'], ['dataMAC1', 'dataMAC2']);
+    acquisition.addListener(listeners['dataMAC'], ['dataMAC1']);
     errorHandler.addListener(listeners['overlayInfo'], ['overlayInfo']);
 
     timer = Timer.periodic(Duration(seconds: 15), (Timer t) => print('timer'));
@@ -153,6 +153,7 @@ class _NavigationPageState extends State<NavigationPage>
     getLastSensors(visualizationMAC1, visualizationMAC2);
     //getLastBatteries(acquisition);
     getMACHistory(historyMAC);
+    getLastConfigurations(configurations, driveListNotifier);
 
     initialized = initialize();
   }
@@ -169,9 +170,7 @@ class _NavigationPageState extends State<NavigationPage>
   }
 
   void _onNavigationTap(int index) {
-    //setState(() {
     _navigationIndex.value = index;
-    //});
   }
 
   Future<bool> initialize() async {
@@ -216,7 +215,6 @@ class _NavigationPageState extends State<NavigationPage>
 
   @override
   Widget build(BuildContext context) {
-    print('rebuilding NavigationPage');
     return Scaffold(
       drawer: ProfileDrawer(
         mqttClientWrapper: mqttClientWrapper,
@@ -277,6 +275,9 @@ class _NavigationPageState extends State<NavigationPage>
                             devices: devices,
                             acquisition: acquisition,
                             mqttClientWrapper: mqttClientWrapper,
+                            client: client,
+                            configurations: configurations,
+                            errorHandler: errorHandler,
                             connectionNotifier: connectionNotifier,
                             receivedMACNotifier: receivedMACNotifier,
                             driveListNotifier: driveListNotifier,
@@ -418,6 +419,7 @@ class _NavigationPageState extends State<NavigationPage>
                           visualizationMAC2: visualizationMAC2,
                           historyMAC: historyMAC,
                           patientNotifier: widget.patientNotifier,
+                          driveListNotifier: driveListNotifier,
                         ),
                       ]);
               }),

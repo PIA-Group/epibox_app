@@ -1,4 +1,4 @@
-package com.example.rPiInterface
+package com.scientisst.epibox
 
 import io.flutter.embedding.android.FlutterActivity
 

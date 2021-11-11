@@ -148,6 +148,7 @@ class _ConfigPageState extends State<ConfigPage> {
     widget.devices.addListener(listeners['macAddress1'], ['macAddress1']);
     widget.devices.addListener(listeners['macAddress2'], ['macAddress2']);
     //widget.driveListNotifier.addListener(listeners['driveListNotifier']);
+    widget.configurations.addListener(() {}, ['controllerFreq']);
   }
 
   @override
@@ -226,7 +227,6 @@ class _ConfigPageState extends State<ConfigPage> {
 
   @override
   Widget build(BuildContext context) {
-    print('rebuilding ConfigPage');
     final width = MediaQuery.of(context).size.width -
         MediaQuery.of(context).viewInsets.left -
         MediaQuery.of(context).viewInsets.right;
@@ -406,6 +406,7 @@ class DriveBlock extends StatelessWidget {
                 child: PropertyChangeConsumer<Configurations>(
                     properties: ['chosenDrive'],
                     builder: (context, configurations, properties) {
+                      //print('drivelist: ${driveListNotifier.value}');
                       return ValueListenableBuilder(
                           valueListenable: driveListNotifier,
                           builder: (context, driveList, child) {

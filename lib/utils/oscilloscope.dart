@@ -23,7 +23,6 @@ import 'package:flutter/material.dart';
 /// The [padding] argument allows space to be set around the display (this defaults to 10.0 if not specified)
 ///
 /// NB: This is not a Time Domain trace, the update frequency of the supplied [dataSet] determines the trace speed.
-
 class Oscilloscope extends StatefulWidget {
   final List<double> dataSet;
   final double yAxisMin;
@@ -121,7 +120,7 @@ class _TracePainter extends CustomPainter {
     // only start plot if dataset has data
     int length = dataSet.length;
     if (length > 0) {
-      if (length > size.width)
+      if (length > size.width.toInt())
         data2draw = dataSet.sublist(dataSet.length - size.width.floor());
       // Create Path and set Origin to first data point
       Path trace = Path();

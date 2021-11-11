@@ -62,11 +62,12 @@ class MQTTClientWrapper {
     client = MqttServerClient.withPort(Constants.hostname, '#1', 1883);
     client.logging(on: false);
     client.autoReconnect = true;
-    //client.onAutoReconnected = _onReconnected;
+    client.onAutoReconnect = _onReconnect;
+    client.onAutoReconnected = _onReconnected;
+    client.resubscribeOnAutoReconnect = true;
     client.onDisconnected = _onDisconnected;
     client.onConnected = _onConnected;
     client.onSubscribed = _onSubscribed;
-    print('SETUP DONE');
   }
 
   Future<void> _subscribeToTopic() async {
@@ -114,6 +115,25 @@ class MQTTClientWrapper {
     onNewConnection(connectionState);
   }
 
+  void _onReconnect() {
+    print(
+        'MQTTClientWrapper::OnReconnect client callback - Client autoReconnection');
+    //client.disconnect();
+    //connectionState = MqttCurrentConnectionState.DISCONNECTED;
+    onNewConnection(connectionState);
+  }
+
+  void _onReconnected() {
+    connectionState = MqttCurrentConnectionState.CONNECTED;
+
+    print(
+        'MQTTClientWrapper::OnConnected client callback - Client connection was sucessful');
+    //_subscribeToTopic();
+    //onConnectedCallback();
+    //onAutoReconnectCallback();
+    onNewConnection(connectionState);
+  }
+
   void _onConnected() {
     connectionState = MqttCurrentConnectionState.CONNECTED;
     print(
@@ -129,20 +149,20 @@ class MQTTClientWrapper {
     _subscribeToTopic();
   }
 
-  void _onReconnected() {
-    /* if (connectionState == MqttCurrentConnectionState.CONNECTED) {
-      print(
-          'MQTTClientWrapper::Tried to reconnect while being already connected');
-      diconnectClient();
-      _connectClient();
-      
-    } else { */
-    connectionState = MqttCurrentConnectionState.CONNECTED;
-    print(
-        'MQTTClientWrapper::OnRconnected client callback - Client connection was sucessful');
-    _subscribeToTopic();
-    onConnectedCallback();
-    // }
-    onNewConnection(connectionState);
-  }
+  // void _onReconnected() {
+  //   /* if (connectionState == MqttCurrentConnectionState.CONNECTED) {
+  //     print(
+  //         'MQTTClientWrapper::Tried to reconnect while being already connected');
+  //     diconnectClient();
+  //     _connectClient();
+
+  //   } else { */
+  //   connectionState = MqttCurrentConnectionState.CONNECTED;
+  //   print(
+  //       'MQTTClientWrapper::OnRconnected client callback - Client connection was sucessful');
+  //   _subscribeToTopic();
+  //   onConnectedCallback();
+  //   // }
+  //   onNewConnection(connectionState);
+  // }
 }

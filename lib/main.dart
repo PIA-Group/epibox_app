@@ -19,14 +19,12 @@ class InterfaceRPi extends StatelessWidget {
       theme: ThemeData(
           canvasColor: DefaultColors.backgroundColor,
           scaffoldBackgroundColor: DefaultColors.backgroundColor,
-
           brightness: Brightness.light,
           hintColor: DefaultColors.mainLColor,
           primaryColor: DefaultColors.mainColor,
-          accentColor: DefaultColors.mainLColor,
+          //accentColor: DefaultColors.mainLColor,
           primaryColorDark: DefaultColors.mainLColor,
           fontFamily: 'Hind',
-
           textTheme: TextTheme(
             headline1: TextStyle(
               fontSize: 72.0,

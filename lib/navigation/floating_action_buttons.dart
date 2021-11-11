@@ -186,6 +186,7 @@ class StartStopButton extends StatelessWidget {
   final Visualization visualizationMAC2;
   final ValueNotifier<List<String>> historyMAC;
   final ValueNotifier<String> patientNotifier;
+  final ValueNotifier<List<String>> driveListNotifier;
 
   StartStopButton({
     Key key,
@@ -198,6 +199,7 @@ class StartStopButton extends StatelessWidget {
     this.visualizationMAC2,
     this.historyMAC,
     this.patientNotifier,
+    this.driveListNotifier,
   }) : super(key: key);
 
   @override
@@ -222,6 +224,7 @@ class StartStopButton extends StatelessWidget {
                         visualizationMAC2: visualizationMAC2,
                         historyMAC: historyMAC,
                         patientNotifier: patientNotifier,
+                        driveListNotifier: driveListNotifier,
                       )
                   : () => stopAcquisition(mqttClientWrapper),
               label: (acquisition.acquisitionState == 'stopped' ||

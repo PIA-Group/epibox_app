@@ -1,4 +1,5 @@
 import 'package:epibox/classes/acquisition.dart';
+import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/devices.dart';
 import 'package:epibox/classes/visualization.dart';
 import 'package:flutter/material.dart';
@@ -41,28 +42,29 @@ void getLastDeviceType(Devices devices) async {
   });
 }
 
-Future<void> saveChannels(List<List> channelsMAC1, List<List> channelsMAC2) async {
+Future<void> saveChannels(
+    List<List> channelsMAC1, List<List> channelsMAC2) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   try {
-    await prefs.setString(
-        'channelsMAC1', json.encode(channelsMAC1));
+    await prefs.setString('channelsMAC1', json.encode(channelsMAC1));
   } catch (e) {
     print(e);
   }
 
   try {
-    await prefs.setString(
-        'channelsMAC2', json.encode(channelsMAC2));
+    await prefs.setString('channelsMAC2', json.encode(channelsMAC2));
   } catch (e) {
     print(e);
   }
 }
 
-void getLastChannels(Visualization visualizationMAC1, Visualization visualizationMAC2) async {
+void getLastChannels(
+    Visualization visualizationMAC1, Visualization visualizationMAC2) async {
   await SharedPreferences.getInstance().then((prefs) {
     if (prefs.containsKey('channelsMAC1')) {
       try {
-        List<List> channels = List<List>.from(json.decode(prefs.getString('channelsMAC1'))) ?? [];
+        List<List> channels =
+            List<List>.from(json.decode(prefs.getString('channelsMAC1'))) ?? [];
         visualizationMAC1.channelsMAC = channels;
       } catch (e) {
         print(e);
@@ -73,7 +75,8 @@ void getLastChannels(Visualization visualizationMAC1, Visualization visualizatio
 
     if (prefs.containsKey('channelsMAC2')) {
       try {
-        List<List> channels = List<List>.from(json.decode(prefs.getString('channelsMAC2'))) ?? [];
+        List<List> channels =
+            List<List>.from(json.decode(prefs.getString('channelsMAC2'))) ?? [];
         visualizationMAC2.channelsMAC = channels;
       } catch (e) {
         print(e);
@@ -87,21 +90,20 @@ void getLastChannels(Visualization visualizationMAC1, Visualization visualizatio
 Future<void> saveSensors(List sensorsMAC1, List sensorsMAC2) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   try {
-    await prefs.setString(
-        'sensorsMAC1', json.encode(sensorsMAC1));
+    await prefs.setString('sensorsMAC1', json.encode(sensorsMAC1));
   } catch (e) {
     print(e);
   }
 
   try {
-    await prefs.setString(
-        'sensorsMAC2', json.encode(sensorsMAC2));
+    await prefs.setString('sensorsMAC2', json.encode(sensorsMAC2));
   } catch (e) {
     print(e);
   }
 }
 
-void getLastSensors(Visualization visualizationMAC1, Visualization visualizationMAC2) async {
+void getLastSensors(
+    Visualization visualizationMAC1, Visualization visualizationMAC2) async {
   await SharedPreferences.getInstance().then((prefs) {
     if (prefs.containsKey('sensorsMAC1')) {
       try {
@@ -178,6 +180,74 @@ void getMACHistory(ValueNotifier<List<String>> historyMAC) async {
       historyMAC.value = [' '];
     }
   });
+}
+
+void getLastConfigurations(Configurations configurations,
+    ValueNotifier<List<String>> driveListNotifier) async {
+  await SharedPreferences.getInstance().then((prefs) {
+    if (prefs.containsKey('configurations')) {
+      try {
+        String conf = (prefs.getString('configurations') ?? '');
+        if (conf != '') {
+          Map<String, dynamic> confMap = json.decode(conf);
+          driveListNotifier.value
+              .addAll(List<String>.from(confMap['driveList']));
+          configurations.bit1Selections =
+              List<bool>.from(confMap['bit1Selections']);
+          configurations.bit2Selections =
+              List<bool>.from(confMap['bit2Selections']);
+          configurations.configDefault = confMap['configDefault'];
+          configurations.controllerSensors = List.generate(
+              12,
+              (i) =>
+                  TextEditingController(text: confMap['controllerSensors'][i]));
+          configurations.chosenDrive = confMap['chosenDrive'];
+          configurations.controllerFreq =
+              TextEditingController(text: confMap['controllerFreq']);
+          configurations.saveRaw = confMap['saveRaw'];
+
+          //configurations = auxConf;
+          //configurations.notifyConfigListeners();
+          //configurations.controllerFreq = TextEditingController(text: '1000');
+        }
+      } catch (e) {
+        print(e);
+      }
+    }
+  });
+}
+
+void saveConfigurations(Configurations configurations,
+    ValueNotifier<List<String>> driveListNotifier) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  List<String> listConfigurations = [
+    'bit1Selections',
+    'bit2Selections',
+    'configDefault',
+    'controllerSensors',
+    'chosenDrive',
+    'controllerFreq',
+    'saveRaw'
+  ];
+  Map<String, dynamic> confMap =
+      Map<String, dynamic>.fromIterable(listConfigurations,
+          key: (item) => item,
+          value: (item) {
+            if (item == 'controllerSensors')
+              return List.generate(
+                  12, (i) => configurations.controllerSensors[i].text);
+            else if (item == 'controllerFreq')
+              return configurations.controllerFreq.text;
+            else
+              return configurations.get(item);
+          });
+  confMap['driveList'] = driveListNotifier.value;
+  await prefs.setString('configurations', json.encode(confMap));
+}
+
+void removeSharedPrefs(String key) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  prefs.remove(key);
 }
 
 // ANNOTATIONS

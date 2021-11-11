@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:math';
-
 import 'package:epibox/classes/acquisition.dart';
 import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/visualization.dart';
@@ -46,9 +44,7 @@ class VisualizationPage extends StatefulWidget {
 }
 
 class _VisualizationPageState extends State<VisualizationPage> {
-  List<List<double>> bufferData = [];
-
-  final plotHeight = 160.0;
+  final plotHeight = 200.0;
   int buffer = 100;
   Timer _timer;
 
@@ -70,10 +66,11 @@ class _VisualizationPageState extends State<VisualizationPage> {
 
     listeners['dataMAC'] = () {
       if (this.mounted) {
-        if (!_rangeInitiated && widget.visualizationMAC.sensorsMAC.isNotEmpty) {
-          _initRange(widget.visualizationMAC.sensorsMAC);
+        if (!_rangeInitiated && widget.visualizationMAC.dataMAC.isNotEmpty) {
           screenWidth = MediaQuery.of(context).size.width;
+          _initRange(widget.visualizationMAC.sensorsMAC);
           startTimer();
+          _rangeInitiated = true;
         }
 
         List<List<double>> auxListData =
@@ -87,20 +84,17 @@ class _VisualizationPageState extends State<VisualizationPage> {
                 List.filled(widget.visualizationMAC.dataMAC.length, []);
 
             auxData = newSamples.map((d) => d as double).toList();
-            print('aux data len: ${auxData.length}');
           } else {
             auxData = widget.visualizationMAC.data2Plot[index] +
                 newSamples.map((d) => d as double).toList();
-            print('aux data len: ${auxData.length}');
           }
 
-          if (auxData.length > screenWidth) {
-            int start = min(buffer, auxData.length - screenWidth.floor());
+          if (auxData.length > screenWidth.toInt()) {
+            // int start = min(buffer, auxData.length - screenWidth.floor());
+            int start = auxData.length - screenWidth.floor();
             auxListData[index] = auxData.sublist(start);
-            print('auxListData len: ${auxListData[0].length}');
           } else {
             auxListData[index] = auxData;
-            print('auxListData len: ${auxListData[0].length}');
           }
 
           if (widget.visualizationMAC.rangesList[index][2] == 0) {
@@ -118,9 +112,11 @@ class _VisualizationPageState extends State<VisualizationPage> {
           }
         });
         widget.visualizationMAC.data2Plot = List.from(auxListData);
+        // widget.visualizationMAC.series2Plot = widget.visualizationMAC.data2Plot
+        //     .map((d) => data2Series(d, widget.configurations))
+        //     .toList();
       }
     };
-
     widget.startupError.addListener(listeners['startupError']);
     widget.timedOut.addListener(listeners['timedOut']);
     widget.visualizationMAC.addListener(listeners['dataMAC'], ['dataMAC']);
@@ -140,9 +136,24 @@ class _VisualizationPageState extends State<VisualizationPage> {
       if (widget.visualizationMAC.data2Plot.isNotEmpty &&
           widget.acquisition.acquisitionState == 'acquiring') {
         widget.visualizationMAC.refresh = true;
-        print('data2plot len: ${widget.visualizationMAC.data2Plot.length}');
+        //print(widget.visualizationMAC.series2Plot[0].map((e) => e));
       }
     });
+  }
+
+  void _initRange(sensorsMAC) {
+    for (int i = 0; i < sensorsMAC.length; i++) {
+      List<double> auxRangesList;
+      if (widget.configurations.saveRaw) {
+        auxRangesList = [-1, 10, 0];
+      } else {
+        auxRangesList = _getRangeFromSensor(sensorsMAC[i]);
+      }
+      List<List<double>> auxList =
+          List.from(widget.visualizationMAC.rangesList);
+      auxList[i] = auxRangesList;
+      widget.visualizationMAC.rangesList = List.from(auxList);
+    }
   }
 
   List<double> _getRangeFromSensor(sensor) {
@@ -164,22 +175,6 @@ class _VisualizationPageState extends State<VisualizationPage> {
       yRange = [-1, 10, 0];
     }
     return yRange;
-  }
-
-  void _initRange(sensorsMAC) {
-    for (int i = 0; i < sensorsMAC.length; i++) {
-      List<double> auxRangesList;
-      if (widget.configurations.saveRaw) {
-        auxRangesList = [-1, 10, 0];
-      } else {
-        auxRangesList = _getRangeFromSensor(sensorsMAC[i]);
-      }
-      List<List<double>> auxList =
-          List.from(widget.visualizationMAC.rangesList);
-      auxList[i] = auxRangesList;
-      widget.visualizationMAC.rangesList = List.from(auxList);
-    }
-    _rangeInitiated = true;
   }
 
   bool _rangeUpdateNeeded(List<double> data, List<double> currentRange) {
@@ -215,7 +210,6 @@ class _VisualizationPageState extends State<VisualizationPage> {
 
   @override
   Widget build(BuildContext context) {
-    print('rebuilding VisualizationPage');
     return PropertyChangeProvider(
       value: widget.visualizationMAC,
       child: ListView(
@@ -228,28 +222,29 @@ class _VisualizationPageState extends State<VisualizationPage> {
                   if (visualization.dataMAC.isEmpty) {
                     return Container();
                   } else {
-                    return Column(
-                        children: visualization.data2Plot
-                            .mapIndexed((data, i) {
-                              if (data.isNotEmpty) {
-                                return [
-                                  PlotDataTitle(
-                                      channels: visualization.channelsMAC[i],
-                                      sensor: visualization.sensorsMAC[i]),
-                                  PlotData(
-                                    data: data,
-                                    yRange: visualization.rangesList[i]
-                                        .sublist(0, 2),
-                                    plotHeight: plotHeight,
-                                    startTime: startTime,
-                                    secondsSinceStart: secondsSinceStart,
-                                    configurations: widget.configurations,
-                                  )
-                                ];
-                              }
-                            })
-                            .expand((k) => k)
-                            .toList());
+                    if (visualization.data2Plot[0].isEmpty) {
+                      return Container();
+                    } else
+                      return Column(
+                          children: visualization.data2Plot
+                              .mapIndexed((data, i) {
+                                if (data.isNotEmpty) {
+                                  return [
+                                    PlotDataTitle(
+                                        channels: visualization.channelsMAC[i],
+                                        sensor: visualization.sensorsMAC[i]),
+                                    PlotData(
+                                      data: data,
+                                      plotHeight: plotHeight,
+                                      configurations: widget.configurations,
+                                      yRange: visualization.rangesList[i]
+                                          .sublist(0, 2),
+                                    )
+                                  ];
+                                }
+                              })
+                              .expand((k) => k)
+                              .toList());
                   }
                 }),
             SizedBox(height: 40.0),
@@ -284,16 +279,16 @@ class PlotData extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.only(bottom: 20.0),
           child: Row(children: [
-            Padding(
-              padding: EdgeInsets.only(left: 5.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('${yRange[1].ceil()}'),
-                  Text('${yRange[0].floor()}')
-                ],
-              ),
-            ),
+            // Padding(
+            //   padding: EdgeInsets.only(left: 5.0),
+            //   child: Column(
+            //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //     children: [
+            //       Text('${yRange[1].ceil()}'),
+            //       Text('${yRange[0].floor()}')
+            //     ],
+            //   ),
+            // ),
             Expanded(
               child: Oscilloscope(
                 yAxisMax: yRange[1],

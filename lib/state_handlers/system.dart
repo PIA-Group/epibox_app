@@ -35,6 +35,7 @@ Future<void> restart(
 
     saveBatteries(null, null);
     saveMAC('xx:xx:xx:xx:xx:xx', 'xx:xx:xx:xx:xx:xx');
+    removeSharedPrefs('configurations');
   }
   Future.delayed(Duration.zero).then((value) {
     devices.macAddress1Connection = 'disconnected';

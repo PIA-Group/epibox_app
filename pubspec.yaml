@@ -31,6 +31,7 @@ dependencies:
   material_design_icons_flutter: ^4.0.5655
   flutter_local_notifications: ^3.0.1+4
   property_change_notifier: ^0.2.0
+  path_provider: ^1.6.28
   
 
 flutter_icons:

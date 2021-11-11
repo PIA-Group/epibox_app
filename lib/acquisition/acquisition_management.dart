@@ -21,6 +21,7 @@ Future<void> startAcquisition({
   Visualization visualizationMAC2,
   ValueNotifier<List<String>> historyMAC,
   ValueNotifier<String> patientNotifier,
+  ValueNotifier<List<String>> driveListNotifier,
 }) async {
   if (connectionNotifier.value != MqttCurrentConnectionState.CONNECTED ||
       (devices.isBit1Enabled && devices.macAddress1Connection != 'connected') ||
@@ -48,15 +49,15 @@ Future<void> startAcquisition({
 
     visualizationMAC1.channelsMAC = _channels[1][0];
     visualizationMAC1.sensorsMAC = _channels[2][0];
-    visualizationMAC1.data2Plot = List.filled(
-        configurations.bit1Selections.where((item) => item).length, [],
-        growable: true);
+    // visualizationMAC1.data2Plot = List.filled(
+    //     configurations.bit1Selections.where((item) => item).length, [],
+    //     growable: true);
 
     visualizationMAC2.channelsMAC = _channels[1][1];
     visualizationMAC2.sensorsMAC = _channels[2][1];
-    visualizationMAC2.data2Plot = List.filled(
-        configurations.bit2Selections.where((item) => item).length, [],
-        growable: true);
+    // visualizationMAC2.data2Plot = List.filled(
+    //     configurations.bit2Selections.where((item) => item).length, [],
+    //     growable: true);
 
     mqttClientWrapper.publishMessage("['START']");
 
@@ -64,6 +65,7 @@ Future<void> startAcquisition({
     saveMACHistory(devices.macAddress1, devices.macAddress2, historyMAC);
     saveChannels(visualizationMAC1.channelsMAC, visualizationMAC2.channelsMAC);
     saveSensors(visualizationMAC1.sensorsMAC, visualizationMAC2.sensorsMAC);
+    saveConfigurations(configurations, driveListNotifier);
   }
 }
 
@@ -93,7 +95,8 @@ List<List> _getChannels(Configurations configurations, Devices devices) {
       ]);
       _channels2Save[1]
           .add(["${devices.macAddress2}", "${(channel + 1).toString()}"]);
-      _sensors2Save[1].add("${configurations.controllerSensors[channel + 5].text}");
+      _sensors2Save[1]
+          .add("${configurations.controllerSensors[channel + 5].text}");
     }
   });
   return [_channels2Send, _channels2Save, _sensors2Save];
