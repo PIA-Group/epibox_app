@@ -219,8 +219,11 @@ class _DevicesPageState extends State<DevicesPage> {
                         (devices.macAddress2.trim() != '' &&
                             devices.macAddress2.trim() != 'xx:xx:xx:xx:xx:xx'))
                       return CustomTooltip(
-                        message:
-                            'Para conectar um dos dispositivos, pressione a caixa correspondente',
+                        message: AppLocalizations.of(context)
+                                .translate(
+                                    'to connect one of the devices, press the corresponding box')
+                                .inCaps +
+                            '.',
                         tooltipKey: connectDevicesKey,
                       );
                     else
@@ -367,10 +370,10 @@ class DeviceStateConnectionBlock extends StatelessWidget {
         MediaQuery.of(context).viewInsets.right;
 
     const Map<String, String> _connectionStateText = {
-      'connected': 'dispositivo conectado!',
-      'connecting': 'A conectar...',
-      'failed': 'falha na conexão',
-      'other': 'dispositivo desconectado',
+      'connected': 'device connected!',
+      'connecting': 'connecting...',
+      'failed': 'connection failed',
+      'other': 'device disconnected',
     };
 
     const Map<String, Widget> _connectionStateIcon = {

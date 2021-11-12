@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:epibox/app_localizations.dart';
 import 'package:epibox/classes/acquisition.dart';
 import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/visualization.dart';
@@ -277,21 +278,24 @@ class PlotData extends StatelessWidget {
       child: Container(
         height: double.infinity,
         child: Padding(
-          padding: EdgeInsets.only(bottom: 20.0),
-          child: Row(children: [
-            Padding(
-              padding: EdgeInsets.only(left: 5.0),
-              child: SizedBox(
-                width: 10,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('${yRange[1].ceil()}'),
-                    Text('${yRange[0].floor()}')
-                  ],
-                ),
-              ),
+          padding: EdgeInsets.fromLTRB(5.0, 0.0, 0.0, 20.0),
+          child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+            // SizedBox(
+            //   width: 30,
+            // child:
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('${yRange[1].ceil()}',
+                    style: MyTextStyle(
+                        color: DefaultColors.textColorOnLight, fontSize: 13)),
+                Text('${yRange[0].floor()}',
+                    style: MyTextStyle(
+                        color: DefaultColors.textColorOnLight, fontSize: 13))
+              ],
             ),
+            //),
             Expanded(
               child: Oscilloscope(
                 yAxisMax: yRange[1],
@@ -319,7 +323,7 @@ class PlotDataTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Text(
-        'Canal: A${channels[1]} | $sensor',
+        '${AppLocalizations.of(context).translate('channel').inCaps}: A${channels[1]} | $sensor',
         style: MyTextStyle(
             fontWeight: FontWeight.bold, color: DefaultColors.textColorOnLight),
       ),

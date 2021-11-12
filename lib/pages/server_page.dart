@@ -85,7 +85,7 @@ class _ServerPageState extends State<ServerPage> {
                         TextSpan(
                             text: AppLocalizations.of(context)
                                     .translate(
-                                        'to connect to the server and (re-)start the process, press')
+                                        'to connect to the server and (re)start the process, press')
                                     .inCaps +
                                 ' ',
                             style: MyTextStyle(
@@ -98,8 +98,10 @@ class _ServerPageState extends State<ServerPage> {
                                 color: DefaultColors.textColorOnLight)),
                         TextSpan(
                             text: '. ' +
-                                AppLocalizations.of(context).translate(
-                                    'this will initiate all necessary procedures to start the data acquisition') +
+                                AppLocalizations.of(context)
+                                    .translate(
+                                        'this will initiate all necessary procedures to start the data acquisition')
+                                    .inCaps +
                                 '!',
                             style: MyTextStyle(
                                 color: DefaultColors.textColorOnLight)),
@@ -165,7 +167,7 @@ class _ServerPageState extends State<ServerPage> {
                       children: [
                         TextSpan(
                             text: AppLocalizations.of(context)
-                                .translate('n case you are')
+                                .translate('in case you are')
                                 .inCaps,
                             style: MyTextStyle(
                                 color: DefaultColors.textColorOnLight)),
@@ -182,7 +184,8 @@ class _ServerPageState extends State<ServerPage> {
                                 AppLocalizations.of(context)
                                     .translate(
                                         'as a last resort, turn the RPi off and turn it on again')
-                                    .inCaps,
+                                    .inCaps +
+                                '.',
                             style: MyTextStyle(
                               color: DefaultColors.textColorOnLight,
                             )),

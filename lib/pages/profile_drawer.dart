@@ -144,7 +144,7 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                   width - 0.9 * width, 20, width - 0.9 * width, 0.0),
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  primary: Colors.grey[200], // background
+                  primary: Colors.white, // background
                   onPrimary: Colors.grey[600], // foreground
                 ),
                 label: Text(
@@ -169,7 +169,7 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                   width - 0.9 * width, 5, width - 0.9 * width, 0.0),
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  primary: Colors.grey[200], // background
+                  primary: Colors.white, // background
                   onPrimary: Colors.grey[600], // foreground
                 ),
                 label: Text(
@@ -226,23 +226,6 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                               setState(() {
                                 _radioValue = value;
                                 widget.devices.type = 'Mini';
-                                _updateDeviceType();
-                              });
-                            }),
-                      ]),
-                  Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Text('Sense',
-                            style: MyTextStyle(
-                                color: DefaultColors.textColorOnLight)),
-                        Radio(
-                            value: 2,
-                            groupValue: _radioValue,
-                            onChanged: (int value) {
-                              setState(() {
-                                _radioValue = value;
-                                widget.devices.type = 'Sense';
                                 _updateDeviceType();
                               });
                             }),

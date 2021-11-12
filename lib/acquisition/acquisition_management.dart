@@ -119,7 +119,7 @@ void pauseAcquisition({
   if (acquisition.acquisitionState != 'acquiring') {
     errorHandler.overlayInfo = {
       'overlayMessage': NotAcquiringOverlay(),
-      'timer': null,
+      'timer': 2,
       'showOverlay': true
     };
   } else {
@@ -139,7 +139,7 @@ Future<void> speedAnnotation({
   if (acquisition.acquisitionState != 'acquiring') {
     errorHandler.overlayInfo = {
       'overlayMessage': NotAcquiringOverlay(),
-      'timer': null,
+      'timer': 2,
       'showOverlay': true
     };
   } else {

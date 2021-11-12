@@ -36,7 +36,7 @@ class Oscilloscope extends StatefulWidget {
       {this.traceColor = Colors.blue,
       this.backgroundColor: Colors.white,
       this.yAxisColor: Colors.black,
-      this.padding = 10.0,
+      this.padding = 5.0,
       this.yAxisMax = 1.0,
       this.yAxisMin = -1.0,
       this.showCanvas = true,
@@ -57,7 +57,7 @@ class _OscilloscopeState extends State<Oscilloscope> {
     return LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
       return Padding(
-        padding: EdgeInsets.symmetric(horizontal: 5.0),
+        padding: EdgeInsets.symmetric(horizontal: widget.padding),
         child: Container(
           decoration: BoxDecoration(
               color: widget.backgroundColor,
