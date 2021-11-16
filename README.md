@@ -19,7 +19,7 @@ EpiBOX app is a user-friendly interface to configure, start, visualize, pause an
 - Real-time visualization of up-to 12 channels
 - In-acquisition annotations
 
-![](images/intro-resized.gif) ![](images/conf-resized.gif) ![](images/acquisition-resized.gif)
+![](images/intro.gif) ![](images/conf.gif) ![](images/acquisition.gif)
 
 ## Additional Resources
 
