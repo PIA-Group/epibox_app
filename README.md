@@ -31,7 +31,7 @@ Why BITalino:
 Why Raspberry Pi:
  - Discreteness
  - Affordability 
- - Ease of system replication - through shell script or Docker (soon!)
+ - Ease of system replication - through shell script or RPi imager
  - Computational and storage power
 
 Get to know our project @ [LinkedIn - PreEpiSeizures](https://www.linkedin.com/feed/update/urn:li:activity:6787017108631941120/)
