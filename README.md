@@ -1,11 +1,15 @@
-# EpiBOX app
-## Sharing the burden of data collection
+# EpiBOX, the Mobile App
+## A Research Tool to Stimulate Collaboration Within Biosignal Collection
 
-EpiBOX is a user-friendly solution for long-term monitorings, enabling researchers to delegate the task of data collection to less proficient individuals.
+EpiBOX was developed as a way to enable researchers to escalate their data collection process by leveraging the human resources available. By providing a versatile, discreet, user-friendly and open-source system, operated through a mobile application, we hope to enable researchers to delegate the task of data collection to less proficient individuals.
 
 EpiBOX app is a user-friendly interface to configure, start, visualize, pause and stop acquisitions with wearable devices. Currently, EpiBOX supports BITalino-based equipments allowing for the recording, storage and visualization of up to 12 channels simmultaneously. 
 
-This mobile app is complementary to the Python package epibox (available @ [epibox (GitHub)](https://github.com/anascacais/epibox) and [epibox (PyPI)](https://pypi.org/project/epibox/)), designed for use with a Raspberry Pi.
+[currently available for Android OS only]
+
+## Requirements
+- This mobile app is complementary to the Python package epibox (available @ [epibox (GitHub)](https://github.com/anascacais/epibox) and [epibox (PyPI)](https://pypi.org/project/epibox/))
+- It also requires a Raspberry Pi set up as a wireless access point and MQTT broker in order to ensure communication between the mobile app and the recording unit (RPi itself or another Linux device).
 
 ## Features
 
