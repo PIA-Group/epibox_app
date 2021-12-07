@@ -112,7 +112,7 @@ class _ConfigPageState extends State<ConfigPage> {
 
       // Save raw
       widget.configurations.saveRaw =
-          widget.configurations.configDefault['saveRaw'] == 'true';
+          widget.configurations.configDefault['save_raw'] == 'true';
 
       // Channels & sensors
       _getDefaultChannels(widget.configurations.configDefault['channels']);
@@ -220,7 +220,7 @@ class _ConfigPageState extends State<ConfigPage> {
         .substring(0, widget.configurations.chosenDrive.indexOf('('))
         .trim();
     widget.mqttClientWrapper.publishMessage(
-        "['NEW CONFIG DEFAULT', ['$_newDefaultDrive', ${widget.configurations.controllerFreq.text}, $_channels2Send, '${widget.configurations.saveRaw}']]");
+        "['NEW CONFIG DEFAULT', {'initial_dir': '$_newDefaultDrive', 'fs': ${widget.configurations.controllerFreq.text}, 'channels': $_channels2Send, 'save_raw': '${widget.configurations.saveRaw}', 'service': '${widget.devices.type}'}]");
   }
 
   @override
