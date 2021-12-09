@@ -195,7 +195,8 @@ class _ConfigPageState extends State<ConfigPage> {
     widget.configurations.bit1Selections.asMap().forEach((channel, value) {
       if (value) {
         _channels2Send.add([
-          "'${widget.devices.macAddress1}'",
+          // "'${widget.devices.macAddress1}'",
+          "'MAC1'",
           "'${(channel + 1).toString()}'",
           "'${widget.configurations.controllerSensors[channel].text}'"
         ]);
@@ -205,7 +206,8 @@ class _ConfigPageState extends State<ConfigPage> {
     widget.configurations.bit2Selections.asMap().forEach((channel, value) {
       if (value) {
         _channels2Send.add([
-          "'${widget.devices.macAddress2}'",
+          // "'${widget.devices.macAddress2}'",
+          "'MAC2'",
           "'${(channel + 1).toString()}'",
           "'${widget.configurations.controllerSensors[channel + 5].text}'"
         ]);

@@ -418,54 +418,54 @@ class DeviceStateConnectionBlock extends StatelessWidget {
                   ),
                   child: Material(
                     color: Colors.white.withOpacity(0.0),
-                    child: InkWell(
-                      key: Key('connectDeviceButton$deviceID'),
-                      onTap: () {
-                        if (connectionNotifier.value !=
-                            MqttCurrentConnectionState.CONNECTED) {
-                          errorHandler.overlayInfo = {
-                            'overlayMessage': DevicesCustomOverlay(),
-                            'timer': 2,
-                            'showOverlay': true
-                          };
-                        } else {
-                          deviceID == 1
-                              ? devices.macAddress1Connection = 'connecting'
-                              : devices.macAddress2Connection = 'connecting';
-                          mqttClientWrapper.publishMessage(
-                              "['CONNECT', '${devices.get('macAddress$deviceID')}', '${devices.type}']");
-                        }
-                      },
-                      child: Container(
-                        child: ListTile(
-                          leading: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                _connectionStateIcon.containsKey(devices
-                                        .get('macAddress${deviceID}Connection'))
-                                    ? _connectionStateIcon[devices
+                    // child: InkWell(
+                    //   key: Key('connectDeviceButton$deviceID'),
+                    //   onTap: () {
+                    //     if (connectionNotifier.value !=
+                    //         MqttCurrentConnectionState.CONNECTED) {
+                    //       errorHandler.overlayInfo = {
+                    //         'overlayMessage': DevicesCustomOverlay(),
+                    //         'timer': 2,
+                    //         'showOverlay': true
+                    //       };
+                    //     } else {
+                    //       deviceID == 1
+                    //           ? devices.macAddress1Connection = 'connecting'
+                    //           : devices.macAddress2Connection = 'connecting';
+                    //       mqttClientWrapper.publishMessage(
+                    //           "['CONNECT', '${devices.get('macAddress$deviceID')}', '${devices.type}']");
+                    //     }
+                    //   },
+                    child: Container(
+                      child: ListTile(
+                        leading: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _connectionStateIcon.containsKey(devices
+                                      .get('macAddress${deviceID}Connection'))
+                                  ? _connectionStateIcon[devices
+                                      .get('macAddress${deviceID}Connection')]
+                                  : _connectionStateIcon['other'],
+                            ]),
+                        title: Text(devices.get('macAddress$deviceID'),
+                            style: MyTextStyle(
+                                color: DefaultColors.textColorOnLight,
+                                fontWeight: FontWeight.bold)),
+                        subtitle: Text(
+                            AppLocalizations.of(context)
+                                .translate(_connectionStateText.containsKey(
+                                        devices.get(
+                                            'macAddress${deviceID}Connection'))
+                                    ? _connectionStateText[devices
                                         .get('macAddress${deviceID}Connection')]
-                                    : _connectionStateIcon['other'],
-                              ]),
-                          title: Text(devices.get('macAddress$deviceID'),
-                              style: MyTextStyle(
-                                  color: DefaultColors.textColorOnLight,
-                                  fontWeight: FontWeight.bold)),
-                          subtitle: Text(
-                              AppLocalizations.of(context)
-                                  .translate(_connectionStateText.containsKey(
-                                          devices.get(
-                                              'macAddress${deviceID}Connection'))
-                                      ? _connectionStateText[devices.get(
-                                          'macAddress${deviceID}Connection')]
-                                      : _connectionStateText['other'])
-                                  .inCaps,
-                              key: Key('connectionStateText$deviceID'),
-                              style: MyTextStyle(
-                                  color: DefaultColors.textColorOnLight)),
-                        ),
+                                    : _connectionStateText['other'])
+                                .inCaps,
+                            key: Key('connectionStateText$deviceID'),
+                            style: MyTextStyle(
+                                color: DefaultColors.textColorOnLight)),
                       ),
                     ),
+                    // ),
                   ),
                 ),
         );

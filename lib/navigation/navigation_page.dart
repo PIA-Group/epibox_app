@@ -149,12 +149,12 @@ class _NavigationPageState extends State<NavigationPage>
 
     getAnnotationTypes(annotationTypesD);
     getLastDeviceType(devices);
-    getLastMAC(devices);
-    getLastChannels(visualizationMAC1, visualizationMAC2);
-    getLastSensors(visualizationMAC1, visualizationMAC2);
+    // getLastMAC(devices);
+    // getLastChannels(visualizationMAC1, visualizationMAC2);
+    // getLastSensors(visualizationMAC1, visualizationMAC2);
     //getLastBatteries(acquisition);
     getMACHistory(historyMAC);
-    getLastConfigurations(configurations, driveListNotifier);
+    // getLastConfigurations(configurations, driveListNotifier);
 
     initialized = initialize();
   }
