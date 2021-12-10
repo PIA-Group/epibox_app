@@ -11,7 +11,8 @@ class SystemCustomOverlay extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 10),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Text(
-            AppLocalizations.of(context).translate('RPi turned off') + '!',
+            AppLocalizations.of(context).translate('EpiBOX Core turned off') +
+                '!',
             textAlign: TextAlign.center,
             style: MyTextStyle(
                 color: DefaultColors.textColorOnLight, fontSize: 20),

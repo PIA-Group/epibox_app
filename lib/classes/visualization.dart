@@ -2,8 +2,8 @@ import 'package:property_change_notifier/property_change_notifier.dart';
 
 class Visualization extends PropertyChangeNotifier<String> {
   List<List> _dataMAC = [];
-  List _sensorsMAC = [];
-  List<List> _channelsMAC = [];
+  List _sensorsMAC = List.filled(6, []);
+  List<List> _channelsMAC = List.filled(6, []);
   List<List<double>> _data2Plot = [];
   bool _refresh = false;
   List<List<double>> _rangesList = List.filled(6, [-1, 10, 1]);

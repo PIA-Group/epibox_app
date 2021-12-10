@@ -77,6 +77,7 @@ class _NavigationPageState extends State<NavigationPage>
   Future<bool> initialized;
 
   Map<String, Function> listeners = {
+    'navigationIndex': null,
     'connectionNotifier': null,
     'shouldRestart': null,
     'acquisitionState': null,
@@ -88,6 +89,15 @@ class _NavigationPageState extends State<NavigationPage>
   void initState() {
     super.initState();
 
+    listeners['navigationIndex'] = () {
+      if (_navigationIndex.value != 3)
+        errorHandler.overlayInfo = {
+          'overlayMessage': errorHandler.overlayInfo['overlayMessage'],
+          'timer': errorHandler.overlayInfo['timer'],
+          'showOverlay': false
+        };
+    };
+
     listeners['connectionNotifier'] = () {
       serverConnectionHandler(context, connectionNotifier, errorHandler);
     };
@@ -97,7 +107,8 @@ class _NavigationPageState extends State<NavigationPage>
             configurations, driveListNotifier);
     };
     listeners['acquisitionState'] = () {
-      acquisitionStateHandler(context, acquisition, errorHandler);
+      if (_navigationIndex.value == 3)
+        acquisitionStateHandler(context, acquisition, errorHandler);
     };
     listeners['dataMAC'] = () {
       visualizationMAC1.dataMAC = acquisition.dataMAC1;
@@ -117,6 +128,7 @@ class _NavigationPageState extends State<NavigationPage>
       }
     };
 
+    _navigationIndex.addListener(listeners['navigationIndex']);
     connectionNotifier.addListener(listeners['connectionNotifier']);
     shouldRestart.addListener(listeners['shouldRestart']);
     acquisition
@@ -149,12 +161,7 @@ class _NavigationPageState extends State<NavigationPage>
 
     getAnnotationTypes(annotationTypesD);
     getLastDeviceType(devices);
-    // getLastMAC(devices);
-    // getLastChannels(visualizationMAC1, visualizationMAC2);
-    // getLastSensors(visualizationMAC1, visualizationMAC2);
-    //getLastBatteries(acquisition);
     getMACHistory(historyMAC);
-    // getLastConfigurations(configurations, driveListNotifier);
 
     initialized = initialize();
   }
@@ -162,6 +169,7 @@ class _NavigationPageState extends State<NavigationPage>
   @override
   void dispose() {
     timer?.cancel();
+    _navigationIndex.removeListener(listeners['navigationIndex']);
     connectionNotifier.removeListener(listeners['connectionNotifier']);
     shouldRestart.removeListener(listeners['shouldRestart']);
     acquisition
