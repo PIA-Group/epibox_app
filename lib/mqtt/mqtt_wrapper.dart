@@ -61,7 +61,7 @@ class MQTTClientWrapper {
   void _setupMqttClient() {
     client = MqttServerClient.withPort(Constants.hostname, '#1', 1883);
     client.logging(on: false);
-    client.autoReconnect = true;
+    client.autoReconnect = false;
     client.onAutoReconnect = _onReconnect;
     client.onAutoReconnected = _onReconnected;
     client.resubscribeOnAutoReconnect = true;

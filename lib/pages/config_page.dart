@@ -1,6 +1,7 @@
 import 'package:epibox/app_localizations.dart';
 import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/devices.dart';
+import 'package:epibox/classes/visualization.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
 import 'package:epibox/mqtt/mqtt_states.dart';
@@ -12,7 +13,8 @@ import 'package:property_change_notifier/property_change_notifier.dart';
 class ConfigPage extends StatefulWidget {
   final Devices devices;
   final Configurations configurations;
-
+  final Visualization visualizationMAC1;
+  final Visualization visualizationMAC2;
   final MQTTClientWrapper mqttClientWrapper;
   final ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
   final ValueNotifier<List<String>> driveListNotifier;
@@ -20,6 +22,8 @@ class ConfigPage extends StatefulWidget {
   ConfigPage({
     this.configurations,
     this.devices,
+    this.visualizationMAC1,
+    this.visualizationMAC2,
     this.mqttClientWrapper,
     this.connectionNotifier,
     this.driveListNotifier,
@@ -117,6 +121,15 @@ class _ConfigPageState extends State<ConfigPage> {
       // Channels & sensors
       _getDefaultChannels(widget.configurations.configDefault['channels']);
       _getDefaultSensors(widget.configurations.configDefault['channels']);
+
+      List<List> _channels =
+          _getChannels(widget.configurations, widget.devices);
+
+      widget.visualizationMAC1.channelsMAC = _channels[1][0];
+      widget.visualizationMAC1.sensorsMAC = _channels[2][0];
+
+      widget.visualizationMAC2.channelsMAC = _channels[1][1];
+      widget.visualizationMAC2.sensorsMAC = _channels[2][1];
     };
     listeners['macAddress1'] = () {
       if (widget.devices.macAddress1 == '' ||
@@ -149,6 +162,40 @@ class _ConfigPageState extends State<ConfigPage> {
     widget.configurations.addListener(() {}, ['controllerFreq']);
   }
 
+  List<List> _getChannels(Configurations configurations, Devices devices) {
+    List<List<String>> _channels2Send = [];
+    List<List<List<String>>> _channels2Save = [[], []];
+    List<List<String>> _sensors2Save = [[], []];
+
+    configurations.bit1Selections.asMap().forEach((channel, value) {
+      if (value) {
+        _channels2Send.add([
+          "'${devices.macAddress1}'",
+          "'${(channel + 1).toString()}'",
+          "'${configurations.controllerSensors[channel].text}'"
+        ]);
+        _channels2Save[0]
+            .add(["${devices.macAddress1}", "${(channel + 1).toString()}"]);
+        _sensors2Save[0]
+            .add("${configurations.controllerSensors[channel].text}");
+      }
+    });
+    configurations.bit2Selections.asMap().forEach((channel, value) {
+      if (value) {
+        _channels2Send.add([
+          "'${devices.macAddress2}'",
+          "'${(channel + 1).toString()}'",
+          "'${configurations.controllerSensors[channel + 5].text}'"
+        ]);
+        _channels2Save[1]
+            .add(["${devices.macAddress2}", "${(channel + 1).toString()}"]);
+        _sensors2Save[1]
+            .add("${configurations.controllerSensors[channel + 5].text}");
+      }
+    });
+    return [_channels2Send, _channels2Save, _sensors2Save];
+  }
+
   @override
   void dispose() {
     widget.configurations
@@ -164,10 +211,10 @@ class _ConfigPageState extends State<ConfigPage> {
     List<bool> _aux2Selections = List.generate(6, (_) => false);
 
     channels.forEach((triplet) {
-      if (triplet[0] == widget.devices.defaultMacAddress1) {
+      if (triplet[0] == 'MAC1') {
         _aux1Selections[int.parse(triplet[1]) - 1] = true;
       }
-      if (triplet[0] == widget.devices.defaultMacAddress2) {
+      if (triplet[0] == 'MAC2') {
         _aux2Selections[int.parse(triplet[1]) - 1] = true;
       }
     });
@@ -179,11 +226,11 @@ class _ConfigPageState extends State<ConfigPage> {
     //List<String>
 
     channels.forEach((triplet) {
-      if (triplet[0] == widget.devices.defaultMacAddress1) {
+      if (triplet[0] == 'MAC1') {
         widget.configurations.controllerSensors[int.parse(triplet[1]) - 1]
             .text = triplet[2];
       }
-      if (triplet[0] == widget.devices.defaultMacAddress2) {
+      if (triplet[0] == 'MAC2') {
         widget.configurations.controllerSensors[int.parse(triplet[1]) + 5]
             .text = triplet[2];
       }

@@ -1,6 +1,8 @@
 import 'package:epibox/classes/acquisition.dart';
 import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/devices.dart';
+import 'package:epibox/mqtt/connection_manager.dart';
+import 'package:epibox/mqtt/mqtt_states.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'package:epibox/shared_pref/pref_handler.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +10,7 @@ import 'package:flutter/material.dart';
 Future<void> restart(
     String restart,
     MQTTClientWrapper mqttClientWrapper,
+    ValueNotifier<MqttCurrentConnectionState> connectionNotifier,
     Devices devices,
     Acquisition acquisition,
     Configurations configurations,
@@ -28,6 +31,8 @@ Future<void> restart(
 
     devices.isBit1Enabled = false;
     devices.isBit2Enabled = false;
+
+    await setup(mqttClientWrapper, connectionNotifier);
   } else if (restart == 'medium') {
     mqttClientWrapper.publishMessage("['RESTART']");
     acquisition.batteryBit1 = null;

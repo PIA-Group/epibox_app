@@ -30,7 +30,6 @@ dependencies:
   mqtt_client: ^9.0.0
   shared_preferences: ^0.5.12
   flutter_launcher_icons: ^0.9.2
-  barcode_scan: ^3.0.1
   material_design_icons_flutter: ^4.0.5655
   flutter_local_notifications: ^3.0.1+4
   property_change_notifier: ^0.2.0

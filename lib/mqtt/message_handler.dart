@@ -157,7 +157,6 @@ void isData(List message2List, Devices devices, Acquisition acquisition) {
   List<List> dataMAC2 = [];
 
   message2List[2].asMap().forEach((index, channel) {
-    print(message2List);
     if (channel[0] == devices.macAddress1) {
       dataMAC1.add(message2List[1][index]);
     } else {

@@ -103,8 +103,8 @@ class _NavigationPageState extends State<NavigationPage>
     };
     listeners['shouldRestart'] = () {
       if (shouldRestart.value != null)
-        restart(shouldRestart.value, mqttClientWrapper, devices, acquisition,
-            configurations, driveListNotifier);
+        restart(shouldRestart.value, mqttClientWrapper, connectionNotifier,
+            devices, acquisition, configurations, driveListNotifier);
     };
     listeners['acquisitionState'] = () {
       if (_navigationIndex.value == 3)
@@ -311,6 +311,8 @@ class _NavigationPageState extends State<NavigationPage>
                           ),
                           ConfigPage(
                             devices: devices,
+                            visualizationMAC1: visualizationMAC1,
+                            visualizationMAC2: visualizationMAC2,
                             configurations: configurations,
                             mqttClientWrapper: mqttClientWrapper,
                             connectionNotifier: connectionNotifier,
