@@ -53,6 +53,7 @@ MQTTClientWrapper setupHome({
   ValueNotifier<bool> startupError,
   ValueNotifier<String> shouldRestart,
   ValueNotifier<MqttCurrentConnectionState> connectionNotifier,
+  ValueNotifier<String> patientNotifier,
 }) {
   // initiate MQTT client and message/state functions
   mqttClientWrapper = MQTTClientWrapper(
@@ -69,6 +70,7 @@ MQTTClientWrapper setupHome({
       startupError: startupError,
       errorHandler: errorHandler,
       shouldRestart: shouldRestart,
+      patientNotifier: patientNotifier,
     ),
     (newConnectionState) => updatedConnection(
         newConnectionState, connectionNotifier, shouldRestart),

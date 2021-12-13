@@ -1,4 +1,4 @@
-// import 'package:barcode_scan/barcode_scan.dart';
+import 'package:barcode_scan/barcode_scan.dart';
 import 'package:epibox/app_localizations.dart';
 import 'package:epibox/classes/devices.dart';
 import 'package:epibox/classes/error_handler.dart';
@@ -323,7 +323,7 @@ class SelectDevicesBlock extends StatelessWidget {
                     icon: Icon(
                       MdiIcons.qrcode,
                     ),
-                    onPressed: () => {}) //scan(entry.value))
+                    onPressed: () => scan(entry.value))
               ]),
             );
           }).toList(),
@@ -332,15 +332,15 @@ class SelectDevicesBlock extends StatelessWidget {
     );
   }
 
-  // Future scan(TextEditingController controller) async {
-  //   try {
-  //     var scan = (await BarcodeScanner.scan());
-  //     String scanString = scan.rawContent;
-  //     controller.text = scanString;
-  //   } on PlatformException catch (e) {
-  //     print(e);
-  //   }
-  // }
+  Future scan(TextEditingController controller) async {
+    try {
+      var scan = (await BarcodeScanner.scan());
+      String scanString = scan.rawContent;
+      controller.text = scanString;
+    } on PlatformException catch (e) {
+      print(e);
+    }
+  }
 }
 
 class DeviceStateConnectionBlock extends StatelessWidget {

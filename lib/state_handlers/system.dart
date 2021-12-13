@@ -16,7 +16,7 @@ Future<void> restart(
     Configurations configurations,
     ValueNotifier<List<String>> driveListNotifier) async {
   if (restart == 'full') {
-    mqttClientWrapper.publishMessage("['RESTART']");
+    //mqttClientWrapper.publishMessage("['RESTART']");
     await mqttClientWrapper.diconnectClient();
 
     devices.defaultMacAddress1 = 'xx:xx:xx:xx:xx:xx';

@@ -33,6 +33,8 @@
     "disconnected from the server": "desconectado do servidor",
     "don't know when it happened": "não sei quando ocorreu",
     
+    "EpiBOX Core has saved new defaults": "EpiBOX Core guardou os novos defaults",
+    "EpiBOX Core turned off": "EpiBOX Core desligado corretamente",
     "error during": "não foi possível",
     
     "flash annotation": "anotação rápida",
@@ -49,7 +51,6 @@
     "press the button to resume": "pressione o botão para retomar",
     
     "restart": "reiniciar",
-    "EpiBOX Core turned off": "EpiBOX Core desligado corretamente",
     
     "sampling freq.": "freq. amostragem",
     "save data raw": "guardar os dados em bruto",
@@ -69,6 +70,7 @@
     "to connect one of the devices, press the corresponding box": "para conectar um dos dispositivos, pressione a caixa correspondente",
     "to connect to the server and (re)start the process, press": "para conectar ao servidor e (re)iniciar o processo, clicar em",
     "to start the acquisitions, scan the patient's ID or type it below": "para iniciar as aquisições, faça scan do ID do paciente ou escreva em baixo",
+    "trying to connect to devices": "a tentar conectar ao(s) dispositivo(s)",
     "trying to resume the acquisition": "a tentar retomar a aquisição",
     "turn off RPi": "desligar RPi",
     

@@ -6,6 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
+Future<void> updateIdTemplate(String patientID) async {
+  print('new ID: $patientID');
+  await SharedPreferences.getInstance().then((prefs) async {
+    await prefs.setString('id_template', patientID);
+  });
+}
+
 // DEVICES
 
 void getLastMAC(Devices devices) async {

@@ -1,7 +1,8 @@
 import 'dart:async';
 
-// import 'package:barcode_scan/barcode_scan.dart';
+import 'package:barcode_scan/barcode_scan.dart';
 import 'package:epibox/app_localizations.dart';
+import 'package:epibox/shared_pref/pref_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -25,12 +26,12 @@ class _ScanPageState extends State<ScanPage> {
   initState() {
     super.initState();
     //var timeStamp = DateTime.now();
-    _getIdTemplate();
+    getIdTemplate();
     /* _idController.text =
         '${timeStamp.day}_${timeStamp.month}_${timeStamp.year}'; */
   }
 
-  void _getIdTemplate() async {
+  void getIdTemplate() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String _idTemplate;
     try {
@@ -39,12 +40,6 @@ class _ScanPageState extends State<ScanPage> {
     } catch (e) {
       print(e);
     }
-  }
-
-  Future<void> _updateIdTemplate() async {
-    await SharedPreferences.getInstance().then((prefs) async {
-      await prefs.setString('id_template', _idController.text);
-    });
   }
 
   @override
@@ -120,7 +115,7 @@ class _ScanPageState extends State<ScanPage> {
                           primary: DefaultColors.mainLColor, // background
                           //onPrimary: Colors.white, // foreground
                         ),
-                        onPressed: () => {}, //scan(widget.patientNotifier),
+                        onPressed: () => scan(widget.patientNotifier),
                         icon: Icon(
                           MdiIcons.qrcode,
                         ),
@@ -173,7 +168,7 @@ class _ScanPageState extends State<ScanPage> {
                               onPressed: () {
                                 setState(() => widget.patientNotifier.value =
                                     _idController.text.trim());
-                                _updateIdTemplate();
+                                updateIdTemplate(widget.patientNotifier.value);
                               })
                         ],
                       )),
@@ -201,30 +196,30 @@ class _ScanPageState extends State<ScanPage> {
     );
   }
 
-  // Future scan(ValueNotifier<String> notifier) async {
-  //   try {
-  //     var scan = (await BarcodeScanner.scan());
-  //     String scanString = scan.rawContent;
-  //     if (scan.format != BarcodeFormat.unknown) {
-  //       setState(() => notifier.value = scanString);
-  //       setState(
-  //           () => this.barcodeError = 'ID: ${widget.patientNotifier.value}');
-  //     }
-  //   } on PlatformException catch (e) {
-  //     if (e.code == BarcodeScanner.cameraAccessDenied) {
-  //       setState(() {
-  //         this.barcodeError = 'É necessário permissão para aceder à camera!';
-  //       });
-  //     } else {
-  //       setState(() => this.barcodeError = 'Unknown error: $e');
-  //     }
-  //   } on FormatException {
-  //     setState(() => notifier.value = null);
-  //     setState(() => this.barcodeError = 'Scan não completo.');
-  //   } catch (e) {
-  //     setState(() => this.barcodeError = 'Unknown error: $e');
-  //   }
-  // }
+  Future scan(ValueNotifier<String> notifier) async {
+    try {
+      var scan = (await BarcodeScanner.scan());
+      String scanString = scan.rawContent;
+      if (scan.format != BarcodeFormat.unknown) {
+        setState(() => notifier.value = scanString);
+        setState(
+            () => this.barcodeError = 'ID: ${widget.patientNotifier.value}');
+      }
+    } on PlatformException catch (e) {
+      if (e.code == BarcodeScanner.cameraAccessDenied) {
+        setState(() {
+          this.barcodeError = 'É necessário permissão para aceder à camera!';
+        });
+      } else {
+        setState(() => this.barcodeError = 'Unknown error: $e');
+      }
+    } on FormatException {
+      setState(() => notifier.value = null);
+      setState(() => this.barcodeError = 'Scan não completo.');
+    } catch (e) {
+      setState(() => this.barcodeError = 'Unknown error: $e');
+    }
+  }
 }
 
 class CurveBackground extends CustomPainter {

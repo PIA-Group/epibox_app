@@ -107,8 +107,8 @@ class _NavigationPageState extends State<NavigationPage>
             devices, acquisition, configurations, driveListNotifier);
     };
     listeners['acquisitionState'] = () {
-      if (_navigationIndex.value == 3)
-        acquisitionStateHandler(context, acquisition, errorHandler);
+      acquisitionStateHandler(
+          context, acquisition, errorHandler, _navigationIndex);
     };
     listeners['dataMAC'] = () {
       visualizationMAC1.dataMAC = acquisition.dataMAC1;
@@ -157,6 +157,7 @@ class _NavigationPageState extends State<NavigationPage>
       startupError: startupError,
       shouldRestart: shouldRestart,
       connectionNotifier: connectionNotifier,
+      patientNotifier: widget.patientNotifier,
     );
 
     getAnnotationTypes(annotationTypesD);
@@ -317,6 +318,7 @@ class _NavigationPageState extends State<NavigationPage>
                             mqttClientWrapper: mqttClientWrapper,
                             connectionNotifier: connectionNotifier,
                             driveListNotifier: driveListNotifier,
+                            patientNotifier: widget.patientNotifier,
                           ),
                           VisualizationNavPage(
                             devices: devices,

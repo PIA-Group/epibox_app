@@ -2,8 +2,11 @@ import 'package:epibox/classes/acquisition.dart';
 import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/devices.dart';
 import 'package:epibox/classes/error_handler.dart';
+import 'package:epibox/costum_overlays/config_overlay.dart';
+import 'package:epibox/costum_overlays/error_overlays.dart';
 import 'package:epibox/costum_overlays/system_overlay.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
+import 'package:epibox/shared_pref/pref_handler.dart';
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 
@@ -18,13 +21,19 @@ void gotNewMessage({
   ErrorHandler errorHandler,
   ValueNotifier<bool> startupError,
   ValueNotifier<String> shouldRestart,
+  ValueNotifier<String> patientNotifier,
 }) {
   // runs functions based on the received message
   List message2List = json.decode(message.replaceAll('\'', '\"'));
 
+  if (message2List[0] != 'DATA') print(message2List);
+
   switch (message2List[0]) {
     case 'DEFAULT MAC':
       isMACAddress(message2List, devices);
+      break;
+    case 'RECEIVED DEFAULT':
+      isReceivedDefault(errorHandler);
       break;
     case 'MAC STATE':
       isMACState(message, devices);
@@ -45,7 +54,7 @@ void gotNewMessage({
       isTimeout(message2List, timedOut);
       break;
     case 'ERROR':
-      isStartupError(startupError, shouldRestart);
+      isStartupError(errorHandler, startupError, shouldRestart);
       break;
     case 'TURNED OFF':
       isTurnedOff(errorHandler, shouldRestart);
@@ -55,6 +64,7 @@ void gotNewMessage({
     case 'RECONNECTING':
     case 'PAIRING':
     case 'STOPPED':
+    case 'TRYING TO CONNECT':
     case 'PAUSED':
       isAcquisitionState(message, acquisition, shouldRestart);
       break;
@@ -116,6 +126,7 @@ void isDrivesList(String message, ValueNotifier<List<String>> driveListNotifier,
 
 void isDefaultConfig(List message2List, Configurations configurations) {
   configurations.configDefault = message2List[1];
+  //updateIdTemplate(message2List[1]['patient_id']);
 }
 
 // ACQUISITION
@@ -131,6 +142,8 @@ void isAcquisitionState(String message, Acquisition acquisition,
     }
   } else if (message.contains('RECONNECTING')) {
     acquisition.acquisitionState = 'reconnecting';
+  } else if (message.contains('TRYING TO CONNECT')) {
+    acquisition.acquisitionState = 'trying';
   } else if (message.contains('PAIRING')) {
     acquisition.acquisitionState = 'pairing';
   } else if (message.contains('STOPPED')) {
@@ -209,14 +222,27 @@ void isBatteryLevel(
 
 // SYSTEM
 
+void isReceivedDefault(ErrorHandler errorHandler) {
+  errorHandler.overlayInfo = {
+    'overlayMessage': ConfigCustomOverlay(),
+    'timer': 4,
+    'showOverlay': true
+  };
+}
+
 void isTimeout(List message2List, ValueNotifier<String> timedOut) {
   timedOut.value = message2List[1];
 }
 
-void isStartupError(
-    ValueNotifier<bool> startupError, ValueNotifier<String> shouldRestart) {
+void isStartupError(ErrorHandler errorHandler, ValueNotifier<bool> startupError,
+    ValueNotifier<String> shouldRestart) {
   startupError.value = true;
   shouldRestart.value = 'medium';
+  errorHandler.overlayInfo = {
+    'overlayMessage': VerifyConnectionsOverlay(),
+    'timer': 2,
+    'showOverlay': true
+  };
 }
 
 void isTurnedOff(

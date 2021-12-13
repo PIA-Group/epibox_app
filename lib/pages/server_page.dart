@@ -130,23 +130,6 @@ class _ServerPageState extends State<ServerPage> {
                       else
                         setup(widget.mqttClientWrapper,
                             widget.connectionNotifier);
-                      // Future.delayed(Duration.zero).then((value) {
-                      //   // widget.mqttClientWrapper = setupHome(
-                      //   //   mqttClientWrapper: widget.mqttClientWrapper,
-                      //   //   client: widget.client,
-                      //   //   devices: widget.devices,
-                      //   //   acquisition: widget.acquisition,
-                      //   //   configurations: widget.configurations,
-                      //   //   driveListNotifier: widget.driveListNotifier,
-                      //   //   timedOut: widget.timedOut,
-                      //   //   errorHandler: widget.errorHandler,
-                      //   //   startupError: widget.startupError,
-                      //   //   shouldRestart: widget.shouldRestart,
-                      //   //   connectionNotifier: widget.connectionNotifier,
-                      //   // );
-                      //   // setup(widget.mqttClientWrapper,
-                      //   //     widget.connectionNotifier);
-                      // });
                     },
                     child: new Text(
                       '${AppLocalizations.of(context).translate("connect").inCaps} / ${AppLocalizations.of(context).translate("restart").inCaps}',

@@ -39,6 +39,28 @@ class AcquisitionCustomOverlay extends StatelessWidget {
           SizedBox(height: 20),
         ]),
       );
+    } else if (state == 'trying') {
+      return Center(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Text(
+            AppLocalizations.of(context)
+                    .translate('trying to connect to devices')
+                    .inCaps +
+                '...',
+            textAlign: TextAlign.center,
+            style: MyTextStyle(
+                color: DefaultColors.textColorOnLight, fontSize: 20),
+          ),
+          SizedBox(height: 20),
+          Center(
+            child: SpinKitFoldingCube(
+              color: DefaultColors.mainColor,
+              size: 70.0,
+            ),
+          ),
+          SizedBox(height: 20),
+        ]),
+      );
     } else if (state == 'paused') {
       return Center(
         child: Column(mainAxisSize: MainAxisSize.min, children: [

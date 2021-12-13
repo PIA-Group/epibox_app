@@ -32,6 +32,8 @@
     "disconnected from the server": "disconnected from the server",
     "don't know when it happened": "don't know when it happened",
     
+    "EpiBOX Core has saved new defaults": "EpiBOX Core has saved new defaults",
+    "EpiBOX Core turned off": "EpiBOX Core turned off",
     "error during": "error during",
     
     "flash annotation": "flash annotation",
@@ -48,7 +50,6 @@
     "press the button to resume": "press the button to resume",
     
     "restart": "restart",
-    "EpiBOX Core turned off": "EpiBOX Core turned off",
     
     "sampling freq.": "sampling freq.",
     "save data raw": "save data raw",
@@ -68,6 +69,7 @@
     "to connect one of the devices, press the corresponding box": "to connect one of the devices, press the corresponding box",
     "to connect to the server and (re)start the process, press": "to connect to the server and (re)start the process, press",
     "to start the acquisitions, scan the patient's ID or type it below": "to start the acquisitions, scan the patient's ID or type it below",
+    "trying to connect to devices": "trying to connect to devices",
     "trying to resume the acquisition": "trying to resume the acquisition",
     "turn off RPi": "turn off RPi",
     

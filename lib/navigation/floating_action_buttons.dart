@@ -216,30 +216,35 @@ class StartStopButton extends StatelessWidget {
             return FloatingActionButton.extended(
               backgroundColor: DefaultColors.mainLColor,
               key: Key('startStopButton'),
-              onPressed: (acquisition.acquisitionState == 'stopped' ||
-                      acquisition.acquisitionState == 'off')
-                  ? () => startAcquisition(
-                        context: context,
-                        connectionNotifier: connectionNotifier,
-                        devices: devices,
-                        errorHandler: errorHandler,
-                        configurations: configurations,
-                        mqttClientWrapper: mqttClientWrapper,
-                        visualizationMAC1: visualizationMAC1,
-                        visualizationMAC2: visualizationMAC2,
-                        historyMAC: historyMAC,
-                        patientNotifier: patientNotifier,
-                        driveListNotifier: driveListNotifier,
-                      )
-                  : () => stopAcquisition(mqttClientWrapper),
-              label: (acquisition.acquisitionState == 'stopped' ||
-                      acquisition.acquisitionState == 'off')
-                  ? Text(AppLocalizations.of(context).translate('start').inCaps)
-                  : Text(AppLocalizations.of(context).translate('stop').inCaps),
-              icon: (acquisition.acquisitionState == 'stopped' ||
-                      acquisition.acquisitionState == 'off')
-                  ? Icon(Icons.play_arrow_rounded)
-                  : Icon(Icons.stop),
+              onPressed: () => stopAcquisition(mqttClientWrapper),
+
+              // (acquisition.acquisitionState == 'stopped' ||
+              //         acquisition.acquisitionState == 'off')
+              //     ? () => startAcquisition(
+              //           context: context,
+              //           connectionNotifier: connectionNotifier,
+              //           devices: devices,
+              //           errorHandler: errorHandler,
+              //           configurations: configurations,
+              //           mqttClientWrapper: mqttClientWrapper,
+              //           visualizationMAC1: visualizationMAC1,
+              //           visualizationMAC2: visualizationMAC2,
+              //           historyMAC: historyMAC,
+              //           patientNotifier: patientNotifier,
+              //           driveListNotifier: driveListNotifier,
+              //         )
+              //     : () => stopAcquisition(mqttClientWrapper),
+              label:
+                  Text(AppLocalizations.of(context).translate('stop').inCaps),
+              // (acquisition.acquisitionState == 'stopped' ||
+              //         acquisition.acquisitionState == 'off')
+              //     ? Text(AppLocalizations.of(context).translate('start').inCaps)
+              //     : Text(AppLocalizations.of(context).translate('stop').inCaps),
+              icon: Icon(Icons.stop),
+              // (acquisition.acquisitionState == 'stopped' ||
+              //         acquisition.acquisitionState == 'off')
+              //     ? Icon(Icons.play_arrow_rounded)
+              //     : Icon(Icons.stop),
             );
           }),
     );

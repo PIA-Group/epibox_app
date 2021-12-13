@@ -18,6 +18,7 @@ class ConfigPage extends StatefulWidget {
   final MQTTClientWrapper mqttClientWrapper;
   final ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
   final ValueNotifier<List<String>> driveListNotifier;
+  final ValueNotifier<String> patientNotifier;
 
   ConfigPage({
     this.configurations,
@@ -27,6 +28,7 @@ class ConfigPage extends StatefulWidget {
     this.mqttClientWrapper,
     this.connectionNotifier,
     this.driveListNotifier,
+    this.patientNotifier,
   });
 
   @override
@@ -96,7 +98,7 @@ class _ConfigPageState extends State<ConfigPage> {
     super.initState();
 
     listeners['configDefault'] = () {
-      // Storage
+      print('config defaut listener');
       // if the currently available drives doesn't include the previous default drive:
       if (!_isDefaultDriveInList()) {
         widget.configurations.chosenDrive = widget.driveListNotifier.value[0];
@@ -269,7 +271,7 @@ class _ConfigPageState extends State<ConfigPage> {
         .substring(0, widget.configurations.chosenDrive.indexOf('('))
         .trim();
     widget.mqttClientWrapper.publishMessage(
-        "['NEW CONFIG DEFAULT', {'initial_dir': '$_newDefaultDrive', 'fs': ${widget.configurations.controllerFreq.text}, 'channels': $_channels2Send, 'save_raw': '${widget.configurations.saveRaw}', 'service': '${widget.devices.type}'}]");
+        "['NEW CONFIG DEFAULT', {'initial_dir': '$_newDefaultDrive', 'fs': ${widget.configurations.controllerFreq.text}, 'channels': $_channels2Send, 'save_raw': '${widget.configurations.saveRaw}', 'patient_id': '${widget.patientNotifier.value}', 'service': '${widget.devices.type}'}]");
   }
 
   @override
