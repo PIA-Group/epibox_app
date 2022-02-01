@@ -1,9 +1,11 @@
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:epibox/app_localizations.dart';
+import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/devices.dart';
 import 'package:epibox/classes/error_handler.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
+import 'package:epibox/utils/config.dart';
 import 'package:epibox/utils/masked_text.dart';
 import 'package:epibox/mqtt/mqtt_states.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
@@ -22,6 +24,8 @@ class DevicesPage extends StatefulWidget {
   final MQTTClientWrapper mqttClientWrapper;
   final MqttCurrentConnectionState connectionState;
 
+  final Configurations configurations;
+
   final ValueNotifier<String> patientNotifier;
 
   final ValueNotifier<List<String>> historyMAC;
@@ -32,6 +36,7 @@ class DevicesPage extends StatefulWidget {
   DevicesPage({
     this.devices,
     this.errorHandler,
+    this.configurations,
     this.mqttClientWrapper,
     this.connectionState,
     this.connectionNotifier,
@@ -199,8 +204,8 @@ class _DevicesPageState extends State<DevicesPage> {
                   _setNewDefault1();
                   _setNewDefault2();
 
-                  widget.mqttClientWrapper.publishMessage(
-                      "['NEW MAC',{'MAC1':'${widget.devices.macAddress1}','MAC2':'${widget.devices.macAddress2}'}]");
+                  newDefault(widget.mqttClientWrapper, widget.configurations,
+                      widget.devices, widget.patientNotifier);
                 },
                 child: new Text(
                   AppLocalizations.of(context)

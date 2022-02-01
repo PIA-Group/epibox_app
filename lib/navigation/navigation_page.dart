@@ -304,6 +304,7 @@ class _NavigationPageState extends State<NavigationPage>
                           DevicesPage(
                             devices: devices,
                             errorHandler: errorHandler,
+                            configurations: configurations,
                             patientNotifier: widget.patientNotifier,
                             mqttClientWrapper: mqttClientWrapper,
                             connectionNotifier: connectionNotifier,

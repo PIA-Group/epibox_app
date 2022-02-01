@@ -80,7 +80,8 @@ class _VisualizationPageState extends State<VisualizationPage> {
         widget.visualizationMAC.dataMAC.asMap().forEach((index, newSamples) {
           List<double> auxData;
 
-          if (widget.visualizationMAC.data2Plot.isEmpty) {
+          if (widget.visualizationMAC.data2Plot.length !=
+              widget.visualizationMAC.dataMAC.length) {
             widget.visualizationMAC.data2Plot =
                 List.filled(widget.visualizationMAC.dataMAC.length, []);
 

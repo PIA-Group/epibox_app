@@ -8,7 +8,11 @@ class ErrorHandler extends PropertyChangeNotifier<String> {
       ),
     ); */
 
-  Map<String, dynamic> _overlayInfo;
+  Map<String, dynamic> _overlayInfo = {
+    'overlayMessage': null,
+    'timer': 2,
+    'showOverlay': true
+  };
   bool _showOverlay = false;
 
   Map<String, dynamic> get overlayInfo => _overlayInfo;

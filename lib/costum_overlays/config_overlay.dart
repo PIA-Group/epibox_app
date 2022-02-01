@@ -18,6 +18,17 @@ class ConfigCustomOverlay extends StatelessWidget {
             style: MyTextStyle(
                 color: DefaultColors.textColorOnLight, fontSize: 20),
           ),
+          SizedBox(height: 20),
+          Text(
+            AppLocalizations.of(context)
+                    .translate(
+                        'please stop the current acquisition to use the new defaults')
+                    .inCaps +
+                '.',
+            textAlign: TextAlign.center,
+            style: MyTextStyle(
+                color: DefaultColors.textColorOnLight, fontSize: 20),
+          ),
         ]),
       ),
     );

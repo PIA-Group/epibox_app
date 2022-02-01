@@ -9,6 +9,7 @@ import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'package:epibox/utils/tooltips.dart';
 import 'package:flutter/material.dart';
 import 'package:property_change_notifier/property_change_notifier.dart';
+import 'package:epibox/utils/config.dart';
 
 class ConfigPage extends StatefulWidget {
   final Devices devices;
@@ -239,41 +240,6 @@ class _ConfigPageState extends State<ConfigPage> {
     });
   }
 
-  List<List<String>> _getChannels2Send() {
-    List<List<String>> _channels2Send = [];
-    widget.configurations.bit1Selections.asMap().forEach((channel, value) {
-      if (value) {
-        _channels2Send.add([
-          // "'${widget.devices.macAddress1}'",
-          "'MAC1'",
-          "'${(channel + 1).toString()}'",
-          "'${widget.configurations.controllerSensors[channel].text}'"
-        ]);
-      }
-    });
-
-    widget.configurations.bit2Selections.asMap().forEach((channel, value) {
-      if (value) {
-        _channels2Send.add([
-          // "'${widget.devices.macAddress2}'",
-          "'MAC2'",
-          "'${(channel + 1).toString()}'",
-          "'${widget.configurations.controllerSensors[channel + 5].text}'"
-        ]);
-      }
-    });
-    return _channels2Send;
-  }
-
-  void _newDefault() {
-    List<List<String>> _channels2Send = _getChannels2Send();
-    String _newDefaultDrive = widget.configurations.chosenDrive
-        .substring(0, widget.configurations.chosenDrive.indexOf('('))
-        .trim();
-    widget.mqttClientWrapper.publishMessage(
-        "['NEW CONFIG DEFAULT', {'initial_dir': '$_newDefaultDrive', 'fs': ${widget.configurations.controllerFreq.text}, 'channels': $_channels2Send, 'save_raw': '${widget.configurations.saveRaw}', 'patient_id': '${widget.patientNotifier.value}', 'service': '${widget.devices.type}'}]");
-  }
-
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width -
@@ -389,7 +355,8 @@ class _ConfigPageState extends State<ConfigPage> {
                     //onPrimary: Colors.white, // foreground
                   ),
                   onPressed: () {
-                    _newDefault();
+                    newDefault(widget.mqttClientWrapper, widget.configurations,
+                        widget.devices, widget.patientNotifier);
                   },
                   child: new Text(
                     AppLocalizations.of(context)
