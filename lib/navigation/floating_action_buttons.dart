@@ -21,6 +21,7 @@ class DrawerFloater extends StatelessWidget {
       alignment: Alignment(-0.9, -0.65),
       child: Builder(builder: (context) {
         return FloatingActionButton(
+            heroTag: null,
             backgroundColor: Colors.transparent,
             elevation: 0.0,
             child: Icon(Icons.more_vert),
@@ -47,6 +48,7 @@ class MQTTStateFloater extends StatelessWidget {
             builder: (BuildContext context, MqttCurrentConnectionState state,
                 Widget child) {
               return FloatingActionButton(
+                  heroTag: null,
                   backgroundColor: Colors.transparent,
                   elevation: 0.0,
                   child: CircleAvatar(
@@ -91,6 +93,7 @@ class MACAddressConnectionFloater extends StatelessWidget {
                       (devices.isBit2Enabled &&
                           devices.macAddress2Connection != 'connected'));
               return FloatingActionButton(
+                  heroTag: null,
                   backgroundColor: Colors.transparent,
                   elevation: 0.0,
                   child: CircleAvatar(
@@ -161,6 +164,7 @@ class ResumePauseButton extends StatelessWidget {
           properties: ['acquisitionState'],
           builder: (context, acquisition, properties) {
             return FloatingActionButton(
+              heroTag: null,
               backgroundColor: DefaultColors.mainLColor,
               mini: true,
               onPressed: acquisition.acquisitionState == 'paused'
@@ -214,6 +218,7 @@ class StartStopButton extends StatelessWidget {
           properties: ['acquisitionState'],
           builder: (context, acquisition, properties) {
             return FloatingActionButton.extended(
+              heroTag: null,
               backgroundColor: DefaultColors.mainLColor,
               key: Key('startStopButton'),
               onPressed: () => stopAcquisition(mqttClientWrapper),

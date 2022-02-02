@@ -32,11 +32,8 @@ Future<void> setup(
   // connects the client instance to the server and topic
   await mqttClientWrapper.prepareMqttClient().then((value) {
     if (connectionNotifier.value == MqttCurrentConnectionState.CONNECTED) {
-      var timeStamp = DateTime.now();
-      String time =
-          "${timeStamp.year}-${timeStamp.month}-${timeStamp.day} ${timeStamp.hour}:${timeStamp.minute}:${timeStamp.second}";
-      mqttClientWrapper.publishMessage("['TIME', '$time']");
       mqttClientWrapper.publishMessage("['Send default']");
+      sendActualDatetime(mqttClientWrapper);
     }
   });
 }

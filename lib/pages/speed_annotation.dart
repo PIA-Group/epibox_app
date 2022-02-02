@@ -56,7 +56,8 @@ class _SpeedAnnotationDialogState extends State<SpeedAnnotationDialog> {
       if (!_isChecked) {
         annot = [
           '"$annotText"',
-          '"${timeStamp.hour}:${timeStamp.minute}:${timeStamp.second}"'
+          //'"${timeStamp.hour}:${timeStamp.minute}:${timeStamp.second}"'
+          '"$timeStamp"'
         ];
       } else {
         annot = ['"$annotText"', '"null"'];

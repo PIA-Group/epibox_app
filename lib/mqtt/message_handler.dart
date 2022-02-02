@@ -6,7 +6,6 @@ import 'package:epibox/costum_overlays/config_overlay.dart';
 import 'package:epibox/costum_overlays/error_overlays.dart';
 import 'package:epibox/costum_overlays/system_overlay.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
-import 'package:epibox/shared_pref/pref_handler.dart';
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 
@@ -58,6 +57,9 @@ void gotNewMessage({
       break;
     case 'TURNED OFF':
       isTurnedOff(errorHandler, shouldRestart);
+      break;
+    case 'NEW CONFIG DEFAULT':
+      sendActualDatetime(mqttClientWrapper);
       break;
     case 'STARTING':
     case 'ACQUISITION ON':
@@ -221,6 +223,11 @@ void isBatteryLevel(
   } */
 
 // SYSTEM
+
+void sendActualDatetime(MQTTClientWrapper mqttClientWrapper) {
+  List annot = ['"actualTime"', '"${DateTime.now()}"'];
+  mqttClientWrapper.publishMessage("['ANNOTATION', $annot]");
+}
 
 void isReceivedDefault(ErrorHandler errorHandler) {
   errorHandler.overlayInfo = {
