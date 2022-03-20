@@ -12,6 +12,9 @@ import 'package:property_change_notifier/property_change_notifier.dart';
 import 'package:epibox/utils/config.dart';
 
 class ConfigPage extends StatefulWidget {
+  /* This page allows the user to see the current default acquisition configurations 
+  (sent by PyEpiBOX), as well as defining new default configurations. */
+
   final Devices devices;
   final Configurations configurations;
   final Visualization visualizationMAC1;
@@ -37,22 +40,7 @@ class ConfigPage extends StatefulWidget {
 }
 
 class _ConfigPageState extends State<ConfigPage> {
-  List<String> fsOptions = [
-    ' ',
-    /* '17000',
-    '16000',
-    '10000',
-    '9000',
-    '7000',
-    '6000',
-    '5000',
-    '4000',
-    '3000', */
-    '1000',
-    '100',
-    '10',
-    '1'
-  ];
+  List<String> fsOptions = [' ', '1000', '100', '10', '1'];
 
   List<DropdownMenuItem<String>> sensorItems = [
     '-',
@@ -150,13 +138,7 @@ class _ConfigPageState extends State<ConfigPage> {
         widget.devices.isBit2Enabled = true;
       }
     };
-    /* listeners['driveListNotifier'] = () {
-      if (!widget.driveListNotifier.value
-          .contains(widget.configurations.chosenDrive))
-        widget.configurations.chosenDrive = widget.driveListNotifier.value[0];
-    }; */
-
-    // update values upon receiving default configurations from RPi
+    // update values upon receiving default configurations from PyEpiBOX
     widget.configurations
         .addListener(listeners['configDefault'], ['configDefault']);
     widget.devices.addListener(listeners['macAddress1'], ['macAddress1']);
@@ -376,6 +358,10 @@ class _ConfigPageState extends State<ConfigPage> {
 }
 
 class DriveBlock extends StatelessWidget {
+  /* Widget that displays the current default storage location, as well as 
+  other available locations of EpiBOX Core; and allows the user to choose a 
+  new default based on the available storage locations. */
+
   final ValueNotifier<List<String>> driveListNotifier;
   final double height, width, verticalSpacing;
   final configurationKey = GlobalKey<State<Tooltip>>();
@@ -468,6 +454,10 @@ class DriveBlock extends StatelessWidget {
 }
 
 class FrequencyBlock extends StatelessWidget {
+  /* Widget that displays the current default sampling frequency, as well as 
+  other available sampling frequencies; and allows the user to choose a 
+  new default based on the available options. */
+
   final List<String> fsOptions;
 
   FrequencyBlock({this.fsOptions});
@@ -513,6 +503,9 @@ class FrequencyBlock extends StatelessWidget {
 }
 
 class SaveRawBlock extends StatelessWidget {
+  /* Widget that displays the current default option on saving the data raw 
+  (digital values) or performing a transformation to physical units. */
+
   SaveRawBlock();
 
   @override
@@ -539,6 +532,9 @@ class SaveRawBlock extends StatelessWidget {
 }
 
 class ChannelBlock extends StatelessWidget {
+  /* Widget that displays the current default analog channels for acquisition; 
+  and allows the user to choose a new default. */
+
   final int deviceID;
 
   ChannelBlock({this.deviceID});
@@ -588,6 +584,9 @@ class ChannelBlock extends StatelessWidget {
 }
 
 class SensorBlock extends StatelessWidget {
+  /* Widget that displays the current default analog channels for acquisition; 
+  and allows the user to choose a new default. */
+
   final int deviceID;
   final List<DropdownMenuItem<String>> sensorItems;
 

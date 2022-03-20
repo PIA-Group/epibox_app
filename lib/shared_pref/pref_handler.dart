@@ -6,6 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
+/* This script manages all uptades and accesses to the locally-stored information
+(on SharedPreferences). */
+
 Future<void> updateIdTemplate(String patientID) async {
   print('new ID: $patientID');
   await SharedPreferences.getInstance().then((prefs) async {
@@ -212,10 +215,6 @@ void getLastConfigurations(Configurations configurations,
           configurations.controllerFreq =
               TextEditingController(text: confMap['controllerFreq']);
           configurations.saveRaw = confMap['saveRaw'];
-
-          //configurations = auxConf;
-          //configurations.notifyConfigListeners();
-          //configurations.controllerFreq = TextEditingController(text: '1000');
         }
       } catch (e) {
         print(e);

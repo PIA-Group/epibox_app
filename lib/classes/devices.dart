@@ -1,6 +1,10 @@
 import 'package:property_change_notifier/property_change_notifier.dart';
 
 class Devices extends PropertyChangeNotifier<String> {
+  /* This class holds all information regarding the biosignal acquisition
+  devices, including the ones chosen by the user ("macAddress") and the ones
+  received via MQTT from PyEpiBOX. */
+
   String _macAddress1 = 'xx:xx:xx:xx:xx:xx';
   String _macAddress2 = 'xx:xx:xx:xx:xx:xx';
   String _defaultMacAddress1 = 'xx:xx:xx:xx:xx:xx';

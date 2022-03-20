@@ -12,6 +12,9 @@ import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 
 class ServerPage extends StatefulWidget {
+  /* This page allows the user to connect the EpiBOX App to the MQTT server,
+  i.e. the EpiBOX App becomes a MQTT client, both as a publisher and subscriber */
+
   final Devices devices;
   final Acquisition acquisition;
 

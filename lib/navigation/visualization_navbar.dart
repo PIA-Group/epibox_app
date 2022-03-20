@@ -4,12 +4,15 @@ import 'package:epibox/classes/devices.dart';
 import 'package:epibox/classes/visualization.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
-import 'package:epibox/pages/visualization_page.dart';
+import 'package:epibox/user-pages/visualization_page.dart';
 import 'package:epibox/mqtt/mqtt_states.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'package:flutter/material.dart';
 
 class VisualizationNavPage extends StatelessWidget {
+  /* This is the parent widget of the visualization pages for the two devices. 
+  Navigation is performed via a TabBarView. */
+
   VisualizationNavPage({
     this.devices,
     this.configurations,
@@ -51,7 +54,7 @@ class VisualizationNavPage extends StatelessWidget {
               .map(
                 (macAddress) => Tab(
                   child: Text(macAddress,
-                  key: Key(macAddress),
+                      key: Key(macAddress),
                       style: MyTextStyle(
                           color: DefaultColors.textColorOnLight, fontSize: 15)),
                 ),

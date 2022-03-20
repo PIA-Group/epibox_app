@@ -6,7 +6,7 @@ import 'package:epibox/classes/visualization.dart';
 import 'package:epibox/costum_overlays/error_overlays.dart';
 import 'package:epibox/mqtt/mqtt_states.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
-import 'package:epibox/pages/speed_annotation.dart';
+import 'package:epibox/user-pages/speed_annotation.dart';
 import 'package:epibox/shared_pref/pref_handler.dart';
 import 'package:flutter/material.dart';
 

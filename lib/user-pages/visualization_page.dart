@@ -12,6 +12,11 @@ import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'package:property_change_notifier/property_change_notifier.dart';
 
 class VisualizationPage extends StatefulWidget {
+  /* This page allows the user to visualize the data being collected for one of
+  the devices. One variable ("visualizationMAC.data2Plot") holds the data that is 
+  received via MQTT and the plots are rebuilt every 16 seconds (through a 
+  timer). */
+
   final Configurations configurations;
   final Visualization visualizationMAC;
   final Acquisition acquisition;
@@ -65,6 +70,9 @@ class _VisualizationPageState extends State<VisualizationPage> {
   void initState() {
     super.initState();
 
+    // When data is received via MQTT, the variable "visualizationMAC" is updated.
+    // This listener, listens to changes in that variable, adding the new data
+    // to the "visualizationMAC.data2Plot" variable.
     listeners['dataMAC'] = () {
       if (this.mounted) {
         if (!_rangeInitiated && widget.visualizationMAC.dataMAC.isNotEmpty) {
@@ -92,7 +100,7 @@ class _VisualizationPageState extends State<VisualizationPage> {
           }
 
           if (auxData.length > screenWidth.toInt()) {
-            // int start = min(buffer, auxData.length - screenWidth.floor());
+            // remove samples that don't fit in the screen to avoid data overflow
             int start = auxData.length - screenWidth.floor();
             auxListData[index] = auxData.sublist(start);
           } else {
@@ -114,9 +122,6 @@ class _VisualizationPageState extends State<VisualizationPage> {
           }
         });
         widget.visualizationMAC.data2Plot = List.from(auxListData);
-        // widget.visualizationMAC.series2Plot = widget.visualizationMAC.data2Plot
-        //     .map((d) => data2Series(d, widget.configurations))
-        //     .toList();
       }
     };
     widget.startupError.addListener(listeners['startupError']);
@@ -138,7 +143,6 @@ class _VisualizationPageState extends State<VisualizationPage> {
       if (widget.visualizationMAC.data2Plot.isNotEmpty &&
           widget.acquisition.acquisitionState == 'acquiring') {
         widget.visualizationMAC.refresh = true;
-        //print(widget.visualizationMAC.series2Plot[0].map((e) => e));
       }
     });
   }

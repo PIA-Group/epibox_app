@@ -1,12 +1,8 @@
 import 'package:property_change_notifier/property_change_notifier.dart';
 
 class ErrorHandler extends PropertyChangeNotifier<String> {
-  /* Widget _overlayMessage = Center(
-      child: SpinKitFoldingCube(
-        color: DefaultColors.mainColor,
-        size: 70.0,
-      ),
-    ); */
+  /* This class is multi-purpose, used to notify the user of all kinds of
+  messaged, using an overlay - the messages are defined in ../custom_overlays */
 
   Map<String, dynamic> _overlayInfo = {
     'overlayMessage': null,

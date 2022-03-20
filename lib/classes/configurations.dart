@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:property_change_notifier/property_change_notifier.dart';
 
 class Configurations extends PropertyChangeNotifier<String> {
+  /* This class holds all information regarding acquisition 
+  configurations, chosen by the user. */
+
   List<bool> _bit1Selections = [false, false, false, false, false, false];
   List<bool> _bit2Selections = [false, false, false, false, false, false];
   Map<String, dynamic> _configDefault = {};

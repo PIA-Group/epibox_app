@@ -2,7 +2,7 @@ import 'package:epibox/app_localizations.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:epibox/utils/id_wrapper.dart';
+import 'package:epibox/navigation/id_wrapper.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 

@@ -1,6 +1,9 @@
 import 'package:property_change_notifier/property_change_notifier.dart';
 
 class Acquisition extends PropertyChangeNotifier<String> {
+  /* This class holds all information regarding current acquisition 
+  configurations and acquisition state, received via MQTT from PyEpiBOX. */
+
   String _acquisitionState = 'off';
   double _batteryBit1;
   double _batteryBit2;

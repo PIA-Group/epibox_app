@@ -7,17 +7,16 @@ import 'package:epibox/classes/visualization.dart';
 import 'package:epibox/mqtt/connection_manager.dart';
 import 'package:epibox/navigation/floating_action_buttons.dart';
 import 'package:epibox/navigation/visualization_navbar.dart';
-import 'package:epibox/pages/config_page.dart';
-import 'package:epibox/pages/devices_page.dart';
-import 'package:epibox/pages/profile_drawer.dart';
-import 'package:epibox/pages/server_page.dart';
+import 'package:epibox/user-pages/config_page.dart';
+import 'package:epibox/user-pages/devices_page.dart';
+import 'package:epibox/user-pages/profile_drawer.dart';
+import 'package:epibox/user-pages/server_page.dart';
 import 'package:epibox/shared_pref/pref_handler.dart';
-import 'package:epibox/state_handlers/acquisition_state.dart';
-import 'package:epibox/state_handlers/server_connection.dart';
-import 'package:epibox/state_handlers/system.dart';
+import 'package:epibox/costum_overlays/acquisition_state_handler.dart';
+import 'package:epibox/costum_overlays/server_connection_handler.dart';
+import 'package:epibox/costum_overlays/system_handler.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:epibox/decor/text_styles.dart';
 import 'package:epibox/decor/default_colors.dart';
@@ -27,6 +26,10 @@ import 'package:property_change_notifier/property_change_notifier.dart';
 import 'package:epibox/decor/custom_icons.dart';
 
 class NavigationPage extends StatefulWidget {
+  /* This page controls navigation through the four main user pages. The 
+  variables that are shared across the main pages are all initiated here. 
+  Navigation is performed via an IndexedStack within a ValueListenableBuilder. */
+
   final ValueNotifier<String> patientNotifier;
   NavigationPage({this.patientNotifier});
 
@@ -38,44 +41,45 @@ class _NavigationPageState extends State<NavigationPage>
     with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  // ---------------------------------------------------------------------------
+  // Initiate variables that are shared across the four main user pages
   ValueNotifier<MqttCurrentConnectionState> connectionNotifier =
       ValueNotifier(MqttCurrentConnectionState.DISCONNECTED);
 
+  // MQTT-related variables
+  MqttCurrentConnectionState connectionState;
+  MQTTClientWrapper mqttClientWrapper;
+  MqttClient client;
+
+  // Variables that hold information/data received from PyEpiBOX via MQTT
+  ValueNotifier<bool> receivedMACNotifier = ValueNotifier(false);
+  ValueNotifier<bool> sentMACNotifier = ValueNotifier(false);
+  ValueNotifier<List<String>> driveListNotifier = ValueNotifier([' ']);
+  ValueNotifier<String> timedOut = ValueNotifier(null);
+  ValueNotifier<bool> startupError = ValueNotifier(false);
+
+  // Variables that hold information stores locally on the smartphone
+  ValueNotifier<List<String>> historyMAC = ValueNotifier([]);
+  ValueNotifier<List> annotationTypesD = ValueNotifier([]);
+
+  // App-related variables
+  Timer timer;
+  double appBarHeight = 100;
+  ValueNotifier<int> _navigationIndex = ValueNotifier(0);
+  Future<bool> initialized;
+
+  // User interface-related variables
   Devices devices = Devices();
   Configurations configurations = Configurations();
   Acquisition acquisition = Acquisition();
   Visualization visualizationMAC1 = Visualization();
   Visualization visualizationMAC2 = Visualization();
   ErrorHandler errorHandler = ErrorHandler();
-
-  ValueNotifier<List<String>> driveListNotifier = ValueNotifier([' ']);
-
   ValueNotifier<String> shouldRestart = ValueNotifier(null);
 
-  ValueNotifier<bool> receivedMACNotifier = ValueNotifier(false);
-  ValueNotifier<bool> sentMACNotifier = ValueNotifier(false);
-
-  ValueNotifier<String> timedOut = ValueNotifier(null);
-  ValueNotifier<bool> startupError = ValueNotifier(false);
-
-  Timer timer;
-
-  ValueNotifier<List<String>> historyMAC = ValueNotifier([]);
-
-  MqttCurrentConnectionState connectionState;
-  MQTTClientWrapper mqttClientWrapper;
-  MqttClient client;
-
-  FlutterLocalNotificationsPlugin batteryNotification =
-      FlutterLocalNotificationsPlugin();
-
-  ValueNotifier<List> annotationTypesD = ValueNotifier([]);
-
-  double appBarHeight = 100;
-  ValueNotifier<int> _navigationIndex = ValueNotifier(0);
-
-  Future<bool> initialized;
-
+  // The "listeners" variable stores the listeners added to several other variables
+  // (see below) and listen to any changes to those variables. Once a change is
+  // detected, some action is performed.
   Map<String, Function> listeners = {
     'navigationIndex': null,
     'connectionNotifier': null,
@@ -88,7 +92,7 @@ class _NavigationPageState extends State<NavigationPage>
   @override
   void initState() {
     super.initState();
-
+    // Define actions for when changes are detected
     listeners['navigationIndex'] = () {
       if (_navigationIndex.value != 3)
         errorHandler.overlayInfo = {
@@ -128,6 +132,7 @@ class _NavigationPageState extends State<NavigationPage>
       }
     };
 
+    // Assign listeners to corresponding variables
     _navigationIndex.addListener(listeners['navigationIndex']);
     connectionNotifier.addListener(listeners['connectionNotifier']);
     shouldRestart.addListener(listeners['shouldRestart']);
@@ -138,13 +143,7 @@ class _NavigationPageState extends State<NavigationPage>
 
     timer = Timer.periodic(Duration(seconds: 15), (Timer t) => print('timer'));
 
-    var initializationSettingsAndroid =
-        AndroidInitializationSettings('seizure_icon');
-    var initializationSettingsIOs = IOSInitializationSettings();
-    var initSetttings = InitializationSettings(
-        android: initializationSettingsAndroid, iOS: initializationSettingsIOs);
-    batteryNotification.initialize(initSetttings);
-
+    // Set up MQTT client settings
     mqttClientWrapper = setupHome(
       mqttClientWrapper: mqttClientWrapper,
       client: client,
@@ -159,11 +158,9 @@ class _NavigationPageState extends State<NavigationPage>
       connectionNotifier: connectionNotifier,
       patientNotifier: widget.patientNotifier,
     );
-
     getAnnotationTypes(annotationTypesD);
     getLastDeviceType(devices);
     getMACHistory(historyMAC);
-
     initialized = initialize();
   }
 
@@ -178,6 +175,7 @@ class _NavigationPageState extends State<NavigationPage>
     acquisition.removeListener(listeners['dataMAC'], ['dataMAC1', 'dataMAC2']);
     super.dispose();
   }
+  // ---------------------------------------------------------------------------
 
   void _onNavigationTap(int index) {
     _navigationIndex.value = index;
@@ -401,6 +399,8 @@ class _NavigationPageState extends State<NavigationPage>
               ],
             );
           }),
+      // Set of floating action buttons. According to the page the user is in,
+      // different floating action buttons are displayed.
       floatingActionButton: PropertyChangeProvider(
         value: acquisition,
         child: PropertyChangeProvider(

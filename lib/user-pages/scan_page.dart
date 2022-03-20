@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:epibox/app_localizations.dart';
 import 'package:epibox/shared_pref/pref_handler.dart';
@@ -11,6 +10,11 @@ import 'package:epibox/decor/default_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ScanPage extends StatefulWidget {
+  /*
+  This is the fisrt page the user encounters. The patient/session ID is saved
+  in the variable "patientNotifier".
+  */
+
   final ValueNotifier<String> patientNotifier;
   ScanPage({this.patientNotifier});
 
@@ -25,10 +29,7 @@ class _ScanPageState extends State<ScanPage> {
   @override
   initState() {
     super.initState();
-    //var timeStamp = DateTime.now();
     getIdTemplate();
-    /* _idController.text =
-        '${timeStamp.day}_${timeStamp.month}_${timeStamp.year}'; */
   }
 
   void getIdTemplate() async {
@@ -64,24 +65,22 @@ class _ScanPageState extends State<ScanPage> {
             left: 0,
             right: 0,
             bottom: 0,
-            child: Column(
-                //alignment: Alignment.topCenter,
-                children: [
-                  Text(
-                    AppLocalizations.of(context).translate('welcome to').inCaps,
-                    style: MyTextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 30),
-                  Text('EpiBOX',
-                      style: TextStyle(
-                          fontSize: 70,
-                          fontFamily: 'canter',
-                          color: DefaultColors.backgroundColor)),
-                ]),
+            child: Column(children: [
+              Text(
+                AppLocalizations.of(context).translate('welcome to').inCaps,
+                style: MyTextStyle(
+                  fontSize: 18,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 30),
+              Text('EpiBOX',
+                  style: TextStyle(
+                      fontSize: 70,
+                      fontFamily: 'canter',
+                      color: DefaultColors.backgroundColor)),
+            ]),
           ),
           Positioned(
             top: height * 0.5,
@@ -178,21 +177,6 @@ class _ScanPageState extends State<ScanPage> {
           ),
         ]),
       ),
-      /* floatingActionButton: FloatingActionButton.extended(
-          //mini: true,
-          label: Text(
-            'Instruções',
-            style: MyTextStyle(fontSize: 14),
-          ),
-          icon: Icon(Icons.list),
-          onPressed: () async {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) {
-                return InstructionsHPage();
-              }),
-            );
-          }), */
     );
   }
 
@@ -227,15 +211,9 @@ class CurveBackground extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     var paint = Paint();
     paint.color = DefaultColors.mainColor;
-    paint.style = PaintingStyle.fill; // Change this to fill
+    paint.style = PaintingStyle.fill;
 
     var path = Path();
-
-    /* path.moveTo(0, size.height * 0.25);
-    path.quadraticBezierTo(
-        size.width / 2, size.height * 0.45, size.width, size.height * 0.25);
-    path.lineTo(size.width, 0);
-    path.lineTo(0, 0); */
 
     path.moveTo(0, size.height * 0.3);
     path.quadraticBezierTo(

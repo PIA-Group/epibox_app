@@ -1,6 +1,9 @@
 import 'package:property_change_notifier/property_change_notifier.dart';
 
 class Visualization extends PropertyChangeNotifier<String> {
+  /* This class holds all information regarding visualization, including the 
+  data to plot. */
+
   List<List> _dataMAC = [];
   List _sensorsMAC = [];
   List<List> _channelsMAC = [];

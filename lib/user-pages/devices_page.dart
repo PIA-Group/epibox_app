@@ -17,6 +17,9 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:property_change_notifier/property_change_notifier.dart';
 
 class DevicesPage extends StatefulWidget {
+  /* This page allows the user to see the current default acquisition devices 
+  (sent by PyEpiBOX), as well as defining new default devices */
+
   final Devices devices;
   final ErrorHandler errorHandler;
 
@@ -145,10 +148,6 @@ class _DevicesPageState extends State<DevicesPage> {
         Padding(
           padding: EdgeInsets.symmetric(horizontal: horizontalSpacing),
           child: Column(children: [
-            /* Align(
-              alignment: Alignment.centerLeft,
-              child: Container(
-                child:  */
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
               Expanded(
                 child: Text(
@@ -260,6 +259,10 @@ class _DevicesPageState extends State<DevicesPage> {
 }
 
 class SelectDevicesBlock extends StatelessWidget {
+  /* Widget that displays the current default acquisition device; allows the 
+  user to type a MAC address to become the default; or scan a QR code with the 
+  MAC address. */
+
   final TextEditingController controller1;
   final TextEditingController controller2;
   final ValueNotifier<List<String>> historyMAC;
@@ -349,6 +352,9 @@ class SelectDevicesBlock extends StatelessWidget {
 }
 
 class DeviceStateConnectionBlock extends StatelessWidget {
+  /* Widget that displays the connection state between the acquisition device 
+  and PyEpiBOX. */
+
   final MQTTClientWrapper mqttClientWrapper;
   final Devices devices;
   final int deviceID;
@@ -422,24 +428,6 @@ class DeviceStateConnectionBlock extends StatelessWidget {
                   ),
                   child: Material(
                     color: Colors.white.withOpacity(0.0),
-                    // child: InkWell(
-                    //   key: Key('connectDeviceButton$deviceID'),
-                    //   onTap: () {
-                    //     if (connectionNotifier.value !=
-                    //         MqttCurrentConnectionState.CONNECTED) {
-                    //       errorHandler.overlayInfo = {
-                    //         'overlayMessage': DevicesCustomOverlay(),
-                    //         'timer': 2,
-                    //         'showOverlay': true
-                    //       };
-                    //     } else {
-                    //       deviceID == 1
-                    //           ? devices.macAddress1Connection = 'connecting'
-                    //           : devices.macAddress2Connection = 'connecting';
-                    //       mqttClientWrapper.publishMessage(
-                    //           "['CONNECT', '${devices.get('macAddress$deviceID')}', '${devices.type}']");
-                    //     }
-                    //   },
                     child: Container(
                       child: ListTile(
                         leading: Column(
