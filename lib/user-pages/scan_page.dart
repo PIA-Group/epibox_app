@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:barcode_scan/barcode_scan.dart';
+//import 'package:barcode_scan/barcode_scan.dart';
 import 'package:epibox/app_localizations.dart';
 import 'package:epibox/shared_pref/pref_handler.dart';
 import 'package:flutter/material.dart';
@@ -114,7 +114,7 @@ class _ScanPageState extends State<ScanPage> {
                           primary: DefaultColors.mainLColor, // background
                           //onPrimary: Colors.white, // foreground
                         ),
-                        onPressed: () => scan(widget.patientNotifier),
+                        onPressed: () => {}, //scan(widget.patientNotifier),
                         icon: Icon(
                           MdiIcons.qrcode,
                         ),
@@ -180,30 +180,30 @@ class _ScanPageState extends State<ScanPage> {
     );
   }
 
-  Future scan(ValueNotifier<String> notifier) async {
-    try {
-      var scan = (await BarcodeScanner.scan());
-      String scanString = scan.rawContent;
-      if (scan.format != BarcodeFormat.unknown) {
-        setState(() => notifier.value = scanString);
-        setState(
-            () => this.barcodeError = 'ID: ${widget.patientNotifier.value}');
-      }
-    } on PlatformException catch (e) {
-      if (e.code == BarcodeScanner.cameraAccessDenied) {
-        setState(() {
-          this.barcodeError = 'É necessário permissão para aceder à camera!';
-        });
-      } else {
-        setState(() => this.barcodeError = 'Unknown error: $e');
-      }
-    } on FormatException {
-      setState(() => notifier.value = null);
-      setState(() => this.barcodeError = 'Scan não completo.');
-    } catch (e) {
-      setState(() => this.barcodeError = 'Unknown error: $e');
-    }
-  }
+  // Future scan(ValueNotifier<String> notifier) async {
+  //   try {
+  //     var scan = (await BarcodeScanner.scan());
+  //     String scanString = scan.rawContent;
+  //     if (scan.format != BarcodeFormat.unknown) {
+  //       setState(() => notifier.value = scanString);
+  //       setState(
+  //           () => this.barcodeError = 'ID: ${widget.patientNotifier.value}');
+  //     }
+  //   } on PlatformException catch (e) {
+  //     if (e.code == BarcodeScanner.cameraAccessDenied) {
+  //       setState(() {
+  //         this.barcodeError = 'É necessário permissão para aceder à camera!';
+  //       });
+  //     } else {
+  //       setState(() => this.barcodeError = 'Unknown error: $e');
+  //     }
+  //   } on FormatException {
+  //     setState(() => notifier.value = null);
+  //     setState(() => this.barcodeError = 'Scan não completo.');
+  //   } catch (e) {
+  //     setState(() => this.barcodeError = 'Unknown error: $e');
+  //   }
+  // }
 }
 
 class CurveBackground extends CustomPainter {

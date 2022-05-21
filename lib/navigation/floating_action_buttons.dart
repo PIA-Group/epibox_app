@@ -4,6 +4,7 @@ import 'package:epibox/classes/acquisition.dart';
 import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/devices.dart';
 import 'package:epibox/classes/error_handler.dart';
+import 'package:epibox/classes/shared_pref.dart';
 import 'package:epibox/classes/visualization.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/mqtt/mqtt_states.dart';
@@ -114,18 +115,18 @@ class MACAddressConnectionFloater extends StatelessWidget {
 
 class SpeedAnnotationFloater extends StatelessWidget {
   final MQTTClientWrapper mqttClientWrapper;
-  final ValueNotifier<List> annotationTypesD;
   final ValueNotifier<String> patientNotifier;
   final Acquisition acquisition;
   final ErrorHandler errorHandler;
+  final Preferences preferences;
 
   SpeedAnnotationFloater({
     Key key,
     this.mqttClientWrapper,
-    this.annotationTypesD,
     this.patientNotifier,
     this.acquisition,
     this.errorHandler,
+    this.preferences,
   }) : super(key: key);
 
   @override
@@ -140,9 +141,9 @@ class SpeedAnnotationFloater extends StatelessWidget {
           context: context,
           acquisition: acquisition,
           errorHandler: errorHandler,
-          annotationTypesD: annotationTypesD,
           patientNotifier: patientNotifier,
           mqttClientWrapper: mqttClientWrapper,
+          preferences: preferences,
         ),
         child: Icon(MdiIcons.lightningBolt),
       ),
@@ -192,7 +193,6 @@ class StartStopButton extends StatelessWidget {
   final MQTTClientWrapper mqttClientWrapper;
   final Visualization visualizationMAC1;
   final Visualization visualizationMAC2;
-  final ValueNotifier<List<String>> historyMAC;
   final ValueNotifier<String> patientNotifier;
   final ValueNotifier<List<String>> driveListNotifier;
 
@@ -205,7 +205,6 @@ class StartStopButton extends StatelessWidget {
     this.mqttClientWrapper,
     this.visualizationMAC1,
     this.visualizationMAC2,
-    this.historyMAC,
     this.patientNotifier,
     this.driveListNotifier,
   }) : super(key: key);

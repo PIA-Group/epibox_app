@@ -1,24 +1,23 @@
 import 'package:epibox/app_localizations.dart';
 import 'package:epibox/classes/devices.dart';
+import 'package:epibox/classes/shared_pref.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
+import 'package:epibox/shared_pref/pref_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:epibox/decor/default_colors.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:epibox/decor/text_styles.dart';
 
 class ProfileDrawer extends StatefulWidget {
   final MQTTClientWrapper mqttClientWrapper;
   final ValueNotifier<String> patientNotifier;
-  final ValueNotifier<List> annotationTypesD;
-  final ValueNotifier<List<String>> historyMAC;
   final Devices devices;
+  final Preferences preferences;
 
   ProfileDrawer({
     this.mqttClientWrapper,
     this.patientNotifier,
-    this.annotationTypesD,
-    this.historyMAC,
     this.devices,
+    this.preferences,
   });
 
   @override
@@ -26,7 +25,6 @@ class ProfileDrawer extends StatefulWidget {
 }
 
 class _ProfileDrawerState extends State<ProfileDrawer> {
-  List<String> annotationTypesS;
   int _radioValue;
   Map<String, int> typeOfDevices = {'Bitalino': 0, 'Mini': 1, 'Sense': 2};
   //TextEditingController _idTemplateController = TextEditingController();
@@ -35,26 +33,10 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
   void initState() {
     super.initState();
     _radioValue = typeOfDevices[widget.devices.type];
-    annotationTypesS = List<String>.from(widget.annotationTypesD.value);
-  }
-
-  void _updateAnnotations() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('annotationTypes', annotationTypesS);
-  }
-
-  void _updateHistory() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('historyMAC', widget.historyMAC.value);
-  }
-
-  void _updateDeviceType() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('deviceType', widget.devices.type);
   }
 
   Iterable<Widget> get annotationsWidgets sync* {
-    for (String annot in annotationTypesS) {
+    for (String annot in widget.preferences.annotationTypes) {
       yield Padding(
         padding: const EdgeInsets.all(4.0),
         child: Chip(
@@ -65,13 +47,13 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                 fontSize: 16,
               )),
           onDeleted: () {
-            setState(() {
-              annotationTypesS.removeWhere((String entry) {
-                return entry == annot;
-              });
-            });
-            setState(() => widget.annotationTypesD.value.remove(annot));
-            _updateAnnotations();
+            // setState(() {
+            //   annotationTypesS.removeWhere((String entry) {
+            //     return entry == annot;
+            //   });
+            // });
+            setState(() => widget.preferences.annotationTypes.remove(annot));
+            updateAnnotations(widget.preferences);
           },
         ),
       );
@@ -79,7 +61,7 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
   }
 
   Iterable<Widget> get historyWidgets sync* {
-    for (String mac in widget.historyMAC.value) {
+    for (String mac in widget.preferences.macHistory) {
       if (mac != ' ') {
         yield Padding(
           padding: const EdgeInsets.all(4.0),
@@ -92,11 +74,11 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                 )),
             onDeleted: () {
               setState(() {
-                widget.historyMAC.value.removeWhere((String entry) {
+                widget.preferences.macHistory.removeWhere((String entry) {
                   return entry == mac;
                 });
               });
-              _updateHistory();
+              updateHistory(widget.preferences);
             },
           ),
         );
@@ -208,7 +190,7 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                             setState(() {
                               _radioValue = value;
                               widget.devices.type = 'Bitalino';
-                              _updateDeviceType();
+                              updateDeviceType(widget.devices);
                             });
                           }),
                     ],
@@ -226,7 +208,7 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                               setState(() {
                                 _radioValue = value;
                                 widget.devices.type = 'Mini';
-                                _updateDeviceType();
+                                updateDeviceType(widget.devices);
                               });
                             }),
                       ]),

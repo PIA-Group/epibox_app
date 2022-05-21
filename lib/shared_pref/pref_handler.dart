@@ -1,6 +1,7 @@
 import 'package:epibox/classes/acquisition.dart';
 import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/devices.dart';
+import 'package:epibox/classes/shared_pref.dart';
 import 'package:epibox/classes/visualization.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -149,15 +150,15 @@ Future<void> saveMAC(mac1, mac2) async {
 }
 
 Future<void> saveMACHistory(
-    String mac1, String mac2, ValueNotifier<List<String>> historyMAC) async {
+    String mac1, String mac2, Preferences preferences) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   try {
     if (mac1 != '' &&
         mac1 != ' ' &&
         mac1 != 'xx:xx:xx:xx:xx:xx' &&
-        !historyMAC.value.contains(mac1)) {
-      historyMAC.value.add(mac1);
-      await prefs.setStringList('historyMAC', historyMAC.value);
+        !preferences.macHistory.contains(mac1)) {
+      preferences.macHistory.add(mac1);
+      await prefs.setStringList('historyMAC', preferences.macHistory);
     }
   } catch (e) {
     print(e);
@@ -167,27 +168,28 @@ Future<void> saveMACHistory(
     if (mac2 != '' &&
         mac2 != ' ' &&
         mac2 != 'xx:xx:xx:xx:xx:xx' &&
-        !historyMAC.value.contains(mac2)) {
-      historyMAC.value.add(mac2);
-      await prefs.setStringList('historyMAC', historyMAC.value);
+        !preferences.macHistory.contains(mac2)) {
+      preferences.macHistory.add(mac2);
+      await prefs.setStringList('historyMAC', preferences.macHistory);
     }
   } catch (e) {
     print(e);
   }
 }
 
-void getMACHistory(ValueNotifier<List<String>> historyMAC) async {
+void getMACHistory(Preferences preferences) async {
   await SharedPreferences.getInstance().then((prefs) {
+    print('contains history: ${prefs.containsKey('historyMAC')}');
     if (prefs.containsKey('historyMAC')) {
       try {
         List<String> history =
             (prefs.getStringList('historyMAC').toList() ?? [' ']);
-        historyMAC.value = history;
+        preferences.macHistory = history;
       } catch (e) {
         print(e);
       }
     } else {
-      historyMAC.value = [' '];
+      preferences.macHistory = [' '];
     }
   });
 }
@@ -258,19 +260,40 @@ void removeSharedPrefs(String key) async {
 
 // ANNOTATIONS
 
-void getAnnotationTypes(ValueNotifier<List> annotationTypesD) async {
+void getAnnotationTypes(Preferences preferences) async {
   await SharedPreferences.getInstance().then((prefs) {
+    print('contains annotations: ${prefs.containsKey('annotationTypes')}');
     if (prefs.containsKey('annotationTypes')) {
       try {
         List annot = prefs.getStringList('annotationTypes').toList() ?? [];
-        annotationTypesD.value = annot;
+        preferences.annotationTypes = annot;
       } catch (e) {
         print(e);
       }
     } else {
-      annotationTypesD.value = [];
+      preferences.annotationTypes = [];
     }
   });
+}
+
+void saveAnnotationTypes(List<String> annotationTypes) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setStringList('annotationTypes', annotationTypes);
+}
+
+void updateAnnotations(Preferences preferences) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setStringList('annotationTypes', preferences.annotationTypes);
+}
+
+void updateHistory(Preferences preferences) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setStringList('historyMAC', preferences.macHistory);
+}
+
+void updateDeviceType(Devices devices) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString('deviceType', devices.type);
 }
 
 // BATTERIES

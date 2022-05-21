@@ -3,6 +3,7 @@ import 'package:epibox/classes/acquisition.dart';
 import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/devices.dart';
 import 'package:epibox/classes/error_handler.dart';
+import 'package:epibox/classes/shared_pref.dart';
 import 'package:epibox/classes/visualization.dart';
 import 'package:epibox/mqtt/connection_manager.dart';
 import 'package:epibox/navigation/floating_action_buttons.dart';
@@ -58,10 +59,6 @@ class _NavigationPageState extends State<NavigationPage>
   ValueNotifier<String> timedOut = ValueNotifier(null);
   ValueNotifier<bool> startupError = ValueNotifier(false);
 
-  // Variables that hold information stores locally on the smartphone
-  ValueNotifier<List<String>> historyMAC = ValueNotifier([]);
-  ValueNotifier<List> annotationTypesD = ValueNotifier([]);
-
   // App-related variables
   Timer timer;
   double appBarHeight = 100;
@@ -75,6 +72,7 @@ class _NavigationPageState extends State<NavigationPage>
   Visualization visualizationMAC1 = Visualization();
   Visualization visualizationMAC2 = Visualization();
   ErrorHandler errorHandler = ErrorHandler();
+  Preferences preferences = Preferences();
   ValueNotifier<String> shouldRestart = ValueNotifier(null);
 
   // The "listeners" variable stores the listeners added to several other variables
@@ -158,9 +156,9 @@ class _NavigationPageState extends State<NavigationPage>
       connectionNotifier: connectionNotifier,
       patientNotifier: widget.patientNotifier,
     );
-    getAnnotationTypes(annotationTypesD);
+    getAnnotationTypes(preferences);
     getLastDeviceType(devices);
-    getMACHistory(historyMAC);
+    getMACHistory(preferences);
     initialized = initialize();
   }
 
@@ -223,9 +221,8 @@ class _NavigationPageState extends State<NavigationPage>
       drawer: ProfileDrawer(
         mqttClientWrapper: mqttClientWrapper,
         patientNotifier: widget.patientNotifier,
-        annotationTypesD: annotationTypesD,
-        historyMAC: historyMAC,
         devices: devices,
+        preferences: preferences,
       ),
       backgroundColor: Colors.transparent,
       key: _scaffoldKey,
@@ -294,7 +291,6 @@ class _NavigationPageState extends State<NavigationPage>
                             driveListNotifier: driveListNotifier,
                             sentMACNotifier: sentMACNotifier,
                             patientNotifier: widget.patientNotifier,
-                            annotationTypesD: annotationTypesD,
                             timedOut: timedOut,
                             startupError: startupError,
                             shouldRestart: shouldRestart,
@@ -306,8 +302,8 @@ class _NavigationPageState extends State<NavigationPage>
                             patientNotifier: widget.patientNotifier,
                             mqttClientWrapper: mqttClientWrapper,
                             connectionNotifier: connectionNotifier,
+                            preferences: preferences,
                             driveListNotifier: driveListNotifier,
-                            historyMAC: historyMAC,
                           ),
                           ConfigPage(
                             devices: devices,
@@ -318,6 +314,7 @@ class _NavigationPageState extends State<NavigationPage>
                             connectionNotifier: connectionNotifier,
                             driveListNotifier: driveListNotifier,
                             patientNotifier: widget.patientNotifier,
+                            preferences: preferences,
                           ),
                           VisualizationNavPage(
                             devices: devices,
@@ -327,7 +324,6 @@ class _NavigationPageState extends State<NavigationPage>
                             acquisition: acquisition,
                             mqttClientWrapper: mqttClientWrapper,
                             patientNotifier: widget.patientNotifier,
-                            annotationTypesD: annotationTypesD,
                             connectionNotifier: connectionNotifier,
                             timedOut: timedOut,
                             startupError: startupError,
@@ -422,10 +418,10 @@ class _NavigationPageState extends State<NavigationPage>
                         MACAddressConnectionFloater(),
                         SpeedAnnotationFloater(
                           mqttClientWrapper: mqttClientWrapper,
-                          annotationTypesD: annotationTypesD,
                           patientNotifier: widget.patientNotifier,
                           acquisition: acquisition,
                           errorHandler: errorHandler,
+                          preferences: preferences,
                         ),
                         ResumePauseButton(
                           mqttClientWrapper: mqttClientWrapper,
@@ -439,7 +435,6 @@ class _NavigationPageState extends State<NavigationPage>
                           mqttClientWrapper: mqttClientWrapper,
                           visualizationMAC1: visualizationMAC1,
                           visualizationMAC2: visualizationMAC2,
-                          historyMAC: historyMAC,
                           patientNotifier: widget.patientNotifier,
                           driveListNotifier: driveListNotifier,
                         ),

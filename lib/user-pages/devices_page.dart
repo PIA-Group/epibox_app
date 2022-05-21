@@ -1,8 +1,9 @@
-import 'package:barcode_scan/barcode_scan.dart';
+//import 'package:barcode_scan/barcode_scan.dart';
 import 'package:epibox/app_localizations.dart';
 import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/devices.dart';
 import 'package:epibox/classes/error_handler.dart';
+import 'package:epibox/classes/shared_pref.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
 import 'package:epibox/utils/config.dart';
@@ -11,7 +12,6 @@ import 'package:epibox/mqtt/mqtt_states.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'package:epibox/utils/tooltips.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:property_change_notifier/property_change_notifier.dart';
@@ -26,12 +26,10 @@ class DevicesPage extends StatefulWidget {
   final ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
   final MQTTClientWrapper mqttClientWrapper;
   final MqttCurrentConnectionState connectionState;
-
+  final Preferences preferences;
   final Configurations configurations;
 
   final ValueNotifier<String> patientNotifier;
-
-  final ValueNotifier<List<String>> historyMAC;
 
   final ValueNotifier<List<String>> driveListNotifier;
   final ValueNotifier<bool> sentConfigNotifier;
@@ -42,11 +40,11 @@ class DevicesPage extends StatefulWidget {
     this.configurations,
     this.mqttClientWrapper,
     this.connectionState,
+    this.preferences,
     this.connectionNotifier,
     this.patientNotifier,
     this.driveListNotifier,
     this.sentConfigNotifier,
-    this.historyMAC,
   });
 
   @override
@@ -183,7 +181,7 @@ class _DevicesPageState extends State<DevicesPage> {
             SelectDevicesBlock(
               controller1: controller1,
               controller2: controller2,
-              historyMAC: widget.historyMAC,
+              preferences: widget.preferences,
             ),
             SizedBox(
               height: verticalSpacing,
@@ -203,8 +201,12 @@ class _DevicesPageState extends State<DevicesPage> {
                   _setNewDefault1();
                   _setNewDefault2();
 
-                  newDefault(widget.mqttClientWrapper, widget.configurations,
-                      widget.devices, widget.patientNotifier);
+                  newDefault(
+                      widget.mqttClientWrapper,
+                      widget.configurations,
+                      widget.devices,
+                      widget.patientNotifier,
+                      widget.preferences);
                 },
                 child: new Text(
                   AppLocalizations.of(context)
@@ -265,9 +267,13 @@ class SelectDevicesBlock extends StatelessWidget {
 
   final TextEditingController controller1;
   final TextEditingController controller2;
-  final ValueNotifier<List<String>> historyMAC;
+  final Preferences preferences;
 
-  SelectDevicesBlock({this.controller1, this.controller2, this.historyMAC});
+  SelectDevicesBlock({
+    this.controller1,
+    this.controller2,
+    this.preferences,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -320,7 +326,7 @@ class SelectDevicesBlock extends StatelessWidget {
                     entry.value.text = value;
                   },
                   itemBuilder: (BuildContext context) {
-                    return historyMAC.value
+                    return preferences.macHistory
                         .map<PopupMenuItem<String>>((String value) {
                       return new PopupMenuItem(
                           child: new Text(value), value: value);
@@ -331,23 +337,13 @@ class SelectDevicesBlock extends StatelessWidget {
                     icon: Icon(
                       MdiIcons.qrcode,
                     ),
-                    onPressed: () => scan(entry.value))
+                    onPressed: () => {}) //scan(entry.value))
               ]),
             );
           }).toList(),
         ),
       ),
     );
-  }
-
-  Future scan(TextEditingController controller) async {
-    try {
-      var scan = (await BarcodeScanner.scan());
-      String scanString = scan.rawContent;
-      controller.text = scanString;
-    } on PlatformException catch (e) {
-      print(e);
-    }
   }
 }
 
@@ -361,6 +357,7 @@ class DeviceStateConnectionBlock extends StatelessWidget {
   final TextEditingController controller;
   final double verticalSpacing;
   final ErrorHandler errorHandler;
+  final Preferences preferences;
   final ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
 
   DeviceStateConnectionBlock({
@@ -370,6 +367,7 @@ class DeviceStateConnectionBlock extends StatelessWidget {
     this.controller,
     this.verticalSpacing,
     this.errorHandler,
+    this.preferences,
     this.connectionNotifier,
   });
 

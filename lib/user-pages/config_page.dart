@@ -1,6 +1,7 @@
 import 'package:epibox/app_localizations.dart';
 import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/devices.dart';
+import 'package:epibox/classes/shared_pref.dart';
 import 'package:epibox/classes/visualization.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/decor/text_styles.dart';
@@ -23,6 +24,7 @@ class ConfigPage extends StatefulWidget {
   final ValueNotifier<MqttCurrentConnectionState> connectionNotifier;
   final ValueNotifier<List<String>> driveListNotifier;
   final ValueNotifier<String> patientNotifier;
+  final Preferences preferences;
 
   ConfigPage({
     this.configurations,
@@ -33,6 +35,7 @@ class ConfigPage extends StatefulWidget {
     this.connectionNotifier,
     this.driveListNotifier,
     this.patientNotifier,
+    this.preferences,
   });
 
   @override
@@ -337,8 +340,12 @@ class _ConfigPageState extends State<ConfigPage> {
                     //onPrimary: Colors.white, // foreground
                   ),
                   onPressed: () {
-                    newDefault(widget.mqttClientWrapper, widget.configurations,
-                        widget.devices, widget.patientNotifier);
+                    newDefault(
+                        widget.mqttClientWrapper,
+                        widget.configurations,
+                        widget.devices,
+                        widget.patientNotifier,
+                        widget.preferences);
                   },
                   child: new Text(
                     AppLocalizations.of(context)

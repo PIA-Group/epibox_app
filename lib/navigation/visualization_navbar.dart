@@ -21,7 +21,6 @@ class VisualizationNavPage extends StatelessWidget {
     this.acquisition,
     this.mqttClientWrapper,
     this.patientNotifier,
-    this.annotationTypesD,
     this.connectionNotifier,
     this.timedOut,
     this.startupError,
@@ -36,8 +35,6 @@ class VisualizationNavPage extends StatelessWidget {
   final MQTTClientWrapper mqttClientWrapper;
 
   final ValueNotifier<String> patientNotifier;
-
-  final ValueNotifier<List> annotationTypesD;
 
   final ValueNotifier<String> timedOut;
   final ValueNotifier<bool> startupError;
@@ -71,7 +68,6 @@ class VisualizationNavPage extends StatelessWidget {
                     acquisition: acquisition,
                     mqttClientWrapper: mqttClientWrapper,
                     patientNotifier: patientNotifier,
-                    annotationTypesD: annotationTypesD,
                     connectionNotifier: connectionNotifier,
                     timedOut: timedOut,
                     startupError: startupError,

@@ -25,8 +25,6 @@ class VisualizationPage extends StatefulWidget {
 
   final ValueNotifier<String> patientNotifier;
 
-  final ValueNotifier<List> annotationTypesD;
-
   final ValueNotifier<String> timedOut;
   final ValueNotifier<bool> startupError;
 
@@ -39,7 +37,6 @@ class VisualizationPage extends StatefulWidget {
     this.configurations,
     this.mqttClientWrapper,
     this.patientNotifier,
-    this.annotationTypesD,
     this.timedOut,
     this.startupError,
     this.connectionNotifier,

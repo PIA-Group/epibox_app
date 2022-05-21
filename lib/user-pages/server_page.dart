@@ -34,8 +34,6 @@ class ServerPage extends StatefulWidget {
 
   final ValueNotifier<String> patientNotifier;
 
-  final ValueNotifier<List> annotationTypesD;
-
   final ValueNotifier<String> timedOut;
   final ValueNotifier<bool> startupError;
 
@@ -56,7 +54,6 @@ class ServerPage extends StatefulWidget {
     this.hostnameNotifier,
     this.sentMACNotifier,
     this.patientNotifier,
-    this.annotationTypesD,
     this.timedOut,
     this.startupError,
     this.controllerFreq,

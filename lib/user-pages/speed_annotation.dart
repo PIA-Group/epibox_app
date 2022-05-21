@@ -1,20 +1,21 @@
 import 'package:epibox/app_localizations.dart';
+import 'package:epibox/classes/shared_pref.dart';
+import 'package:epibox/shared_pref/pref_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class SpeedAnnotationDialog extends StatefulWidget {
-  final ValueNotifier<List> annotationTypesD;
   final List<String> annotationTypes;
   final ValueNotifier<String> patientNotifier;
   final MQTTClientWrapper mqttClientWrapper;
+  final Preferences preferences;
 
   SpeedAnnotationDialog({
-    this.annotationTypesD,
     this.annotationTypes,
     this.patientNotifier,
     this.mqttClientWrapper,
+    this.preferences,
   });
 
   @override
@@ -41,10 +42,10 @@ class _SpeedAnnotationDialogState extends State<SpeedAnnotationDialog> {
       try {
         setState(() => _controller.text = _controller.text.trim());
         if (!widget.annotationTypes.contains(_controller.text)) {
-          setState(() => widget.annotationTypesD.value.add(_controller.text));
+          setState(
+              () => widget.preferences.annotationTypes.add(_controller.text));
           widget.annotationTypes.add(_controller.text);
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setStringList('annotationTypes', widget.annotationTypes);
+          saveAnnotationTypes(widget.annotationTypes);
         }
       } catch (e) {
         print(e);
