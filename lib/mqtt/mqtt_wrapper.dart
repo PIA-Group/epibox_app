@@ -28,7 +28,6 @@ class MQTTClientWrapper {
       connectionState = MqttCurrentConnectionState.CONNECTING;
       onNewConnection(connectionState);
       await client.connect(Constants.username, Constants.password);
-      print('CONNECTION DONE');
     } on Exception catch (e) {
       print('MQTTClientWrapper::client exception - $e');
       connectionState = MqttCurrentConnectionState.ERROR_WHEN_CONNECTING;

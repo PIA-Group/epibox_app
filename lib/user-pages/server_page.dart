@@ -120,8 +120,6 @@ class _ServerPageState extends State<ServerPage> {
                       //onPrimary: Colors.white, // foreground
                     ),
                     onPressed: () {
-                      print(
-                          'HERE current connectionstate: ${widget.connectionNotifier.value}');
                       if (widget.connectionNotifier.value !=
                               MqttCurrentConnectionState.DISCONNECTED &&
                           widget.connectionNotifier.value !=

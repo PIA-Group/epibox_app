@@ -90,7 +90,6 @@ class _ConfigPageState extends State<ConfigPage> {
     super.initState();
 
     listeners['configDefault'] = () {
-      print('config defaut listener');
       // if the currently available drives doesn't include the previous default drive:
       if (!_isDefaultDriveInList()) {
         widget.configurations.chosenDrive = widget.driveListNotifier.value[0];
@@ -113,7 +112,7 @@ class _ConfigPageState extends State<ConfigPage> {
           widget.configurations.configDefault['save_raw'] == 'true';
 
       // Channels & sensors
-      _getDefaultChannels(widget.configurations.configDefault['channels']);
+      _getDefaultChannels(widget.configurations.configDefault);
       _getDefaultSensors(widget.configurations.configDefault['channels']);
 
       List<List> _channels =
@@ -155,6 +154,8 @@ class _ConfigPageState extends State<ConfigPage> {
     List<List<List<String>>> _channels2Save = [[], []];
     List<List<String>> _sensors2Save = [[], []];
 
+    print('bit1: ${configurations.bit1Selections}');
+
     configurations.bit1Selections.asMap().forEach((channel, value) {
       if (value) {
         _channels2Send.add([
@@ -168,6 +169,7 @@ class _ConfigPageState extends State<ConfigPage> {
             .add("${configurations.controllerSensors[channel].text}");
       }
     });
+    print(_channels2Send);
     configurations.bit2Selections.asMap().forEach((channel, value) {
       if (value) {
         _channels2Send.add([
@@ -194,25 +196,31 @@ class _ConfigPageState extends State<ConfigPage> {
     super.dispose();
   }
 
-  void _getDefaultChannels(List channels) {
+  void _getDefaultChannels(Map<String, dynamic> configDefault) {
     List<bool> _aux1Selections = List.generate(6, (_) => false);
     List<bool> _aux2Selections = List.generate(6, (_) => false);
 
-    channels.forEach((triplet) {
-      if (triplet[0] == 'MAC1') {
-        _aux1Selections[int.parse(triplet[1]) - 1] = true;
-      }
-      if (triplet[0] == 'MAC2') {
-        _aux2Selections[int.parse(triplet[1]) - 1] = true;
-      }
-    });
+    print('channels ${configDefault.isEmpty}');
+    if (configDefault['channels'].isEmpty) {
+      if (!configDefault['devices_mac']['MAC1'].isEmpty)
+        _aux1Selections = List.generate(6, (_) => true);
+      if (!configDefault['devices_mac']['MAC2'].isEmpty)
+        _aux2Selections = List.generate(6, (_) => true);
+    } else {
+      configDefault['channels'].forEach((triplet) {
+        if (triplet[0] == 'MAC1') {
+          _aux1Selections[int.parse(triplet[1]) - 1] = true;
+        }
+        if (triplet[0] == 'MAC2') {
+          _aux2Selections[int.parse(triplet[1]) - 1] = true;
+        }
+      });
+    }
     widget.configurations.bit1Selections = _aux1Selections;
     widget.configurations.bit2Selections = _aux2Selections;
   }
 
   void _getDefaultSensors(List channels) {
-    //List<String>
-
     channels.forEach((triplet) {
       if (triplet[0] == 'MAC1') {
         widget.configurations.controllerSensors[int.parse(triplet[1]) - 1]
@@ -427,7 +435,8 @@ class DriveBlock extends StatelessWidget {
                 child: PropertyChangeConsumer<Configurations>(
                     properties: ['chosenDrive'],
                     builder: (context, configurations, properties) {
-                      //print('drivelist: ${driveListNotifier.value}');
+                      print('drivelist: ${driveListNotifier.value}');
+                      print(configurations.chosenDrive);
                       return ValueListenableBuilder(
                           valueListenable: driveListNotifier,
                           builder: (context, driveList, child) {

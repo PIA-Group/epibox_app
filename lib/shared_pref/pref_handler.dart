@@ -11,7 +11,6 @@ import 'dart:convert';
 (on SharedPreferences). */
 
 Future<void> updateIdTemplate(String patientID) async {
-  print('new ID: $patientID');
   await SharedPreferences.getInstance().then((prefs) async {
     await prefs.setString('id_template', patientID);
   });
@@ -179,7 +178,6 @@ Future<void> saveMACHistory(
 
 void getMACHistory(Preferences preferences) async {
   await SharedPreferences.getInstance().then((prefs) {
-    print('contains history: ${prefs.containsKey('historyMAC')}');
     if (prefs.containsKey('historyMAC')) {
       try {
         List<String> history =

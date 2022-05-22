@@ -231,7 +231,14 @@ class _VisualizationPageState extends State<VisualizationPage> {
                       return Column(
                           children: visualization.data2Plot
                               .mapIndexed((data, i) {
+                                print(
+                                    'data2plot lenght: ${visualization.data2Plot.length}');
                                 if (data.isNotEmpty) {
+                                  print(i);
+                                  print(
+                                      'channelsMAC: ${visualization.channelsMAC}');
+                                  print(
+                                      'sensorsMAC: ${visualization.sensorsMAC}');
                                   return [
                                     PlotDataTitle(
                                         channels: visualization.channelsMAC[i],

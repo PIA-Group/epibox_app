@@ -119,8 +119,7 @@ void isDrivesList(String message, ValueNotifier<List<String>> driveListNotifier,
     List<String> listDrives = message.split(",");
     listDrives.removeAt(0);
     listDrives = listDrives.map((drive) => drive.split("'")[1]).toList();
-    driveListNotifier.value = listDrives;
-    //mqttClientWrapper.publishMessage("['GO TO DEVICES']");
+    driveListNotifier.value = [' '] + listDrives;
   } catch (e) {
     print(e);
   }
@@ -128,7 +127,6 @@ void isDrivesList(String message, ValueNotifier<List<String>> driveListNotifier,
 
 void isDefaultConfig(List message2List, Configurations configurations) {
   configurations.configDefault = message2List[1];
-  //updateIdTemplate(message2List[1]['patient_id']);
 }
 
 // ACQUISITION
@@ -139,7 +137,6 @@ void isAcquisitionState(String message, Acquisition acquisition,
     acquisition.acquisitionState = 'starting';
   } else if (message.contains('ACQUISITION ON')) {
     if (acquisition.acquisitionState != 'acquiring') {
-      print('changed acquisition state in isAcquisitionState');
       acquisition.acquisitionState = 'acquiring';
     }
   } else if (message.contains('RECONNECTING')) {
@@ -158,7 +155,6 @@ void isAcquisitionState(String message, Acquisition acquisition,
 
 void isData(List message2List, Devices devices, Acquisition acquisition) {
   if (acquisition.acquisitionState != 'acquiring') {
-    print('changed acquisition state in isData');
     acquisition.acquisitionState = 'acquiring';
   }
   if (devices.macAddress1.trim() != '' &&
@@ -172,9 +168,10 @@ void isData(List message2List, Devices devices, Acquisition acquisition) {
   List<List> dataMAC2 = [];
 
   message2List[2].asMap().forEach((index, channel) {
-    if (channel[0] == devices.macAddress1) {
+    if (channel[0] == devices.macAddress1 && devices.macAddress1.trim() != '') {
       dataMAC1.add(message2List[1][index]);
-    } else {
+    } else if (channel[0] == devices.macAddress2 &&
+        devices.macAddress2.trim() != '') {
       dataMAC2.add(message2List[1][index]);
     }
   });
