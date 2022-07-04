@@ -39,9 +39,15 @@ void newDefault(
     Preferences preferences) {
   List<List<String>> _channels2Send = _getChannels2Send(configurations);
   saveMACHistory(devices.macAddress1, devices.macAddress2, preferences);
-  String _newDefaultDrive = configurations.chosenDrive
-      .substring(0, configurations.chosenDrive.indexOf('('))
-      .trim();
+  print('chosen drive: ${configurations.chosenDrive.trim().isEmpty}');
+  String _newDefaultDrive = 'EpiBOX Core';
+  print(
+      "['NEW CONFIG DEFAULT', {'initial_dir': '', 'fs': ${configurations.controllerFreq.text}, 'channels': $_channels2Send, 'save_raw': '${configurations.saveRaw}', 'devices_mac': {'MAC1':'${devices.macAddress1}','MAC2':'${devices.macAddress2}'}, 'patient_id': '${patientNotifier.value}', 'service': '${devices.type}'}]");
+  if (configurations.chosenDrive.trim().isNotEmpty) {
+    _newDefaultDrive = configurations.chosenDrive
+        .substring(0, configurations.chosenDrive.indexOf('('))
+        .trim();
+  }
   mqttClientWrapper.publishMessage(
       "['NEW CONFIG DEFAULT', {'initial_dir': '$_newDefaultDrive', 'fs': ${configurations.controllerFreq.text}, 'channels': $_channels2Send, 'save_raw': '${configurations.saveRaw}', 'devices_mac': {'MAC1':'${devices.macAddress1}','MAC2':'${devices.macAddress2}'}, 'patient_id': '${patientNotifier.value}', 'service': '${devices.type}'}]");
 }

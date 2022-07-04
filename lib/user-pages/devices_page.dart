@@ -218,6 +218,8 @@ class _DevicesPageState extends State<DevicesPage> {
               PropertyChangeConsumer<Devices>(
                   properties: ['macAddress1', 'macAddress2'],
                   builder: (context, devices, properties) {
+                    print(
+                        'devices: ${devices.macAddress1.trim()} | ${devices.macAddress2.trim()}');
                     if ((devices.macAddress1.trim() != '' &&
                             devices.macAddress1.trim() !=
                                 'xx:xx:xx:xx:xx:xx') ||

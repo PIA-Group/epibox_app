@@ -126,6 +126,7 @@ void isDrivesList(String message, ValueNotifier<List<String>> driveListNotifier,
 }
 
 void isDefaultConfig(List message2List, Configurations configurations) {
+  print('default: ${message2List[1]}');
   configurations.configDefault = message2List[1];
 }
 
