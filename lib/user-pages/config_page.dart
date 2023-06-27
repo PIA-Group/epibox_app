@@ -154,7 +154,7 @@ class _ConfigPageState extends State<ConfigPage> {
     List<List<List<String>>> _channels2Save = [[], []];
     List<List<String>> _sensors2Save = [[], []];
 
-    print('bit1: ${configurations.bit1Selections}');
+    //print('bit1: ${configurations.bit1Selections}');
 
     configurations.bit1Selections.asMap().forEach((channel, value) {
       if (value) {
@@ -169,7 +169,7 @@ class _ConfigPageState extends State<ConfigPage> {
             .add("${configurations.controllerSensors[channel].text}");
       }
     });
-    print(_channels2Send);
+    //print(_channels2Send);
     configurations.bit2Selections.asMap().forEach((channel, value) {
       if (value) {
         _channels2Send.add([
@@ -200,12 +200,15 @@ class _ConfigPageState extends State<ConfigPage> {
     List<bool> _aux1Selections = List.generate(6, (_) => false);
     List<bool> _aux2Selections = List.generate(6, (_) => false);
 
-    print('channels ${configDefault.isEmpty}');
     if (configDefault['channels'].isEmpty) {
-      if (!configDefault['devices_mac']['MAC1'].isEmpty)
-        _aux1Selections = List.generate(6, (_) => true);
-      if (!configDefault['devices_mac']['MAC2'].isEmpty)
-        _aux2Selections = List.generate(6, (_) => true);
+      if (configDefault["devices_mac"].keys.toList().contains('MAC1')) {
+        if (!configDefault['devices_mac']['MAC1'].isEmpty)
+          _aux1Selections = List.generate(6, (_) => true);
+      }
+      if (configDefault["devices_mac"].keys.toList().contains('MAC2')) {
+        if (!configDefault['devices_mac']['MAC2'].isEmpty)
+          _aux2Selections = List.generate(6, (_) => true);
+      }
     } else {
       configDefault['channels'].forEach((triplet) {
         if (triplet[0] == 'MAC1') {
@@ -435,8 +438,10 @@ class DriveBlock extends StatelessWidget {
                 child: PropertyChangeConsumer<Configurations>(
                     properties: ['chosenDrive'],
                     builder: (context, configurations, properties) {
+                      print(driveListNotifier.value
+                          .contains(configurations.chosenDrive));
                       print('drivelist: ${driveListNotifier.value}');
-                      print(configurations.chosenDrive);
+                      print('chosenDrive: ${configurations.chosenDrive}');
                       return ValueListenableBuilder(
                           valueListenable: driveListNotifier,
                           builder: (context, driveList, child) {

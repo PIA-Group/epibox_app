@@ -222,6 +222,7 @@ class _VisualizationPageState extends State<VisualizationPage> {
             PropertyChangeConsumer<Visualization>(
                 properties: ['refresh'],
                 builder: (context, visualization, properties) {
+                  print(visualization.data2Plot);
                   if (visualization.dataMAC.isEmpty) {
                     return Container();
                   } else {
@@ -231,19 +232,20 @@ class _VisualizationPageState extends State<VisualizationPage> {
                       return Column(
                           children: visualization.data2Plot
                               .mapIndexed((data, i) {
-                                print(
-                                    'data2plot lenght: ${visualization.data2Plot.length}');
+                                // print(
+                                //     'data2plot lenght: ${visualization.data2Plot.length}');
                                 if (data.isNotEmpty) {
-                                  print(i);
-                                  print(
-                                      'channelsMAC: ${visualization.channelsMAC}');
-                                  print(
-                                      'sensorsMAC: ${visualization.sensorsMAC}');
+                                  // print(i);
+                                  // print(
+                                  //     'channelsMAC: ${visualization.channelsMAC}');
+                                  // print(
+                                  //     'sensorsMAC: ${visualization.sensorsMAC}');
                                   return [
                                     PlotDataTitle(
                                         channels: visualization.channelsMAC[i],
                                         sensor: visualization.sensorsMAC[i]),
                                     PlotData(
+                                      // choose color here using 'visualization' object
                                       data: data,
                                       plotHeight: plotHeight,
                                       configurations: widget.configurations,

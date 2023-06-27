@@ -80,9 +80,14 @@ void gotNewMessage({
 void isMACAddress(List message2List, Devices devices) {
   try {
     devices.defaultMacAddress1 = message2List[1];
-    devices.defaultMacAddress2 = message2List[2];
     devices.macAddress1 = message2List[1];
-    devices.macAddress2 = message2List[2];
+    devices.defaultMacAddress2 = '';
+    devices.macAddress2 = '';
+
+    if (message2List.length > 2) {
+      devices.defaultMacAddress2 = message2List[2];
+      devices.macAddress2 = message2List[2];
+    }
   } catch (e) {
     print(e);
   }
@@ -167,6 +172,9 @@ void isData(List message2List, Devices devices, Acquisition acquisition) {
 
   List<List> dataMAC1 = [];
   List<List> dataMAC2 = [];
+
+  print('message: $message2List');
+  print('message 2: ${message2List[2]}');
 
   message2List[2].asMap().forEach((index, channel) {
     if (channel[0] == devices.macAddress1 && devices.macAddress1.trim() != '') {
