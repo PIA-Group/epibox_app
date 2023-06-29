@@ -13,7 +13,7 @@ class Devices extends PropertyChangeNotifier<String> {
   String _macAddress2Connection = 'disconnected';
   bool _isBit1Enabled = false;
   bool _isBit2Enabled = false;
-  String _type = '';
+  String _type = 'bitalino';
 
   String get macAddress1 => _macAddress1;
   String get macAddress2 => _macAddress2;

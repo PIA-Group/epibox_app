@@ -58,6 +58,7 @@ class _DevicesPageState extends State<DevicesPage> {
   Map<String, Function> listeners = {
     'defaultMacAddress1': null,
     'defaultMacAddress2': null,
+    'type': null,
   };
 
   @override
@@ -218,8 +219,8 @@ class _DevicesPageState extends State<DevicesPage> {
               PropertyChangeConsumer<Devices>(
                   properties: ['macAddress1', 'macAddress2'],
                   builder: (context, devices, properties) {
-                    print(
-                        'devices: ${devices.macAddress1.trim()} | ${devices.macAddress2.trim()}');
+                    // print(
+                    //     'devices: ${devices.macAddress1.trim()} | ${devices.macAddress2.trim()}');
                     if ((devices.macAddress1.trim() != '' &&
                             devices.macAddress1.trim() !=
                                 'xx:xx:xx:xx:xx:xx') ||
@@ -305,43 +306,53 @@ class SelectDevicesBlock extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: macMap.entries.map((entry) {
-            return Padding(
-              padding: EdgeInsets.symmetric(horizontal: 5.0),
-              child: Row(children: [
-                Expanded(
-                  child: MaskedTextField(
-                    key: Key(
-                        'device${entry.key.substring(entry.key.length - 1)}TextField'),
-                    maskedTextFieldController: entry.value,
-                    mask: 'xx:xx:xx:xx:xx:xx',
-                    maxLength: 17,
-                    inputDecoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      counterText: "",
-                      labelText: entry.key,
-                    ),
-                  ),
-                ),
-                PopupMenuButton<String>(
-                  icon: const Icon(Icons.arrow_drop_down),
-                  onSelected: (String value) {
-                    entry.value.text = value;
-                  },
-                  itemBuilder: (BuildContext context) {
-                    return preferences.macHistory
-                        .map<PopupMenuItem<String>>((String value) {
-                      return new PopupMenuItem(
-                          child: new Text(value), value: value);
-                    }).toList();
-                  },
-                ),
-                IconButton(
-                    icon: Icon(
-                      MdiIcons.qrcode,
-                    ),
-                    onPressed: () => {}) //scan(entry.value))
-              ]),
-            );
+            return PropertyChangeConsumer<Devices>(
+                properties: ['type'],
+                builder: (context, devices, properties) {
+                  print(devices.type);
+                  return Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 5.0),
+                    child: Row(children: [
+                      Expanded(
+                          child: devices.type == 'bitalino'
+                              ? MaskedTextField(
+                                  key: Key(
+                                      'device${entry.key.substring(entry.key.length - 1)}TextField'),
+                                  maskedTextFieldController: entry.value,
+                                  mask: 'xx:xx:xx:xx:xx:xx',
+                                  maxLength: 17,
+                                  inputDecoration: InputDecoration(
+                                    border: OutlineInputBorder(),
+                                    counterText: "",
+                                    labelText: entry.key,
+                                  ),
+                                )
+                              : TextField(
+                                  key: Key(
+                                      'device${entry.key.substring(entry.key.length - 1)}TextField'),
+                                  controller: entry.value,
+                                )),
+                      PopupMenuButton<String>(
+                        icon: const Icon(Icons.arrow_drop_down),
+                        onSelected: (String value) {
+                          entry.value.text = value;
+                        },
+                        itemBuilder: (BuildContext context) {
+                          return preferences.macHistory
+                              .map<PopupMenuItem<String>>((String value) {
+                            return new PopupMenuItem(
+                                child: new Text(value), value: value);
+                          }).toList();
+                        },
+                      ),
+                      IconButton(
+                          icon: Icon(
+                            MdiIcons.qrcode,
+                          ),
+                          onPressed: () => {}) //scan(entry.value))
+                    ]),
+                  );
+                });
           }).toList(),
         ),
       ),

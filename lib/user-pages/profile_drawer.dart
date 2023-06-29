@@ -26,7 +26,7 @@ class ProfileDrawer extends StatefulWidget {
 
 class _ProfileDrawerState extends State<ProfileDrawer> {
   int _radioValue;
-  Map<String, int> typeOfDevices = {'Bitalino': 0, 'Mini': 1, 'Sense': 2};
+  Map<String, int> typeOfDevices = {'bitalino': 0, 'scientisst': 1};
   //TextEditingController _idTemplateController = TextEditingController();
 
   @override
@@ -189,7 +189,7 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                           onChanged: (int value) {
                             setState(() {
                               _radioValue = value;
-                              widget.devices.type = 'Bitalino';
+                              widget.devices.type = 'bitalino';
                               updateDeviceType(widget.devices);
                             });
                           }),
@@ -198,7 +198,7 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                   Column(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        Text('Mini',
+                        Text('ScientISST',
                             style: MyTextStyle(
                                 color: DefaultColors.textColorOnLight)),
                         Radio(
@@ -207,7 +207,7 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
                             onChanged: (int value) {
                               setState(() {
                                 _radioValue = value;
-                                widget.devices.type = 'Mini';
+                                widget.devices.type = 'scientisst';
                                 updateDeviceType(widget.devices);
                               });
                             }),

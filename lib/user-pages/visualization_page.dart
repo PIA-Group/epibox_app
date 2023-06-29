@@ -222,7 +222,6 @@ class _VisualizationPageState extends State<VisualizationPage> {
             PropertyChangeConsumer<Visualization>(
                 properties: ['refresh'],
                 builder: (context, visualization, properties) {
-                  print(visualization.data2Plot);
                   if (visualization.dataMAC.isEmpty) {
                     return Container();
                   } else {

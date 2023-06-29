@@ -41,13 +41,13 @@ void getLastDeviceType(Devices devices) async {
   await SharedPreferences.getInstance().then((prefs) {
     if (prefs.containsKey('deviceType')) {
       try {
-        String device = prefs.getString('deviceType') ?? 'Bitalino';
+        String device = prefs.getString('deviceType') ?? 'bitalino';
         devices.type = device;
       } catch (e) {
         print(e);
       }
     } else {
-      devices.type = 'Bitalino';
+      devices.type = 'bitalino';
     }
   });
 }
