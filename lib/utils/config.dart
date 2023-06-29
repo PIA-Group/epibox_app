@@ -44,9 +44,13 @@ void newDefault(
   print(
       "['NEW CONFIG DEFAULT', {'initial_dir': '', 'fs': ${configurations.controllerFreq.text}, 'channels': $_channels2Send, 'save_raw': '${configurations.saveRaw}', 'devices_mac': {'MAC1':'${devices.macAddress1}','MAC2':'${devices.macAddress2}'}, 'patient_id': '${patientNotifier.value}', 'service': '${devices.type}'}]");
   if (configurations.chosenDrive.trim().isNotEmpty) {
-    _newDefaultDrive = configurations.chosenDrive
-        .substring(0, configurations.chosenDrive.indexOf('('))
-        .trim();
+    try {
+      _newDefaultDrive = configurations.chosenDrive
+          .substring(0, configurations.chosenDrive.indexOf('('))
+          .trim();
+    } catch (e) {
+      _newDefaultDrive = configurations.chosenDrive.trim();
+    }
   }
   mqttClientWrapper.publishMessage(
       "['NEW CONFIG DEFAULT', {'initial_dir': '$_newDefaultDrive', 'fs': ${configurations.controllerFreq.text}, 'channels': $_channels2Send, 'save_raw': '${configurations.saveRaw}', 'devices_mac': {'MAC1':'${devices.macAddress1}','MAC2':'${devices.macAddress2}'}, 'patient_id': '${patientNotifier.value}', 'service': '${devices.type}'}]");
