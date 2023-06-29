@@ -25,8 +25,8 @@ Future<void> restart(
     devices.macAddress1 = 'xx:xx:xx:xx:xx:xx';
     devices.macAddress2 = 'xx:xx:xx:xx:xx:xx';
 
-    driveListNotifier.value = [' '];
-    configurations.chosenDrive = ' ';
+    driveListNotifier.value = ['EpiBOX Core'];
+    configurations.chosenDrive = 'EpiBOX Core';
     configurations.controllerFreq.text = ' ';
 
     devices.isBit1Enabled = false;

@@ -10,7 +10,7 @@ class Configurations extends PropertyChangeNotifier<String> {
   Map<String, dynamic> _configDefault = {};
   List<TextEditingController> _controllerSensors =
       List.generate(12, (i) => TextEditingController(text: '-'));
-  String _chosenDrive = ' ';
+  String _chosenDrive = 'EpiBOX Core';
   TextEditingController _controllerFreq = TextEditingController(text: ' ');
   bool _saveRaw = true;
 

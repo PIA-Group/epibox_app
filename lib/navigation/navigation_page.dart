@@ -55,7 +55,8 @@ class _NavigationPageState extends State<NavigationPage>
   // Variables that hold information/data received from PyEpiBOX via MQTT
   ValueNotifier<bool> receivedMACNotifier = ValueNotifier(false);
   ValueNotifier<bool> sentMACNotifier = ValueNotifier(false);
-  ValueNotifier<List<String>> driveListNotifier = ValueNotifier([' ']);
+  ValueNotifier<List<String>> driveListNotifier =
+      ValueNotifier(['EpiBOX Core']);
   ValueNotifier<String> timedOut = ValueNotifier(null);
   ValueNotifier<bool> startupError = ValueNotifier(false);
 

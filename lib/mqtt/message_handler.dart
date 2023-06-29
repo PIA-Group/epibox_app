@@ -124,7 +124,9 @@ void isDrivesList(String message, ValueNotifier<List<String>> driveListNotifier,
     List<String> listDrives = message.split(",");
     listDrives.removeAt(0);
     listDrives = listDrives.map((drive) => drive.split("'")[1]).toList();
-    driveListNotifier.value = [' '] + listDrives;
+    driveListNotifier.value = ['EpiBOX Core'] + listDrives;
+    print("list of available drives: $listDrives");
+    print(driveListNotifier.value);
   } catch (e) {
     print(e);
   }
