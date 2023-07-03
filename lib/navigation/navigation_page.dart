@@ -116,6 +116,8 @@ class _NavigationPageState extends State<NavigationPage>
     listeners['dataMAC'] = () {
       visualizationMAC1.dataMAC = acquisition.dataMAC1;
       visualizationMAC2.dataMAC = acquisition.dataMAC2;
+      visualizationMAC1.qualityMAC = acquisition.qualityMAC1;
+      visualizationMAC2.qualityMAC = acquisition.qualityMAC2;
     };
     listeners['overlayInfo'] = () {
       if (errorHandler.overlayInfo['showOverlay']) {

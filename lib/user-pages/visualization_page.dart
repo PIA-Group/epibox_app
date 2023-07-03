@@ -50,6 +50,11 @@ class _VisualizationPageState extends State<VisualizationPage> {
   final plotHeight = 200.0;
   int buffer = 100;
   Timer _timer;
+  final Map<int, Color> qualityColors = {
+    0: Colors.red,
+    1: Colors.green,
+    2: Colors.blue,
+  };
 
   bool _rangeInitiated = false;
 
@@ -250,6 +255,8 @@ class _VisualizationPageState extends State<VisualizationPage> {
                                       configurations: widget.configurations,
                                       yRange: visualization.rangesList[i]
                                           .sublist(0, 2),
+                                      qualityColor: qualityColors[
+                                          visualization.qualityMAC[i]],
                                     )
                                   ];
                                 }
@@ -267,6 +274,7 @@ class _VisualizationPageState extends State<VisualizationPage> {
 class PlotData extends StatelessWidget {
   final List<double> yRange;
   final List<double> data;
+  final Color qualityColor;
   final double plotHeight;
   final DateTime startTime;
   final int secondsSinceStart;
@@ -275,6 +283,7 @@ class PlotData extends StatelessWidget {
   PlotData({
     this.yRange,
     this.data,
+    this.qualityColor,
     this.plotHeight,
     this.startTime,
     this.secondsSinceStart,
@@ -311,6 +320,7 @@ class PlotData extends StatelessWidget {
                 yAxisMax: yRange[1],
                 yAxisMin: yRange[0],
                 dataSet: data,
+                traceColor: qualityColor,
               ),
             )
           ]),

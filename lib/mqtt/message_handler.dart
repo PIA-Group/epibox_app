@@ -175,17 +175,24 @@ void isData(List message2List, Devices devices, Acquisition acquisition) {
   List<List> dataMAC1 = [];
   List<List> dataMAC2 = [];
 
+  List<int> qualityMAC1 = [];
+  List<int> qualityMAC2 = [];
+
   message2List[2].asMap().forEach((index, channel) {
     if (channel[0] == devices.macAddress1 && devices.macAddress1.trim() != '') {
       dataMAC1.add(message2List[1][index]);
+      qualityMAC1.add(message2List[4][index].toInt());
     } else if (channel[0] == devices.macAddress2 &&
         devices.macAddress2.trim() != '') {
       dataMAC2.add(message2List[1][index]);
+      qualityMAC2.add(message2List[4][index]);
     }
   });
 
   acquisition.dataMAC1 = dataMAC1;
   acquisition.dataMAC2 = dataMAC2;
+  acquisition.qualityMAC1 = qualityMAC1;
+  acquisition.qualityMAC2 = qualityMAC2;
 }
 
 void isBatteryLevel(

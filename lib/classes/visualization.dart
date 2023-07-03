@@ -5,6 +5,7 @@ class Visualization extends PropertyChangeNotifier<String> {
   data to plot. */
 
   List<List> _dataMAC = [];
+  List<int> _qualityMAC = [];
   List _sensorsMAC = [];
   List<List> _channelsMAC = [];
   List<List<double>> _data2Plot = [];
@@ -12,6 +13,7 @@ class Visualization extends PropertyChangeNotifier<String> {
   List<List<double>> _rangesList = List.filled(6, [-1, 10, 1]);
 
   List<List> get dataMAC => _dataMAC;
+  List<int> get qualityMAC => _qualityMAC;
   List get sensorsMAC => _sensorsMAC;
   List<List> get channelsMAC => _channelsMAC;
   List<List<double>> get data2Plot => _data2Plot;
@@ -21,6 +23,11 @@ class Visualization extends PropertyChangeNotifier<String> {
   set dataMAC(List<List> value) {
     _dataMAC = value;
     notifyListeners('dataMAC');
+  }
+
+  set qualityMAC(List<int> value) {
+    _qualityMAC = value;
+    notifyListeners('qualityMAC');
   }
 
   set sensorsMAC(List value) {

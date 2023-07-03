@@ -9,6 +9,8 @@ class Acquisition extends PropertyChangeNotifier<String> {
   double _batteryBit2;
   List<List> _dataMAC1 = [];
   List<List> _dataMAC2 = [];
+  List<int> _qualityMAC1 = [];
+  List<int> _qualityMAC2 = [];
   List<List> _channelsMAC1 = [];
   List<List> _channelsMAC2 = [];
   List _sensorsMAC1 = [];
@@ -19,6 +21,8 @@ class Acquisition extends PropertyChangeNotifier<String> {
   double get batteryBit2 => _batteryBit2;
   List<List> get dataMAC1 => _dataMAC1;
   List<List> get dataMAC2 => _dataMAC2;
+  List<int> get qualityMAC1 => _qualityMAC1;
+  List<int> get qualityMAC2 => _qualityMAC2;
   List<List> get channelsMAC1 => _channelsMAC1;
   List<List> get channelsMAC2 => _channelsMAC2;
   List get sensorsMAC1 => _sensorsMAC1;
@@ -47,6 +51,16 @@ class Acquisition extends PropertyChangeNotifier<String> {
   set dataMAC2(List<List> value) {
     _dataMAC2 = value;
     notifyListeners('dataMAC2');
+  }
+
+  set qualityMAC1(List<int> value) {
+    _qualityMAC1 = value;
+    notifyListeners('qualityMAC1');
+  }
+
+  set qualityMAC2(List<int> value) {
+    _qualityMAC2 = value;
+    notifyListeners('qualityMAC2');
   }
 
   set channelsMAC1(List<List> value) {
