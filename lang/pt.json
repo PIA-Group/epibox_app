@@ -58,6 +58,7 @@
     "select acquisition device(s)": "selecionar dispositivo(s) de aquisição",
     "sensors": "sensores",
     "sensors device": "sensores dispositivo",
+    "session ID": "ID da sessão",
     "set new default": "definir novo default",
     "sign out": "terminar sessão",
     "start": "iniciar",
@@ -74,6 +75,8 @@
     "trying to connect to devices": "a tentar conectar ao(s) dispositivo(s)",
     "trying to resume the acquisition": "a tentar retomar a aquisição",
     "turn off RPi": "desligar RPi",
+
+    "used as the name of the storage folder, identifying the acquisition session": "usado como nome da pasta de armazenamento, identificando a sessão de aquisição", 
     
     "welcome to": "bem-vindo ao"
 }

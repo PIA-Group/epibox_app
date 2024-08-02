@@ -57,6 +57,7 @@
     "select acquisition device(s)": "select acquisition device(s)",
     "sensors": "sensors",
     "sensors device": "sensors device",
+    "session ID": "session ID",
     "set new default": "set new default",
     "sign out": "sign out",
     "start": "start",
@@ -73,6 +74,8 @@
     "trying to connect to devices": "trying to connect to devices",
     "trying to resume the acquisition": "trying to resume the acquisition",
     "turn off RPi": "turn off RPi",
+
+    "used as the name of the storage folder, identifying the acquisition session": "used as the name of the storage folder, identifying the acquisition session",
     
     "welcome to": "welcome to"
 }

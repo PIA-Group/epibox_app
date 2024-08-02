@@ -8,9 +8,11 @@ import 'package:epibox/decor/text_styles.dart';
 import 'package:epibox/mqtt/mqtt_states.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'package:epibox/utils/tooltips.dart';
+import 'package:epibox/shared_pref/pref_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:property_change_notifier/property_change_notifier.dart';
 import 'package:epibox/utils/config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ConfigPage extends StatefulWidget {
   /* This page allows the user to see the current default acquisition configurations 
@@ -43,6 +45,19 @@ class ConfigPage extends StatefulWidget {
 }
 
 class _ConfigPageState extends State<ConfigPage> {
+  final TextEditingController idController = TextEditingController();
+
+  void getIdTemplate() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String _idTemplate;
+    try {
+      _idTemplate = prefs.getString('id_template').toString() ?? '';
+      setState(() => idController.text = _idTemplate);
+    } catch (e) {
+      print(e);
+    }
+  }
+
   List<String> fsOptions = [' ', '1000', '100', '10', '1'];
 
   List<DropdownMenuItem<String>> sensorItems = [
@@ -88,6 +103,8 @@ class _ConfigPageState extends State<ConfigPage> {
   @override
   void initState() {
     super.initState();
+
+    getIdTemplate();
 
     listeners['configDefault'] = () {
       // if the currently available drives doesn't include the previous default drive:
@@ -188,6 +205,7 @@ class _ConfigPageState extends State<ConfigPage> {
 
   @override
   void dispose() {
+    idController.dispose();
     widget.configurations
         .removeListener(listeners['configDefault'], ['configDefault']);
     widget.devices.removeListener(listeners['macAddress1'], ['macAddress1']);
@@ -262,6 +280,12 @@ class _ConfigPageState extends State<ConfigPage> {
             children: <Widget>[
               DriveBlock(
                   driveListNotifier: widget.driveListNotifier,
+                  height: height,
+                  width: width,
+                  verticalSpacing: verticalSpacing),
+              SizedBox(height: verticalSpacing),
+              IDBlock(
+                  idController: idController,
                   height: height,
                   width: width,
                   verticalSpacing: verticalSpacing),
@@ -351,6 +375,9 @@ class _ConfigPageState extends State<ConfigPage> {
                     //onPrimary: Colors.white, // foreground
                   ),
                   onPressed: () {
+                    setState(() => widget.patientNotifier.value =
+                        idController.text.trim());
+                    updateIdTemplate(widget.patientNotifier.value);
                     newDefault(
                         widget.mqttClientWrapper,
                         widget.configurations,
@@ -467,6 +494,79 @@ class DriveBlock extends StatelessWidget {
                     }),
               ),
             ],
+          ),
+        ),
+      ),
+    ]);
+  }
+}
+
+class IDBlock extends StatelessWidget {
+  /* Widget that displays the current default storage location, as well as 
+  other available locations of EpiBOX Core; and allows the user to choose a 
+  new default based on the available storage locations. */
+  final TextEditingController idController;
+  final double height, width, verticalSpacing;
+  final configurationKey = GlobalKey<State<Tooltip>>();
+
+  IDBlock({this.idController, this.height, this.width, this.verticalSpacing});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(children: [
+      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        Expanded(
+          child: Text(
+            AppLocalizations.of(context).translate('session ID').inCaps,
+            textAlign: TextAlign.left,
+            style: MyTextStyle(
+              color: DefaultColors.textColorOnLight,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        CustomTooltip(
+          message: AppLocalizations.of(context)
+                  .translate(
+                      "used as the name of the storage folder, identifying the acquisition session")
+                  .inCaps +
+              '.',
+          tooltipKey: configurationKey,
+        ),
+      ]),
+      SizedBox(height: verticalSpacing),
+      Container(
+        padding: EdgeInsets.only(top: 0, bottom: 0),
+        height: height * 0.07,
+        width: width * 0.9,
+        color: Colors.transparent,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.rectangle,
+            borderRadius: BorderRadius.all(Radius.circular(8.0)),
+            boxShadow: [
+              BoxShadow(color: Colors.grey[200], offset: new Offset(5.0, 5.0))
+            ],
+          ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 15.0),
+            child: TextField(
+                key: Key('loginTextField'),
+                style: MyTextStyle(
+                  color: DefaultColors.textColorOnLight,
+                ),
+                controller: idController,
+                decoration: InputDecoration(
+                  isDense: true,
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey[300]),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey[300]),
+                  ),
+                ),
+                onChanged: null),
           ),
         ),
       ),
