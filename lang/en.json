@@ -66,6 +66,7 @@
     "start scan": "start scan",
     "stop": "stop",
     "storage folder": "storage folder",
+    "storage not available, changed it to EpiBOX Core": "storage not available, changed it to EpiBOX Core",
     
     "this will initiate all necessary procedures to start the data acquisition": "this will initiate all necessary procedures to start the data acquisition",
     "time elapsed": "time elapsed",

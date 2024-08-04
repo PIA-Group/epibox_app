@@ -22,3 +22,26 @@ class StorageCustomOverlay extends StatelessWidget {
     );
   }
 }
+
+class ErrorStorageCustomOverlay extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 10),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Text(
+            AppLocalizations.of(context)
+                    .translate(
+                        'storage not available, changed it to EpiBOX Core')
+                    .inCaps +
+                '!',
+            textAlign: TextAlign.center,
+            style: MyTextStyle(
+                color: DefaultColors.textColorOnLight, fontSize: 20),
+          ),
+        ]),
+      ),
+    );
+  }
+}

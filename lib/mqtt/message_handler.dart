@@ -47,6 +47,9 @@ void gotNewMessage({
     case 'INSERT STORAGE':
       noStorage(errorHandler);
       break;
+    case 'STORAGE ERROR':
+      storageError(errorHandler);
+      break;
     case 'DATA':
       isData(message2List, devices, acquisition);
       break;
@@ -274,7 +277,15 @@ void isTurnedOff(
 void noStorage(ErrorHandler errorHandler) {
   errorHandler.overlayInfo = {
     'overlayMessage': StorageCustomOverlay(),
-    'timer': 2,
+    'timer': 4,
+    'showOverlay': true
+  };
+}
+
+void storageError(ErrorHandler errorHandler) {
+  errorHandler.overlayInfo = {
+    'overlayMessage': ErrorStorageCustomOverlay(),
+    'timer': 4,
     'showOverlay': true
   };
 }
