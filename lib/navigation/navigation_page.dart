@@ -424,7 +424,7 @@ class _NavigationPageState extends State<NavigationPage>
                           errorHandler: errorHandler,
                           preferences: preferences,
                         ),
-                        ResumePauseButton(
+                        TimestampButton(
                           mqttClientWrapper: mqttClientWrapper,
                           errorHandler: errorHandler,
                         ),

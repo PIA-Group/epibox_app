@@ -7,6 +7,7 @@ import 'package:epibox/classes/error_handler.dart';
 import 'package:epibox/classes/shared_pref.dart';
 import 'package:epibox/classes/visualization.dart';
 import 'package:epibox/decor/default_colors.dart';
+import 'package:epibox/mqtt/message_handler.dart';
 import 'package:epibox/mqtt/mqtt_states.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'package:flutter/material.dart';
@@ -151,10 +152,10 @@ class SpeedAnnotationFloater extends StatelessWidget {
   }
 }
 
-class ResumePauseButton extends StatelessWidget {
+class TimestampButton extends StatelessWidget {
   final MQTTClientWrapper mqttClientWrapper;
   final ErrorHandler errorHandler;
-  const ResumePauseButton({Key key, this.mqttClientWrapper, this.errorHandler})
+  const TimestampButton({Key key, this.mqttClientWrapper, this.errorHandler})
       : super(key: key);
 
   @override
@@ -168,17 +169,10 @@ class ResumePauseButton extends StatelessWidget {
               heroTag: null,
               backgroundColor: DefaultColors.mainLColor,
               mini: true,
-              onPressed: acquisition.acquisitionState == 'paused'
-                  ? () => resumeAcquisition(mqttClientWrapper)
-                  : () => pauseAcquisition(
-                        mqttClientWrapper: mqttClientWrapper,
-                        context: context,
-                        acquisition: acquisition,
-                        errorHandler: errorHandler,
-                      ),
-              child: acquisition.acquisitionState == 'paused'
-                  ? Icon(Icons.play_arrow)
-                  : Icon(Icons.pause),
+              onPressed: () {
+                sendActualDatetime(mqttClientWrapper);
+              },
+              child: Icon(Icons.access_time_filled),
             );
           }),
     );

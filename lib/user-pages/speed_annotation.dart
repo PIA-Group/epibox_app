@@ -26,8 +26,6 @@ class _SpeedAnnotationDialogState extends State<SpeedAnnotationDialog> {
   final TextEditingController _controller = TextEditingController();
   double _currentSliderValue = 0.0;
 
-  bool _isChecked = false;
-
   @override
   void dispose() {
     _controller.dispose();
@@ -54,15 +52,7 @@ class _SpeedAnnotationDialogState extends State<SpeedAnnotationDialog> {
       List annot;
       String annotText = _controller.text.replaceAll('ç', 'c');
       annotText = annotText.replaceAll(' ', '_');
-      if (!_isChecked) {
-        annot = [
-          '"$annotText"',
-          //'"${timeStamp.hour}:${timeStamp.minute}:${timeStamp.second}"'
-          '"$timeStamp"'
-        ];
-      } else {
-        annot = ['"$annotText"', '"null"'];
-      }
+      annot = ['"annotation"', '"$annotText"', '"${DateTime.now()}"'];
 
       widget.mqttClientWrapper.publishMessage("['ANNOTATION', $annot]");
 
@@ -76,15 +66,9 @@ class _SpeedAnnotationDialogState extends State<SpeedAnnotationDialog> {
         MediaQuery.of(context).viewInsets.left -
         MediaQuery.of(context).viewInsets.right;
 
-    /* final height = MediaQuery.of(context).size.height -
-        MediaQuery.of(context).viewInsets.top -
-        MediaQuery.of(context).viewInsets.bottom; */
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)
-            .translate('flash annotation')
-            .capitalizeFirstofEach),
+        backgroundColor: DefaultColors.mainColor,
         actions: [
           IconButton(
               icon: Icon(
@@ -157,83 +141,83 @@ class _SpeedAnnotationDialogState extends State<SpeedAnnotationDialog> {
                   ),
                 ),
               ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(20.0, 30.0, 0.0, 10.0),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Container(
-                    child: Text(
-                      AppLocalizations.of(context)
-                          .translate('adjust annotation time')
-                          .inCaps,
-                      textAlign: TextAlign.left,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(20.0, 0.0, 0.0, 10.0),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Container(
-                    child: Text(
-                      '${AppLocalizations.of(context).translate('time elapsed').inCaps} [min]',
-                      textAlign: TextAlign.left,
-                      style: TextStyle(
-                        fontSize: 15,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                height: 100,
-                width: width * 0.85,
-                color: Colors.transparent,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.rectangle,
-                    borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                    boxShadow: [
-                      BoxShadow(
-                          color: Colors.grey[200], offset: new Offset(5.0, 5.0))
-                    ],
-                  ),
-                  child: Column(children: [
-                    Slider(
-                      value: _currentSliderValue,
-                      min: 0.0,
-                      max: 5.0,
-                      divisions: 10,
-                      label: _currentSliderValue.toString(),
-                      onChanged: (double value) {
-                        setState(() {
-                          _currentSliderValue = value;
-                        });
-                      },
-                    ),
-                    Expanded(
-                      child: CheckboxListTile(
-                        value: _isChecked,
-                        onChanged: (bool val) {
-                          setState(() => _currentSliderValue = 0.0);
-                          setState(() => _isChecked = val);
-                        },
-                        title: Text(
-                          '(?) ${AppLocalizations.of(context).translate("don't know when it happened").inCaps}',
-                          style: TextStyle(
-                            color: DefaultColors.textColorOnLight,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ]),
-                ),
-              ),
+              // Padding(
+              //   padding: EdgeInsets.fromLTRB(20.0, 30.0, 0.0, 10.0),
+              //   child: Align(
+              //     alignment: Alignment.centerLeft,
+              //     child: Container(
+              //       child: Text(
+              //         AppLocalizations.of(context)
+              //             .translate('adjust annotation time')
+              //             .inCaps,
+              //         textAlign: TextAlign.left,
+              //         style: TextStyle(
+              //           fontWeight: FontWeight.bold,
+              //         ),
+              //       ),
+              //     ),
+              //   ),
+              // ),
+              // Padding(
+              //   padding: EdgeInsets.fromLTRB(20.0, 0.0, 0.0, 10.0),
+              //   child: Align(
+              //     alignment: Alignment.centerLeft,
+              //     child: Container(
+              //       child: Text(
+              //         '${AppLocalizations.of(context).translate('time elapsed').inCaps} [min]',
+              //         textAlign: TextAlign.left,
+              //         style: TextStyle(
+              //           fontSize: 15,
+              //         ),
+              //       ),
+              //     ),
+              //   ),
+              // ),
+              // Container(
+              //   height: 100,
+              //   width: width * 0.85,
+              //   color: Colors.transparent,
+              //   child: Container(
+              //     decoration: BoxDecoration(
+              //       color: Colors.white,
+              //       shape: BoxShape.rectangle,
+              //       borderRadius: BorderRadius.all(Radius.circular(8.0)),
+              //       boxShadow: [
+              //         BoxShadow(
+              //             color: Colors.grey[200], offset: new Offset(5.0, 5.0))
+              //       ],
+              //     ),
+              //     child: Column(children: [
+              //       Slider(
+              //         value: _currentSliderValue,
+              //         min: 0.0,
+              //         max: 5.0,
+              //         divisions: 10,
+              //         label: _currentSliderValue.toString(),
+              //         onChanged: (double value) {
+              //           setState(() {
+              //             _currentSliderValue = value;
+              //           });
+              //         },
+              //       ),
+              //       Expanded(
+              //         child: CheckboxListTile(
+              //           value: _isChecked,
+              //           onChanged: (bool val) {
+              //             setState(() => _currentSliderValue = 0.0);
+              //             setState(() => _isChecked = val);
+              //           },
+              //           title: Text(
+              //             '(?) ${AppLocalizations.of(context).translate("don't know when it happened").inCaps}',
+              //             style: TextStyle(
+              //               color: DefaultColors.textColorOnLight,
+              //             ),
+              //           ),
+              //         ),
+              //       ),
+              //     ]),
+              //   ),
+              // ),
             ]),
           )
         ]),

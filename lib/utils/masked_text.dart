@@ -62,9 +62,9 @@ class _MaskedTextFieldState extends State<MaskedTextField> {
               widget.maskedTextFieldController.text = _buildText(text);
             }
 
-            if (widget.mask[position] != widget.escapeCharacter)
+            if (widget.mask[position - 1] != widget.escapeCharacter)
               widget.maskedTextFieldController.text =
-                  "${widget.maskedTextFieldController.text}${widget.mask[position]}";
+                  "${widget.maskedTextFieldController.text}${widget.mask[position - 1]}";
           }
 
           // Android on change resets cursor position(cursor goes to 0)

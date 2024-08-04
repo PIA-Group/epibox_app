@@ -5,6 +5,7 @@ import 'package:epibox/classes/error_handler.dart';
 import 'package:epibox/costum_overlays/config_overlay.dart';
 import 'package:epibox/costum_overlays/error_overlays.dart';
 import 'package:epibox/costum_overlays/system_overlay.dart';
+import 'package:epibox/costum_overlays/storage_overlay.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
@@ -42,6 +43,12 @@ void gotNewMessage({
       break;
     case 'DEFAULT CONFIG':
       isDefaultConfig(message2List, configurations);
+      break;
+    case 'INSERT STORAGE':
+      noStorage(errorHandler);
+      break;
+    case 'STORAGE ERROR':
+      storageError(errorHandler);
       break;
     case 'DATA':
       isData(message2List, devices, acquisition);
@@ -230,7 +237,7 @@ void isBatteryLevel(
 // SYSTEM
 
 void sendActualDatetime(MQTTClientWrapper mqttClientWrapper) {
-  List annot = ['"actualTime"', '"${DateTime.now()}"'];
+  List annot = ['"actualTime"', '"-"', '"${DateTime.now()}"'];
   mqttClientWrapper.publishMessage("['ANNOTATION', $annot]");
 }
 
@@ -263,6 +270,22 @@ void isTurnedOff(
   errorHandler.overlayInfo = {
     'overlayMessage': SystemCustomOverlay(),
     'timer': 2,
+    'showOverlay': true
+  };
+}
+
+void noStorage(ErrorHandler errorHandler) {
+  errorHandler.overlayInfo = {
+    'overlayMessage': StorageCustomOverlay(),
+    'timer': 4,
+    'showOverlay': true
+  };
+}
+
+void storageError(ErrorHandler errorHandler) {
+  errorHandler.overlayInfo = {
+    'overlayMessage': ErrorStorageCustomOverlay(),
+    'timer': 4,
     'showOverlay': true
   };
 }

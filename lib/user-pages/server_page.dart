@@ -69,10 +69,33 @@ class _ServerPageState extends State<ServerPage> {
 
   @override
   Widget build(BuildContext context) {
+    final height = MediaQuery.of(context).size.height -
+        MediaQuery.of(context).viewInsets.top -
+        MediaQuery.of(context).viewInsets.bottom;
+
     return ListView(
       children: <Widget>[
         Padding(
-          padding: EdgeInsets.only(top: 50.0),
+          padding: EdgeInsets.only(top: height * 0.01),
+          child: Column(children: [
+            Text(
+              AppLocalizations.of(context).translate('welcome to').inCaps,
+              style: MyTextStyle(
+                fontSize: 18,
+                color: DefaultColors.mainColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 10),
+            Text('EpiBOX',
+                style: TextStyle(
+                    fontSize: 70,
+                    fontFamily: 'canter',
+                    color: DefaultColors.mainColor)),
+          ]),
+        ),
+        Padding(
+          padding: EdgeInsets.only(top: 30.0),
           child: Column(children: [
             Padding(
               padding: EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 0.0),

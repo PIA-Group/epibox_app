@@ -41,22 +41,24 @@
     "home": "home",
     
     "in case you are": "in case you are",
+    "insert storage": "insert storage",
     
     "my annotations": "my annotations",
     
     "no ongoing acquisition": "no ongoing acquisition",
     
     "patient ID": "patient ID",
-    "please stop the current acquisition to use the new defaults": "please stop the current acquisition to use the new defaults",
+    "the current acquisition will be stopped": "the current acquisition will be stopped",
     "press the button to resume": "press the button to resume",
     
     "restart": "restart",
     
     "sampling freq.": "sampling freq.",
     "save data raw": "save data raw",
-    "select acquisition device(s)": "select acquisition device(s)",
+    "select acquisition device": "select acquisition device",
     "sensors": "sensors",
     "sensors device": "sensors device",
+    "session ID": "session ID",
     "set new default": "set new default",
     "sign out": "sign out",
     "start": "start",
@@ -64,6 +66,7 @@
     "start scan": "start scan",
     "stop": "stop",
     "storage folder": "storage folder",
+    "storage not available, changed it to EpiBOX Core": "storage not available, changed it to EpiBOX Core",
     
     "this will initiate all necessary procedures to start the data acquisition": "this will initiate all necessary procedures to start the data acquisition",
     "time elapsed": "time elapsed",
@@ -73,6 +76,8 @@
     "trying to connect to devices": "trying to connect to devices",
     "trying to resume the acquisition": "trying to resume the acquisition",
     "turn off RPi": "turn off RPi",
+
+    "used as the name of the storage folder, identifying the acquisition session": "used as the name of the storage folder, identifying the acquisition session",
     
     "welcome to": "welcome to"
 }

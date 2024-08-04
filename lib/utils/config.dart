@@ -1,6 +1,7 @@
 import 'package:epibox/classes/configurations.dart';
 import 'package:epibox/classes/devices.dart';
 import 'package:epibox/classes/shared_pref.dart';
+import 'package:epibox/mqtt/message_handler.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'package:epibox/shared_pref/pref_handler.dart';
 import 'package:flutter/material.dart';

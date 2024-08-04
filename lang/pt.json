@@ -42,22 +42,24 @@
     "home": "início",
     
     "in case you are": "caso esteja",
+    "insert storage": "inserir armazenamento",
     
     "my annotations": "as minhas anotações",
     
     "no ongoing acquisition": "não se encontra nenhuma aquisição a decorrer",
     
     "patient ID": "ID do paciente",
-    "please stop the current acquisition to use the new defaults": "por favor, pare a aquisição atual de modo a usar os novos defaults",
+    "the current acquisition will be stopped": "a aquisição atual será interrompida",
     "press the button to resume": "pressione o botão para retomar",
     
     "restart": "reiniciar",
     
     "sampling freq.": "freq. amostragem",
     "save data raw": "guardar os dados em bruto",
-    "select acquisition device(s)": "selecionar dispositivo(s) de aquisição",
+    "select acquisition device": "selecionar dispositivo de aquisição",
     "sensors": "sensores",
     "sensors device": "sensores dispositivo",
+    "session ID": "ID da sessão",
     "set new default": "definir novo default",
     "sign out": "terminar sessão",
     "start": "iniciar",
@@ -65,6 +67,7 @@
     "start scan": "iniciar scan",
     "stop": "parar",
     "storage folder": "pasta para armazenamento",
+    "storage not available, changed it to EpiBOX Core": "armazenamento não disponível, alterado para 'EpiBOX Core'",
     
     "this will initiate all necessary procedures to start the data acquisition": "isto irá colocar em marcha os procedimentos necessários para iniciar a aquisição de dados",
     "time elapsed": "tempo decorrido",
@@ -74,6 +77,8 @@
     "trying to connect to devices": "a tentar conectar ao(s) dispositivo(s)",
     "trying to resume the acquisition": "a tentar retomar a aquisição",
     "turn off RPi": "desligar RPi",
+
+    "used as the name of the storage folder, identifying the acquisition session": "usado como nome da pasta de armazenamento, identificando a sessão de aquisição", 
     
     "welcome to": "bem-vindo ao"
 }

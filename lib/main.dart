@@ -2,7 +2,7 @@ import 'package:epibox/app_localizations.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:epibox/navigation/id_wrapper.dart';
+import 'package:epibox/navigation/navigation_page.dart';
 import 'package:epibox/decor/default_colors.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -10,6 +10,9 @@ void main() => runApp(InterfaceRPi());
 
 class InterfaceRPi extends StatelessWidget {
   // This widget is the root of your application.
+
+  final ValueNotifier<String> patientNotifier = ValueNotifier(null);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -65,7 +68,7 @@ class InterfaceRPi extends StatelessWidget {
       //showPerformanceOverlay: true,
       title: 'EpiBOX',
       debugShowCheckedModeBanner: false,
-      home: IDWrapper(),
+      home: NavigationPage(patientNotifier: patientNotifier),
     );
   }
 }

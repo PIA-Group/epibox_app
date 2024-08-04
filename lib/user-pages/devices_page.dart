@@ -150,7 +150,7 @@ class _DevicesPageState extends State<DevicesPage> {
               Expanded(
                 child: Text(
                   AppLocalizations.of(context)
-                      .translate('select acquisition device(s)')
+                      .translate('select acquisition device')
                       .inCaps,
                   textAlign: TextAlign.left,
                   style: MyTextStyle(
@@ -285,11 +285,11 @@ class SelectDevicesBlock extends StatelessWidget {
 
     Map<String, TextEditingController> macMap = {
       'MAC 1': controller1,
-      'MAC 2': controller2
+      //'MAC 2': controller2
     };
 
     return Container(
-      height: 150.0,
+      height: 120.0,
       width: 0.95 * bodyWidth,
       color: Colors.transparent,
       child: Container(
