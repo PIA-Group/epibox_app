@@ -162,7 +162,6 @@ class _ConfigPageState extends State<ConfigPage> {
         .addListener(listeners['configDefault'], ['configDefault']);
     widget.devices.addListener(listeners['macAddress1'], ['macAddress1']);
     widget.devices.addListener(listeners['macAddress2'], ['macAddress2']);
-    //widget.driveListNotifier.addListener(listeners['driveListNotifier']);
     widget.configurations.addListener(() {}, ['controllerFreq']);
   }
 
@@ -170,8 +169,6 @@ class _ConfigPageState extends State<ConfigPage> {
     List<List<String>> _channels2Send = [];
     List<List<List<String>>> _channels2Save = [[], []];
     List<List<String>> _sensors2Save = [[], []];
-
-    //print('bit1: ${configurations.bit1Selections}');
 
     configurations.bit1Selections.asMap().forEach((channel, value) {
       if (value) {
@@ -473,6 +470,8 @@ class DriveBlock extends StatelessWidget {
                           valueListenable: driveListNotifier,
                           builder: (context, driveList, child) {
                             return DropdownButton(
+                              isExpanded: true,
+                              itemHeight: null,
                               key: Key('driveDropdown'),
                               value: configurations.chosenDrive,
                               items: driveList.map<DropdownMenuItem<String>>(

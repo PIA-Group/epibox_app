@@ -34,18 +34,6 @@ class MQTTClientWrapper {
       onNewConnection(connectionState);
       //client.disconnect();
     }
-
-    /* if (client.connectionStatus.state == MqttConnectionState.connected) {
-      connectionState = MqttCurrentConnectionState.CONNECTED;
-      onNewConnection(connectionState);
-      print('MQTTClientWrapper::Mosquitto client connected');
-    } else {
-      print(
-          'MQTTClientWrapper::ERROR Mosquitto client connection failed - disconnecting, status is ${client.connectionStatus}');
-      connectionState = MqttCurrentConnectionState.ERROR_WHEN_CONNECTING;
-      onNewConnection(connectionState);
-      //client.disconnect();
-    } */
   }
 
   Future<void> diconnectClient() async {
@@ -86,19 +74,16 @@ class MQTTClientWrapper {
     }
   }
 
-/*   Future<void> _reSubscribeToTopic(String topicName) async {
-    client.resubscribe();
-    print('RESUBSCRIPTION DONE TO TOPIC $topicName');
-  } */
-
   void publishMessage(String message) {
-    final MqttClientPayloadBuilder builder = MqttClientPayloadBuilder();
-    builder.addString(message);
+    if (client != null) {
+      final MqttClientPayloadBuilder builder = MqttClientPayloadBuilder();
+      builder.addString(message);
 
-    print(
-        'MQTTClientWrapper::Publishing message $message to topic ${Constants.topicName}');
-    client.publishMessage(
-        Constants.topicName, MqttQos.atLeastOnce, builder.payload);
+      print(
+          'MQTTClientWrapper::Publishing message $message to topic ${Constants.topicName}');
+      client.publishMessage(
+          Constants.topicName, MqttQos.atLeastOnce, builder.payload);
+    }
   }
 
   void _onSubscribed(String topic) {
@@ -127,9 +112,6 @@ class MQTTClientWrapper {
 
     print(
         'MQTTClientWrapper::OnConnected client callback - Client connection was sucessful');
-    //_subscribeToTopic();
-    //onConnectedCallback();
-    //onAutoReconnectCallback();
     onNewConnection(connectionState);
   }
 
@@ -147,21 +129,4 @@ class MQTTClientWrapper {
         'MQTTClientWrapper::Failed to subscribe to topic ${Constants.topicName}');
     _subscribeToTopic();
   }
-
-  // void _onReconnected() {
-  //   /* if (connectionState == MqttCurrentConnectionState.CONNECTED) {
-  //     print(
-  //         'MQTTClientWrapper::Tried to reconnect while being already connected');
-  //     diconnectClient();
-  //     _connectClient();
-
-  //   } else { */
-  //   connectionState = MqttCurrentConnectionState.CONNECTED;
-  //   print(
-  //       'MQTTClientWrapper::OnRconnected client callback - Client connection was sucessful');
-  //   _subscribeToTopic();
-  //   onConnectedCallback();
-  //   // }
-  //   onNewConnection(connectionState);
-  // }
 }

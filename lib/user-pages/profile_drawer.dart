@@ -95,60 +95,35 @@ class _ProfileDrawerState extends State<ProfileDrawer> {
           // Important: Remove any padding from the ListView.
           padding: EdgeInsets.zero,
           children: <Widget>[
-            Container(
-              height: 170,
-              child: DrawerHeader(
-                decoration: BoxDecoration(
-                  color: DefaultColors.mainColor,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    CircleAvatar(
-                        radius: 40.0,
-                        backgroundImage: AssetImage('images/owl.jpg')),
-                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                      Text('ID:  ',
-                          style: MyTextStyle(
-                            fontSize: 18,
-                          )),
-                      Text(widget.patientNotifier.value,
-                          style: MyTextStyle(
-                            fontSize: 18,
-                          )),
-                    ]),
-                  ],
-                ),
-              ),
-            ),
+            // Container(
+            //   height: 170,
+            //   child: DrawerHeader(
+            //     decoration: BoxDecoration(
+            //       color: DefaultColors.mainColor,
+            //     ),
+            //     child: Column(
+            //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //       children: <Widget>[
+            //         CircleAvatar(
+            //             radius: 40.0,
+            //             backgroundImage: AssetImage('images/owl.jpg')),
+            //         Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            //           Text('ID:  ',
+            //               style: MyTextStyle(
+            //                 fontSize: 18,
+            //               )),
+            //           // Text(widget.patientNotifier.value,
+            //           //     style: MyTextStyle(
+            //           //       fontSize: 18,
+            //           //     )),
+            //         ]),
+            //       ],
+            //     ),
+            //   ),
+            // ),
             Padding(
               padding: EdgeInsets.fromLTRB(
-                  width - 0.9 * width, 20, width - 0.9 * width, 0.0),
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  primary: Colors.white, // background
-                  onPrimary: Colors.grey[600], // foreground
-                ),
-                label: Text(
-                  AppLocalizations.of(context).translate('sign out').inCaps,
-                  style: MyTextStyle(
-                      fontSize: 16, color: DefaultColors.textColorOnLight),
-                ),
-                icon: Icon(
-                  Icons.person,
-                  color: Colors.grey[600],
-                ),
-                onPressed: () {
-                  setState(() {
-                    widget.patientNotifier.value = null;
-                    Navigator.pop(context);
-                  });
-                },
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                  width - 0.9 * width, 5, width - 0.9 * width, 0.0),
+                  width - 0.9 * width, 70, width - 0.9 * width, 0.0),
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   primary: Colors.white, // background
