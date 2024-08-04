@@ -150,7 +150,7 @@ class _DevicesPageState extends State<DevicesPage> {
               Expanded(
                 child: Text(
                   AppLocalizations.of(context)
-                      .translate('select acquisition device(s)')
+                      .translate('select acquisition device')
                       .inCaps,
                   textAlign: TextAlign.left,
                   style: MyTextStyle(
