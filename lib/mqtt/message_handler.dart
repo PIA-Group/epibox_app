@@ -237,7 +237,7 @@ void isBatteryLevel(
 // SYSTEM
 
 void sendActualDatetime(MQTTClientWrapper mqttClientWrapper) {
-  List annot = ['"actualTime"', '"${DateTime.now()}"'];
+  List annot = ['"actualTime"', '"-"', '"${DateTime.now()}"'];
   mqttClientWrapper.publishMessage("['ANNOTATION', $annot]");
 }
 
