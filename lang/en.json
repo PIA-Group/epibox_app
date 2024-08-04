@@ -41,13 +41,14 @@
     "home": "home",
     
     "in case you are": "in case you are",
+    "insert storage": "insert storage",
     
     "my annotations": "my annotations",
     
     "no ongoing acquisition": "no ongoing acquisition",
     
     "patient ID": "patient ID",
-    "please stop the current acquisition to use the new defaults": "please stop the current acquisition to use the new defaults",
+    "the current acquisition will be stopped": "the current acquisition will be stopped",
     "press the button to resume": "press the button to resume",
     
     "restart": "restart",

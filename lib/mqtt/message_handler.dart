@@ -5,6 +5,7 @@ import 'package:epibox/classes/error_handler.dart';
 import 'package:epibox/costum_overlays/config_overlay.dart';
 import 'package:epibox/costum_overlays/error_overlays.dart';
 import 'package:epibox/costum_overlays/system_overlay.dart';
+import 'package:epibox/costum_overlays/storage_overlay.dart';
 import 'package:epibox/mqtt/mqtt_wrapper.dart';
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
@@ -42,6 +43,9 @@ void gotNewMessage({
       break;
     case 'DEFAULT CONFIG':
       isDefaultConfig(message2List, configurations);
+      break;
+    case 'INSERT STORAGE':
+      noStorage(errorHandler);
       break;
     case 'DATA':
       isData(message2List, devices, acquisition);
@@ -262,6 +266,14 @@ void isTurnedOff(
   shouldRestart.value = 'medium';
   errorHandler.overlayInfo = {
     'overlayMessage': SystemCustomOverlay(),
+    'timer': 2,
+    'showOverlay': true
+  };
+}
+
+void noStorage(ErrorHandler errorHandler) {
+  errorHandler.overlayInfo = {
+    'overlayMessage': StorageCustomOverlay(),
     'timer': 2,
     'showOverlay': true
   };
