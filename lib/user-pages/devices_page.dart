@@ -285,11 +285,11 @@ class SelectDevicesBlock extends StatelessWidget {
 
     Map<String, TextEditingController> macMap = {
       'MAC 1': controller1,
-      'MAC 2': controller2
+      //'MAC 2': controller2
     };
 
     return Container(
-      height: 150.0,
+      height: 120.0,
       width: 0.95 * bodyWidth,
       color: Colors.transparent,
       child: Container(

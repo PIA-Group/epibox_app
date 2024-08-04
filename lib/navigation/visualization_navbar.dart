@@ -44,10 +44,10 @@ class VisualizationNavPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 1,
       child: Column(children: [
         TabBar(
-          tabs: [devices.macAddress1, devices.macAddress2]
+          tabs: [devices.macAddress1]
               .map(
                 (macAddress) => Tab(
                   child: Text(macAddress,
@@ -60,7 +60,7 @@ class VisualizationNavPage extends StatelessWidget {
         ),
         Expanded(
           child: TabBarView(
-            children: [visualizationMAC1, visualizationMAC2]
+            children: [visualizationMAC1]
                 .map(
                   (visualizationMAC) => VisualizationPage(
                     configurations: configurations,

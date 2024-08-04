@@ -335,7 +335,7 @@ class _ConfigPageState extends State<ConfigPage> {
                                 .asMap()
                                 .keys
                                 .map((int titleIndex) {
-                                  return [1, 2]
+                                  return [1]
                                       .map((int id) => [
                                             SizedBox(height: verticalSpacing),
                                             Text(
